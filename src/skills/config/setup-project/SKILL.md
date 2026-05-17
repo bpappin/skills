@@ -32,6 +32,7 @@ The agent must verify or initialize the following directory structure in the wor
 *   `docs/reference/`: Domain knowledge and regulatory frameworks (`IDV_REFERENCE.md`, `REGULATORY.md`).
 *   `docs/regulations/`: Authoritative source for regulatory mappings (`README.md`, `COMPLIANCE.md`, `PIPEDA.md`, etc.).
 *   `docs/research/`: Deep-dive technical research and RAD logs (`README.md`).
+*   `docs/discovery/`: Due Diligence (DD) research, vendor analysis, and cost evaluations.
 *   `docs/adr/`: Architectural Decision Records.
 *   `docs/ac/`: Acceptance Criteria repository.
 
@@ -41,10 +42,11 @@ The agent MUST ensure that the project is optimized for AI assistance.
 *   **Action:** If it exists, verify the **"Update Docs Rule"** correctly references the `.skills/config/manage-docs/` skill.
 
 ### 4. Local Agent Configuration (`~/.config/agents/<project_id>/`)
-This directory handles user-specific, non-secret configuration (e.g., active persona, local formatting preferences). Storing this globally bypasses `.gitignore` complexities and keeps the workspace clean.
+This directory handles user-specific, non-secret configuration (e.g., active persona, local formatting preferences, and skill sources). Storing this globally bypasses `.gitignore` complexities and keeps the workspace clean.
 *   **Action:** The agent must resolve the `project_id` from `.config/project.json`.
 *   **Action:** Ensure the `~/.config/agents/<project_id>/` directory exists.
-*   **Constraint:** The agent MUST route all user-specific state files (like `persona.json`) to this global directory, NEVER to the local project workspace.
+*   **Action:** Initialize `skill-sources.json` if missing, prompting the user for the primary master skill repository path (e.g., `~/Workspace/skills/src/skills/`).
+*   **Constraint:** The agent MUST route all user-specific state files (like `persona.json` and `skill-sources.json`) to this global directory, NEVER to the local project workspace.
 
 ### 3. The Secrets Vault (`~/.secrets/agents/<project_id>/`)
 This project relies on a centralized secrets vault located in the user's home directory to store sensitive tokens and API keys securely outside of version control.

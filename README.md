@@ -1,6 +1,6 @@
-# AI Skills for Agentic Engineering
+# Agentic Engineering Skills
 
-A centralized library of specialized instructions, workflows, and tools for AI agents (Gemini CLI and Claude Code). This repository serves as the template upstream source for seeding project-attached intelligence.
+A centralized library of specialized instructions, workflows, and tools for AI agents (Gemini CLI and Claude Code). This repository serves as the "Gold Standard" upstream source for seeding project-attached intelligence.
 
 ---
 
@@ -16,6 +16,7 @@ We follow a **"Project-Attached"** model for agent intelligence. Instead of inst
 1.  **Portability**: Any developer who clones the project immediately inherits its specialized intelligence.
 2.  **Context-Safety**: Agents are locked to the specific patterns and mandates of the project they are currently working on.
 3.  **Versioning**: Skills evolve with the codebase they support.
+4.  **Atomic Specs**: Technical specifications (PRDs and ACs) live in the repository (docs-as-code) to ensure atomic versioning and review alongside implementation changes.
 
 ---
 
@@ -41,9 +42,9 @@ Run project setup
 ### 3. Automated Onboarding
 The **setup-project** skill will take over and autonomously:
 *   Identify the project (ID, Sync Targets).
-*   Create the **6-Sector Documentation Hierarchy** (mandates/, ac/, discovery/, gap/, etc.).
+*   Create the **AI-Optimized Documentation Hierarchy** (mandates/, prd/, ac/, discovery/, gap/, etc.).
 *   Generate or audit the **AGENTS.md** context-mapping file.
-*   Enable optional governance features (R&D Logs, Compliance Tracking).
+*   **Intelligent Migration**: Offer to analyze and organize existing documentation into the new hierarchy.
 
 ---
 
@@ -57,23 +58,22 @@ The **setup-project** skill will take over and autonomously:
 
 ### 🛠️ Configuration & Onboarding
 *   **setup-project**: Bootstraps new workspaces and enforces documentation standards.
-*   **manage-docs**: Intelligently distributes project knowledge across the 6-sector hierarchy.
+*   **manage-docs**: Intelligently distributes knowledge and performs semantic doc migrations.
 *   **manage-skills**: Manages the lifecycle and synchronization of skills between project and master sources.
 *   **persona**: Manages global user state for specialized roles (Developer, Designer, BA).
 
 ### 📐 Engineering & Standards
+*   **to-prd**: The primary workhorse. Synthesizes context into an **ID-First Spec Pair** (PRD and matching AC).
 *   **tdd**: Enforces Test Driven Development and deep-module boundaries.
 *   **grill-with-docs**: Stress-tests plans against existing domain models and ADRs.
 *   **improve-codebase-architecture**: Guidance for refactoring toward clean, maintainable patterns.
 *   **prototype**: Rapid implementation of substantial vertical slices or mockups.
-*   **to-issues**: Strategy for breaking plans into "tracer-bullet" vertical slices.
-*   **to-prd**: Synthesizes conversation context into a formal Product Requirements Document.
 *   **triage**: Professional issue management and initial investigation.
 *   **zoom-out**: High-level architectural mapping and dependency analysis.
 
 ### 📊 Tracking & Roadmap
 *   **generate-epic**: Creates Format B Agile Epic containers.
-*   **generate-issue**: Creates Format A Task/Bug documents.
+*   **generate-issue**: Creates Format A Task/Bug documents (deprecated in favor of to-prd specs).
 *   **sync**: Pushes local Markdown issues to remote trackers (YouTrack, GitHub).
 
 ### ⚖️ Governance & R&D
@@ -86,27 +86,26 @@ The **setup-project** skill will take over and autonomously:
 *   **handoff**: Compacts context into a document for agent-to-agent transition.
 *   **write-a-skill**: Creates new skills with proper structure and triggers.
 
-### 🛡️ Safety & Guardrails
-*   **git-guardrails-gemini**: Strict instruction-based safety for Gemini CLI Git operations.
-*   **git-guardrails-claude-code**: Hard-execution blocks for dangerous Git commands in Claude Code.
-
 ---
 
 ## 🚀 Extended Capabilities
 
-While we leverage foundational agent patterns, this repository introduces several specialized domains designed for enterprise engineering:
+### 🆔 ID-First Traceability
+Our **to-prd** skill implements an "ID-First" workflow. Before creating local documentation, the agent acquires an authoritative ID from your remote issue tracker (GitHub/YouTrack). This ensures that code, commits, and documents are linked to a permanent identity from the first line of code.
 
-### 🛡️ Governance & Regulatory Compliance
-We have added deep-dive auditing capabilities for international privacy standards. Our agents can autonomously track implementation status against **PIPEDA** (Canada), **GDPR** (EU), and **Law 25** (Quebec), ensuring that "Structural Blindness" and "Privacy by Design" are enforced at the code and documentation layer.
+### 🖇️ Atomic Spec-Pairing
+Technical requirements are recorded as an unbreakable pair:
+1.  **Requirement (PRD)**: The user story and implementation decisions.
+2.  **Verification (AC)**: The testable success criteria (Gherkin-style).
+This pairing ensures that the "What" is always strictly linked to the "Proof."
 
-### 🧪 Technical R&D Logging (RAD)
-Standardized logging of technical challenges, hypotheses, and architectural outcomes. This ensures a permanent audit trail for complex engineering choices, supporting both internal knowledge transfer and architectural history.
-
-### 🏗️ Enterprise Documentation Hierarchy
-A unique 6-sector documentation model (mandates/, ac/, discovery/, gap/, regulations/, guides/, reference/, research/, standards/) designed specifically to maximize AI context retrieval accuracy while preventing the "monolithic README" anti-pattern.
-
-### 🗺️ Decoupled Roadmap (GAPs)
-A tiered strategy for project roadmap management, moving beyond flat checklists to individual, searchable files that track functional gaps and technical debt independently of the active issue backlog.
+### 📂 AI-Optimized Documentation Hierarchy
+A unique documentation model designed specifically to maximize AI context retrieval accuracy while preventing documentation bloat:
+*   **Mandates**: Global "Law" (ARCH, SPEC).
+*   **Stories (PRD)**: Feature requirements.
+*   **Criteria (AC)**: Success outcomes.
+*   **Discovery (DD)**: Research and due-diligence records.
+*   **Roadmap (GAP)**: Functional gaps and technical debt.
 
 ---
 *Maintained by Brill Pappin.*

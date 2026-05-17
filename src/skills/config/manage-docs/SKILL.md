@@ -1,55 +1,53 @@
 ---
 name: manage-docs
-description: Manage and intelligently distribute project knowledge across the 6-sector documentation hierarchy. Use when commanded to "update docs", "add documentation", or when project standards change.
+description: Manage the 6-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions. Use when commanded to "update docs", "migrate docs", or when project standards change.
 ---
 
 # Documentation Management
 
 ## The 6-Sector Hierarchy
 
-All knowledge must be dispersed into the appropriate specialized directory to ensure high-quality AI context mapping and prevent documentation bloat.
+All knowledge must be dispersed into the appropriate specialized directory to ensure high-quality AI context mapping and prevent documentation bloat. Technical specifications MUST live in the project repository (docs-as-code) rather than external wikis to ensure atomic versioning and peer review.
 
 | Sector | Path | Focus |
 | :--- | :--- | :--- |
-| **Mandates** | `docs/mandates/` | The "How" and "What" (ARCH, SPEC, DESIGN). |
-| **Criteria** | `docs/ac/` | The "Verification" (Testable success outcomes). Permanent artifacts of a feature. |
-| **Discovery** | `docs/discovery/` | The "Why" and "Due Diligence" (DD). Vendor research, cost analysis, and feasibility. |
-| **Design** | `docs/design/` | The "Experience" (UI/UX, Mockups). |
-| **Roadmap** | `docs/gap/` | The "Future" (GAPs and Technical Debt). Transient task trackers for missing pieces. |
-| **Regulations**| `docs/regulations/` | The "Compliance" (PIPEDA, GDPR, etc.). |
+| **Mandates** | `docs/mandates/` | Global "How" and "What" (`ARCH.md`, `SPEC.md`, `DESIGN.md`). |
+| **Stories** | `docs/prd/` | Feature requirements and user stories (**PRDs**). Linked to **AC**. |
+| **Criteria** | `docs/ac/` | Testable success outcomes (**ACs**). Linked to **PRD**. |
+| **Discovery** | `docs/discovery/` | The "Why" and "Due Diligence" (DD). Vendor research and cost analysis. |
+| **Roadmap** | `docs/gap/` | The "Future" (GAPs). Transient trackers for missing capabilities. |
+| **Regulations**| `docs/regulations/` | Compliance mappings (PIPEDA, GDPR, Law 25). |
 | **Guides** | `docs/guides/` | The "Environment" (Onboarding and Installation). |
-| **Reference** | `docs/reference/` | The "Knowledge" (IDV methods). |
-| **Research** | `docs/research/` | The "Hypothesis" (R&D Logs and Decisions). |
+| **Reference** | `docs/reference/` | Domain-specific knowledge and IDV methods. |
+| **Research** | `docs/research/` | Deep-dive R&D logs (RAD) and Architectural Decisions (ADR). |
 
 ## Workflows
 
-### 1. Intelligent Update ("Update Docs")
-When commanded to "update docs", do NOT create a generic text block. Follow this checklist:
-1.  **Identify Domain**: Determine if the information is technical (ARCH), functional (SPEC), visual (DESIGN), or evaluative (AC).
-2.  **Locate File**: Find the specific file or index in the corresponding sector.
-3.  **Surgical Edit**: Use the `replace` tool to inject the new context idiomaticaly. 
-4.  **Cross-Link**: If the update resolves a GAP, update the status in the corresponding `docs/gap/` file. Note: While an AC may be derived from a GAP, they are independent datasets; ACs define success, while GAPs track roadmap progress.
+### 1. Spec Pairing (PRD + AC)
+When a feature is defined, it is recorded as a pair of files using a shared ID:
+1.  **Requirement**: `docs/prd/[ID]-slug.md`. Contains user stories and implementation decisions.
+2.  **Verification**: `docs/ac/[ID]-slug.md`. Contains testable Gherkin-style scenarios.
+3.  **Note**: If a task is purely informational or non-testable, omit the AC and mark the PRD's Verification section as "N/A".
 
-### 2. Context Mapping Rule
-Before taking significant action, the agent MUST:
-*   Reference `docs/mandates/SPEC.md` for business logic.
-*   Reference `docs/mandates/ARCH.md` for repository/data patterns.
-*   Reference `docs/ac/` for the *permanent* success criteria of the current feature.
-*   Reference `docs/gap/` for the *transient* roadmap status of the task.
+### 2. Migration Workflow ("migrate docs")
+Use this to ingest legacy documentation or clean up an unorganized repository.
+1.  **Scan**: Search the project root and folders like `wiki/`, `notes/`, or `architecture/` for `.md` and `.txt` files.
+2.  **Classify**: Semantically analyze the content to determine its target sector (e.g., "Given/When/Then" ➔ `docs/ac/`).
+3.  **Report**: Present a proposal table of source files and their proposed structured paths.
+4.  **Execute**: Move files, update cross-references, and initialize missing `README.md` indexes.
+5.  **Refactor**: Rename any existing `docs/issue/` directory to `docs/prd/`.
 
-### 3. Adding a new GAP
-1.  Create a new file `docs/gap/XXXX-slug.md` using the next incremental ID.
-2.  Update the [GAP Index](air-file://ml8ci4kvlk3fda06ret8/Users/bpappin/Workspace/coldwater/docs/gap/README.md?type=file&root=%252F).
+### 3. Agentic Proactivity (Soft Offer)
+Monitor the conversation for "Resolution Signals" and offer to record them:
+- **The Trade-off Signal**: If 2+ options were compared and one chosen ➔ Offer a **DD** (Discovery) or **ADR** (Decision).
+- **The Feature Signal**: If "how it should work" is mapped ➔ Offer a **PRD** and **AC** pair.
+- **The Roadmap Signal**: If a task is important but out-of-scope ➔ Offer a **GAP**.
 
 ### 4. Due Diligence (DD) Records
-Before making significant architectural choices or vendor selections, create a Due Diligence record in `docs/discovery/`.
-1.  **Format**: Use the prefix `DD-XXXX-slug.md`.
-2.  **Trail Preservation**: Include a "Discovery Trail" or "Background" section that summarizes the back-and-forth discussions (including AI logic) that led to the findings.
-3.  **Traceability**: Reference the DD record in subsequent ADRs or GAPs using the `[DD-XXXX]` identifier.
+Before making significant architectural choices, create a DD record in `docs/discovery/`.
+- **Discovery Trail**: ALWAYS include a section summarizing the back-and-forth discussion and AI reasoning that led to the findings.
 
 ### 5. Architectural Decision Records (ADR)
-When a hard-to-reverse decision is made, record it in `docs/adr/`.
-1.  **Format**: Use sequential numbering: `XXXX-slug.md`.
-2.  **Criterion**: Only record decisions that are hard to reverse, surprising without context, or the result of a real trade-off.
-3.  **Template**: Keep it concise (1-3 sentences for context/decision/rationale). Include Status, Options Considered, and Consequences only when they add value.
-4.  **Traceability**: Cross-link to related Due Diligence (DD) or GAPs.
+Record hard-to-reverse or surprising technical decisions in `docs/adr/`.
+- **Format**: `XXXX-slug.md`. Keep it concise (1-3 sentences for context/decision).
+- **Linking**: Cross-link to related **DD** or **PRD** records.

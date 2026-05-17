@@ -3,6 +3,7 @@ import os
 import re
 import requests
 import json
+import sys
 from pathlib import Path
 
 def load_config_and_secrets():
@@ -107,7 +108,7 @@ def create_github_issue(title, body, labels=None):
 
 def update_id_in_index_files(old_id, new_id, file_basename):
     """Searches index files and replaces old_id with new_id on lines referencing file_basename."""
-    index_files = list(Path("docs").rglob("README.md")) + list(Path("docs/issue").rglob("*.md"))
+    index_files = list(Path("docs").rglob("README.md")) + list(Path("docs/prd").rglob("*.md"))
     for idx_file in index_files:
         if not idx_file.exists(): continue
         try:
@@ -123,7 +124,9 @@ def update_id_in_index_files(old_id, new_id, file_basename):
                 if modified:
                     if not DRY_RUN:
                         with open(idx_file, "w") as f:
-                            f.write("\n".join(lines) + "\n")
+                            f.write("
+".join(lines) + "
+")
                         print(f"  Updated index {idx_file} -> {new_id}")
                     else:
                         print(f"  [DRY RUN] Would update index {idx_file} -> {new_id}")
@@ -158,7 +161,9 @@ def sync_format_a_file(filepath):
     if issue_id == "#NEW":
         if SYNC_ENABLED or DRY_RUN:
             print(f"Syncing new issue: {title}")
-            new_id = create_github_issue(title, f"Sync source: {filepath}\n\n{content}", labels=default_labels)
+            new_id = create_github_issue(title, f"Sync source: {filepath}
+
+{content}", labels=default_labels)
             if new_id:
                 real_id = f"{new_id}"
                 new_content = content.replace("**ID:** [#NEW]", f"**ID:** [{real_id}]")
@@ -176,7 +181,7 @@ def sync_format_a_file(filepath):
 
 def sync_project_docs():
     """Scans relevant directories for Format A files to sync."""
-    search_paths = [Path("docs/issue"), Path("docs/gap")]
+    search_paths = [Path("docs/prd"), Path("docs/gap")]
     for path in search_paths:
         if not path.exists():
             continue
@@ -186,6 +191,15 @@ def sync_project_docs():
             sync_format_a_file(filepath)
 
 if __name__ == "__main__":
+    if len(sys.argv) > 2 and sys.argv[1] == "--create-skeleton":
+        title = sys.argv[2]
+        new_id = create_github_issue(title, f"Skeleton for PRD: {title}", labels=["documentation-sync"])
+        if new_id:
+            print(new_id)
+        else:
+            print("FAILED")
+        sys.exit(0)
+
     if DRY_RUN:
         print("--- RUNNING IN DRY RUN MODE ---")
     if not SYNC_ENABLED and not DRY_RUN:

@@ -18,6 +18,10 @@ while [[ "$#" -gt 0 ]]; do
     esac
     shift
 done
+echo "⚠️  WARNING: Installing skills globally (--global) or locally (--local)"
+echo "   is DIFFERENT from the \"Project-Attached Skills\" model (using .skills/ directory in your repo)."
+echo "   Only use this if you want these skills to be available outside of a project root."
+echo ""
 
 echo "🚀 Starting Gemini Skill Synchronization..."
 echo "📂 Source Directory: $SRC_DIR"

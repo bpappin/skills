@@ -2,6 +2,14 @@
 
 A centralized library of specialized instructions, workflows, and tools for AI agents (Gemini CLI and Claude Code). This repository serves as the "Gold Standard" upstream source for seeding project-attached intelligence.
 
+---
+
+## 🙏 Attributions & Inspiration
+
+Many of the core engineering and productivity skills in this repository were inspired by or adapted from the excellent work of **[Matt Pocock](https://github.com/mattpocock/skills)**. We highly recommend exploring his original repository for foundational AI agent patterns.
+
+---
+
 ## 🧠 Philosophy: Project-Attached Skills
 
 We follow a **"Project-Attached"** model for agent intelligence. Instead of installing skills into a global registry, they are carried within each repository's `.skills/` directory. This ensures:
@@ -83,12 +91,6 @@ A unique 6-sector documentation model (`mandates/`, `ac/`, `gap/`, `regulations/
 
 ### 🗺️ Decoupled Roadmap (GAPs)
 A tiered strategy for project roadmap management, moving beyond flat checklists to individual, searchable files that track functional gaps and technical debt independently of the active issue backlog.
-
----
-
-## 🙏 Attributions & Inspiration
-
-Many of the core engineering and productivity skills in this repository were inspired by or adapted from the excellent work of **[Matt Pocock](https://github.com/mattpocock/skills)**. We highly recommend exploring his original repository for foundational AI agent patterns.
 
 ---
 *Maintained by Brill Pappin.*

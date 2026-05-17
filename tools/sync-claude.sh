@@ -6,6 +6,10 @@
 SKILLS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC_DIR="$SKILLS_ROOT/src/skills"
 CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+echo "⚠️  WARNING: Syncing skills to Claude global instructions is DIFFERENT"
+echo "   from the \"Project-Attached Skills\" model (using .skills/ directory in your repo)."
+echo "   Only use this if you want these skills to be available in all Claude sessions."
+echo ""
 
 echo "🚀 Starting Claude Skill Synchronization..."
 

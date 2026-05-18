@@ -13,9 +13,11 @@ A comprehensive onboarding skill to configure a project workspace for issue trac
 ### 1. Shared Project Configuration (`.config/project.json`)
 The agent must ensure that a `.config/project.json` file exists in the project workspace. 
 *   **Action:** If `.config/project.json` does not exist, explicitly ask the user for:
-    *   `project_id`: A unique identifier (e.g., `EVO`, `DETOURS`).
+    *   `project_id`: A unique system identifier used for local config and secrets. (e.g., your Firebase Project ID like `coldwater-5e502`. **Default: The current directory name**).
+        *   **Proactivity:** Tell the user what ID you are defaulting to and explain that they can change it later by editing `.config/project.json`.
     *   `sync_target`: Primary issue tracker (e.g., `youtrack`, `github`).
-    *   `git_repo`: The repository identifier or remote URL.
+    *   `github_repo`: The repository URL (if target is GitHub).
+    *   `github_project`: The GitHub Project V2 URL (optional, e.g., `https://github.com/orgs/ORG/projects/NUM`).
 *   **Optional Features:** Ask to enable **Compliance Tracking** (`active_regulations`) and **R&D Logging**.
 
 ### 2. Documentation Architecture
@@ -47,3 +49,6 @@ After initialization, the agent MUST offer to organize existing documentation:
 ### 6. The Secrets Vault (`~/.secrets/agents/<project_id>/`)
 *   **Action:** Verify the directory exists. 
 *   **Credentials**: Help create `<target>.env` (e.g., `github.env`) containing tokens for the `sync_target`.
+
+## Discovery Trail
+- **2026-05-18**: Added proactivity requirement for `project_id` defaults. Clarified `project_id` description and added current directory name as default. Updated `github_project` and `github_repo` requirements.

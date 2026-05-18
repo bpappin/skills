@@ -280,6 +280,8 @@ def sync_format_a_file(filepath, project_metadata=None):
     
     id_match = re.search(r"\*\*ID:\*\*\s+\[(.*?)\]", content)
     status_match = re.search(r"\*\*Status:\*\*\s+(.*)", content)
+    # Layout is optional and doesn't affect sync logic, but we acknowledge it
+    layout_match = re.search(r"\*\*Layout:\*\*\s+(.*)", content)
     
     if not id_match:
         return
@@ -311,9 +313,7 @@ def sync_format_a_file(filepath, project_metadata=None):
     if issue_id == "#NEW":
         if SYNC_ENABLED or DRY_RUN:
             print(f"Syncing new issue: {title}")
-            new_id, node_id = create_github_issue(title, f"Sync source: {filepath}
-
-{content}", labels=default_labels)
+            new_id, node_id = create_github_issue(title, f"Sync source: {filepath}\n\n{content}", labels=default_labels)
             if new_id:
                 real_id = f"{new_id}"
                 new_content = content.replace("**ID:** [#NEW]", f"**ID:** [{real_id}]")

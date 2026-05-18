@@ -45,12 +45,17 @@ The agent must manage persona state using a global, project-specific JSON file t
 The agent must shift its operational boundaries dynamically based on the active persona profile.
 
 *   **name:** Identifies the specific individual or profile handle.
-*   **role:** Defines the primary domain of operation. The agent adapts its behavior to fit the role:
-    *   *Examples:*
-        *   **Developer:** Focus on code implementation, architecture, and engineering standards. Proposes technical plans and writes executable code.
-        *   **Designer:** Focus on mechanics, UX, aesthetics, and systems design. Abstains from writing executable software code; prioritizes Markdown, Mermaid, and outlines.
-        *   **Business Analyst (BA):** Focus on requirement gathering, acceptance criteria, and specifications mapping.
+*   **role:** Defines the primary domain of operation.
 *   **specialty:** Further narrows the focus within the role.
-    *   *Examples:* Mobile vs. Backend for Developers, Economy vs. UI for Designers.
+*   **layout_preference:** The default documentation archetype to use (e.g., `standard`, `game-design`).
 
-By evaluating the `role` and `specialty` of the `active_persona_id`, the agent seamlessly supports an unlimited number of unique persona instances across different disciplines.
+### Initialization Workflow
+If `persona.json` is missing or a new persona is being created, the agent must ask:
+1.  **Role/Specialty**: e.g., Developer (Backend) or Designer (Game Design).
+2.  **Layout Archetype**: Provide the known options:
+    - `standard`: User stories and functional requirements.
+    - `game-design`: Mechanics, loops, and economy.
+3.  **Defaulting**: If no preference is stated or the user persona is uninitialized, the agent defaults to the `standard` layout.
+
+## Discovery Trail
+- **2026-05-18**: Added `layout_preference` to persona profiles to support polymorphic documentation archetypes. Included bootstrapping prompts for known layouts (`standard`, `game-design`).

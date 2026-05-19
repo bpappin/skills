@@ -20,7 +20,7 @@ The document MUST adhere to the following **Format A** structure:
 
 **ID:** [#NEW]
 **Status:** TODO
-**Type:** [Story/Task/Bug]
+**Type:** [Bug]
 **Parent:** [Optional Epic ID]
 
 ## What to build

@@ -20,11 +20,11 @@ When asked to "Add a regulation" (e.g., "Add HIPAA"):
 1.  Create a new mapping file: `docs/regulations/<NAME>.md`.
 2.  Use the standard table format: | Requirement | Implementation | Status |.
 3.  Add the `<NAME>` to the `"active_regulations"` array in `.config/project.json`.
-4.  Update the [docs/regulations/README.md](../../../docs/regulations/README.md) index.
+4.  Update the [README.md](../../../docs/regulations/README.md) index.
 
 ### 2. Pre-Implementation Assessment
 Before starting work on a new ADR or Feature:
-1.  Read the active regulations defined in `.config/project.json` and their corresponding files in [docs/regulations/](../../../docs/regulations/README.md).
+1.  Read the active regulations defined in `.config/project.json` and their corresponding files in [](../../../docs/regulations/README.md).
 2.  Analyze the proposed design: Does it store cleartext PII? Does it have a deletion path?
 3.  Generate an initial **Compliance Mapping** using the [alignment-template.md](references/alignment-template.md) for EACH active regulation.
 

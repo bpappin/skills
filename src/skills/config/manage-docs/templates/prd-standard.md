@@ -19,4 +19,4 @@ A concise statement of what this feature solves and for whom.
 - [ ] Performance limits
 
 ## 5. Verification (AC)
-Linked to: [docs/ac/ID-slug.md]
+Linked to: [ID-slug.md]

@@ -24,10 +24,10 @@ Generate the following pair (unless the feature is purely informational, in whic
 - **Context**: Summarize "Why" this is being built (reference `docs/discovery/` if available).
 - **User Stories**: A LONG, extensive list of "As an <actor>, I want <feature>, so that <benefit>".
 - **Implementation Decisions**: Specific architectural choices, API contracts, and schema changes.
-- **Verification**: Link to the matching AC record.
+- **Verification**: Link to the matching AC record, which serves as the verification tier for these requirements.
 
 **Verification: `docs/ac/[ID]-slug.md`**
-- **Test Scenarios**: Gherkin-style (Given/When/Then) definitions for every story in the PRD.
+- **Test Scenarios**: Gherkin-style (Given/When/Then) definitions for every story in the PRD, functioning as the verification criteria.
 - **Story Link**: Reference the matching PRD record.
 
 ## PRD Template
@@ -45,7 +45,7 @@ The problem from the user's perspective.
 - NO code snippets or file paths (unless encoding a specific protocol/state machine).
 
 ## Verification
-- **AC Link**: [docs/ac/ID-slug.md]
+- **AC Link**: [ID-slug.md]
 ```
 
 ## Review Checklist

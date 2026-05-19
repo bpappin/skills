@@ -38,7 +38,7 @@ Gemini is **ONLY** allowed to perform the following Git operations:
 ## 🛡️ Optional Safety Script
 
 A bash script is provided for environments that support execution hooks or for manual parity with other agents:
-[scripts/block-dangerous-git-gemini.sh](scripts/block-dangerous-git-gemini.sh)
+[block-dangerous-git-gemini.sh](scripts/block-dangerous-git-gemini.sh)
 
 ### Why this script is optional
 Unlike some other agents (e.g., Claude Code), Gemini primarily operates on **Instruction-based Safety**. Because the model interprets and follows the mandates in `AGENTS.md` and this skill directly, a hard execution-level block is not strictly required. 

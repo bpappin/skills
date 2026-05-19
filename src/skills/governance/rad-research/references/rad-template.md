@@ -24,11 +24,11 @@
 2. [Action 2]
 
 ## ✅ Outcome
-**Status**: [Experimental / In-Progress / Implemented / Deferred]
+**Status**: [ Deferred]
 **Validation**: 
 * [Date] [Validation point 1]
 * [Date] [Validation point 2]
 
 ## 🔗 Connections
 - **ADR**: [Link to related Architecture Decision Record]
-- **Issue**: [Link to GitHub/Jira Issue]
+- **Issue**: [Jira Issue]

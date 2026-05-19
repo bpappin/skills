@@ -1,4 +1,4 @@
-# GDD: [Feature/Mechanic Name]
+# GDD: [Mechanic Name]
 
 **ID:** [#NEW]
 **Status:** TODO
@@ -27,4 +27,4 @@ High-level description of the mechanic or feature and how it fits into the overa
 - **Dialogue/Text**:
 
 ## 6. Verification (AC)
-Linked to: [docs/ac/ID-slug.md]
+Linked to: [ID-slug.md]

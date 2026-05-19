@@ -296,13 +296,13 @@ def sync_format_a_file(filepath, project_metadata=None):
     
     # Map PRD/GAP status to Project Column names
     status_map = {
-        "TODO": "Todo",
-        "IN_PROGRESS": "In Progress",
-        "IN-PROGRESS": "In Progress",
+        "TODO": "Backlog",
+        "IN_PROGRESS": "In progress",
+        "IN-PROGRESS": "In progress",
         "DONE": "Done",
         "OBSOLETE": "Done"
     }
-    target_column = status_map.get(status, "Todo")
+    target_column = status_map.get(status, "Backlog")
 
     default_labels = ["documentation-sync"]
     if "gap" in filepath.parts:
@@ -363,6 +363,7 @@ def sync_project_docs():
 if __name__ == "__main__":
     if DRY_RUN:
         print("--- RUNNING IN DRY RUN MODE ---")
+    
     if not SYNC_ENABLED and not DRY_RUN:
         print("Note: GitHub Token or Repository not configured. Issue synchronization is disabled.")
     

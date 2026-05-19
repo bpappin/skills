@@ -15,6 +15,9 @@ Before attempting a sync, the agent MUST verify:
 *   The `.config/project.json` config exists and defines a `sync_target` (e.g., `youtrack`, `github`).
 *   The appropriate sync script exists locally in `.skills/tracking/` (e.g., `yt.py` or `gh.py`).
 *   The secrets vault directory (`~/.secrets/agents/<project_id>/`) exists and contains the necessary `.env` file for the active target.
+*   **Human-Friendly Guidance**:
+    - *Instead of:* "Missing sync secrets."
+    - *Use:* "I noticed your GitHub secrets are missing from the vault (~/.secrets/agents/<project_id>/github.env). Would you like me to help you set them up so I can sync your documentation with the task board?"
 
 ### 2. Execution Preparation
 The agent must prepare the environment for the script execution:

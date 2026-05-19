@@ -58,7 +58,6 @@ To ensure the agent functions correctly as project standards evolve, the agent s
 *   **Audit Points**:
     1.  **Shared Config**: Check `.config/project.json` for all mandatory keys (`project_id`, `sync_target`, etc.).
     2.  **Local State**: Verify `~/.config/agents/<project_id>/` contains `persona.json` and `skill-sources.json`.
-    3.  **Secrets**: Verify existence of the relevant `.env` file in the secrets vault.
 *   **Human-Friendly Guidance**: When prompting a user (especially a non-technical one like a Designer), use clear, outcome-oriented language:
     - *Instead of:* "Update your sync_target in project.json."
     - *Use:* "I noticed your project isn't connected to the task board yet. Would you like me to help you link it so I can sync your design notes automatically?"
@@ -66,10 +65,9 @@ To ensure the agent functions correctly as project standards evolve, the agent s
     - *Use:* "I don't know your role in this project yet! Are you working as a **Developer** or a **Designer**? This helps me use the right templates for your work."
     - *Instead of:* "Provide a master skill source path."
     - *Use:* "I can synchronize my capabilities with your global library if you have one. If you'd rather I just work with what's in this project and not ask again, let me know and I'll stay local."
-    - *Instead of:* "Configure GitHub tokens for issue synchronization."
-    - *Use:* "Would you like me to sync your documentation with the team's task board automatically? If you're working purely on design and don't need this, I can disable it so I don't keep asking for credentials."
 
 ## Discovery Trail
+- **2026-05-19**: Refactored secret verification. Removed the general "Secrets" check from `setup-project` and delegated it to specialized skills (e.g., `sync`) to ensure agents only prompt for secrets when needed.
 - **2026-05-18**: Added "Immediate Capture" and "Version Control" mandates to ensure `.config/project.json` is written to disk and un-ignored in `.gitignore` immediately upon establishing the `project_id`. This guarantees other agents can reliably locate global state.
 - **2026-05-18**: Added "Simplified Workflow" and `sync_enabled` flag to help non-technical members opt out of automated tracking and credential prompts. Refined health check guidance to be more permissive.
 - **2026-05-18**: Added "Local-Only" mode to skill management to prevent repetitive prompting for users without a master source. Refined guidance language to be even more permissive for non-technical personas.

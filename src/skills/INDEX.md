@@ -12,6 +12,7 @@
 - **prototype**: Build a throwaway prototype to flesh out a design before committing to it.
 - **tdd**: Test-driven development with red-green-refactor loop.
 - **to-issues**: Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices.
+- **to-design**: Formalizes the design-capturing process as a structured agent capability to ensure visual samples are generated and properly registered.
 - **to-prd**: Turn conversation context and codebase understanding into a formal PRD and matching AC spec.
 - **triage**: Triage issues through a state machine driven by triage roles.
 - **zoom-out**: Tell the agent to zoom out and give broader context or a higher-level perspective.

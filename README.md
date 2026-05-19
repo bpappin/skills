@@ -1,18 +1,18 @@
 # Agentic Engineering Skills
 
-A centralized library of specialized instructions, workflows, and tools for AI agents (Gemini CLI and Claude Code). This repository serves as the "Gold Standard" upstream source for seeding project-attached intelligence.
+A centralized library of specialized instructions, workflows, and tools for AI agents (Gemini CLI and Claude Code). This repository serves as the base upstream source for seeding project-attached intelligence.
 
 ---
 
 ## 🙏 Attributions & Inspiration
 
-Many of the core engineering and productivity skills in this repository were inspired by or adapted from the excellent work of **[Matt Pocock](https://github.com/mattpocock/skills)**. We highly recommend exploring his original repository for foundational AI agent patterns.
+Many of the core engineering and productivity skills in this repository were seeded, inspired by or adapted from the excellent work of **[Matt Pocock](https://github.com/mattpocock/skills)**. I highly recommend exploring his original repository for foundational AI agent skill patterns.
 
 ---
 
 ## 🧠 Philosophy: Project-Attached Skills
 
-We follow a **"Project-Attached"** model for agent intelligence. Instead of installing skills into a global registry, they are carried within each repository's .skills/ directory. This ensures:
+I follow a **"Project-Attached"** model for agent intelligence. Instead of installing skills into a global registry, they are carried within each repository's .skills/ directory. This ensures:
 1.  **Portability**: Any developer who clones the project immediately inherits its specialized intelligence.
 2.  **Context-Safety**: Agents are locked to the specific patterns and mandates of the project they are currently working on.
 3.  **Versioning**: Skills evolve with the codebase they support.
@@ -41,7 +41,7 @@ Run project setup
 
 ### 3. Automated Onboarding
 The **setup-project** skill will take over and autonomously:
-*   Identify the project (ID, Sync Targets).
+*   Identify the project (ID, Sync Targets). The `project_id` is the most important as it will create `~/.secret/agents/<project_id>` and `~/.config/agents/<project_id>`.
 *   Create the **AI-Optimized Documentation Hierarchy** (mandates/, prd/, ac/, discovery/, gap/, etc.).
 *   Generate or audit the **AGENTS.md** context-mapping file.
 *   **Intelligent Migration**: Offer to analyze and organize existing documentation into the new hierarchy.
@@ -57,34 +57,40 @@ The **setup-project** skill will take over and autonomously:
 ## 🧩 Core Skill Categories
 
 ### 🛠️ Configuration & Onboarding
-*   **setup-project**: Bootstraps new workspaces and enforces documentation standards.
-*   **manage-docs**: Intelligently distributes knowledge and performs semantic doc migrations.
-*   **manage-skills**: Manages the lifecycle and synchronization of skills between project and master sources.
-*   **persona**: Manages global user state for specialized roles (Developer, Designer, BA).
+* **manage-docs**: Manage the 6-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
+* **manage-skills**: Manage the lifecycle, organization, and synchronization of AI agent skills between local project workspaces and master skill sources.
+* **persona**: Initialize and manage persona state via a global persona.json file.
+* **setup-project**: Onboard and configure a project workspace for tracking, sync, and agent interaction.
 
 ### 📐 Engineering & Standards
-*   **to-prd**: The primary workhorse. Synthesizes context into an **ID-First Spec Pair** (PRD and matching AC).
-*   **tdd**: Enforces Test Driven Development and deep-module boundaries.
-*   **grill-with-docs**: Stress-tests plans against existing domain models and ADRs.
-*   **improve-codebase-architecture**: Guidance for refactoring toward clean, maintainable patterns.
-*   **prototype**: Rapid implementation of substantial vertical slices or mockups.
-*   **triage**: Professional issue management and initial investigation.
-*   **zoom-out**: High-level architectural mapping and dependency analysis.
-
-### 📊 Tracking & Roadmap
-*   **generate-epic**: Creates Format B Agile Epic containers.
-*   **generate-issue**: Creates Format A Task/Bug documents (deprecated in favor of to-prd specs).
-*   **sync**: Pushes local Markdown issues to remote trackers (YouTrack, GitHub).
+* **grill-with-docs**: Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise.
+* **improve-codebase-architecture**: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/.
+* **prototype**: Build a throwaway prototype to flesh out a design before committing to it.
+* **tdd**: Test-driven development with red-green-refactor loop.
+* **to-issues**: (deprecated in favor of to-prd specs) Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices.
+* **to-design**: Formalizes the design-capturing process as a structured agent capability to ensure visual samples are generated and properly registered.
+* **to-prd**: The primary workhorse. Synthesizes context into an **ID-First Spec Pair** (PRD and matching AC).
+* **triage**: Triage issues through a state machine driven by triage roles.
+* **zoom-out**: Tell the agent to zoom out and give broader context or a higher-level perspective.
 
 ### ⚖️ Governance & R&D
-*   **regulatory-compliance**: Audits code and ADRs against international privacy standards.
-*   **rad-research**: Standardizes the logging of hypotheses and R&D outcomes (RAD).
+* **rad-research**: Manage Technical Research & Development (R&D) logs.
+* **regulatory-compliance**: Manage and track regulatory requirements (PIPEDA, GDPR, etc.).
+
+### Misc, Odds & Ends
+* **git-guardrails-claude-code**: Set up Claude Code hooks to block dangerous git commands.
+* **git-guardrails-gemini**: Codifies the strict Git safety rules for Gemini CLI.
 
 ### ⚡ Productivity
-*   **caveman**: Ultra-compressed communication mode to save tokens.
-*   **grill-me**: Relentless interviewing to resolve decision tree branches.
-*   **handoff**: Compacts context into a document for agent-to-agent transition.
-*   **write-a-skill**: Creates new skills with proper structure and triggers.
+* **caveman**: Ultra-compressed communication mode to save tokens.
+* **grill-me**: Interview the user relentlessly about a plan or design.
+* **handoff**: Compact the current conversation into a handoff document for another agent to pick up.
+* **write-a-skill**: Create new agent skills with proper structure, progressive disclosure, and bundled resources.
+
+### 📊 Tracking & Roadmap
+* **generate-epic**: Generate comprehensive Agile Epic documents (Format B).
+* **generate-issue**: Generate local Markdown issue documents (Format A).
+* **sync**: Publish local Markdown issue documents (Format A and Format B) to a remote issue tracker.
 
 ---
 

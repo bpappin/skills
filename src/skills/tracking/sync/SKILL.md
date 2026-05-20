@@ -1,12 +1,12 @@
 ---
 name: sync
-description: Push local Markdown issue documents (Format A and Format B) to a remote issue tracker (YouTrack, GitHub, Jira) using local Python scripts. Use when you are ready to publish finalized issue documents.
+description: Push local Markdown requirement documents (PRDs and ACs) to a remote issue tracker (YouTrack, GitHub, Jira) using local Python scripts. Use when you are ready to publish finalized requirement documents.
 ---
 
 # Issue Synchronization
 
 ## Objective
-Provide the agent with the knowledge and execution steps required to push local Markdown issues (Format A and Format B) to the remote issue tracker (YouTrack, GitHub, Jira) using the local Python synchronization scripts.
+Provide the agent with the knowledge and execution steps required to push local Markdown requirement documents (PRDs and ACs) to the remote issue tracker (YouTrack, GitHub, Jira) using the local Python synchronization scripts.
 
 ## Core Mechanics
 
@@ -21,7 +21,7 @@ Before attempting a sync, the agent MUST verify:
 
 ### 2. Execution Preparation
 The agent must prepare the environment for the script execution:
-*   Identify the target Markdown files to sync (typically located in `docs/issues/`).
+*   Identify the target Markdown files to sync (typically located in `docs/prd/` and `docs/ac/`).
 *   Ensure the Python environment is ready.
 
 ### 3. Running the Sync Script
@@ -30,11 +30,11 @@ Execute the script from the root of the project workspace.
 *   **Dry Run:** ALWAYS propose a dry-run first if the script supports it (e.g., passing a `--dry-run` flag) to ensure parsing succeeds without making remote mutations.
 *   **Execution:** Run the script, passing the target file or directory as an argument.
     ```bash
-    # Example invocation (exact arguments depend on the script implementation)
-    python3 .skills/tracking/yt.py docs/issues/epic-name/
+    # Run the sync command which automatically scans the documentation paths
+    python3 .skills/tracking/yt.py sync
     ```
 
 ### 4. Post-Sync Validation
 *   Check the output of the script to confirm successful sync.
 *   Verify that `[#NEW]` tags in the local Markdown files have been successfully replaced with real remote IDs (e.g., `[ID-123]`) by the script.
-*   If the script fails due to parsing errors, the agent must review the Markdown files to ensure they strictly adhere to **Format A** or **Format B** and correct any formatting issues.
+*   If the script fails due to parsing errors, the agent must review the Markdown files to ensure they strictly adhere to **PRD** or **AC** formatting and correct any issues.

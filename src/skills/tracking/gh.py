@@ -273,8 +273,8 @@ def create_github_issue(title, body, labels=None):
         print(f"Error connecting to GitHub: {e}")
         return (None, None)
 
-def sync_format_a_file(filepath, project_metadata=None):
-    """Parses a Format A markdown file and syncs it with GitHub."""
+def sync_requirement_file(filepath, project_metadata=None):
+    """Parses a PRD or AC markdown file and syncs it with GitHub."""
     with open(filepath, "r") as f:
         content = f.read()
     
@@ -344,21 +344,21 @@ def sync_format_a_file(filepath, project_metadata=None):
                         move_project_item(project_node_id, item_id, target_column, project_metadata)
 
 def sync_project_docs():
-    """Scans relevant directories for Format A files to sync."""
+    """Scans relevant directories for requirement files to sync."""
     project_metadata = None
     if GITHUB_PROJECT_URL and (SYNC_ENABLED or DRY_RUN):
         project_metadata = get_project_metadata(GITHUB_PROJECT_URL)
         if project_metadata:
             print(f"Syncing with GitHub Project: {GITHUB_PROJECT_URL}")
 
-    search_paths = [Path("docs/prd"), Path("docs/gap")]
+    search_paths = [Path("docs/prd"), Path("docs/ac"), Path("docs/gap")]
     for path in search_paths:
         if not path.exists():
             continue
         for filepath in path.rglob("*.md"):
             if filepath.name == "README.md":
                 continue
-            sync_format_a_file(filepath, project_metadata)
+            sync_requirement_file(filepath, project_metadata)
 
 if __name__ == "__main__":
     if DRY_RUN:

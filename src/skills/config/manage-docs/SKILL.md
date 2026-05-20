@@ -1,11 +1,11 @@
 ---
 name: manage-docs
-description: Manage the 6-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions. Use when commanded to "update docs", "migrate docs", or when project standards change.
+description: Manage the 12-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions. Use when commanded to "update docs", "migrate docs", or when project standards change.
 ---
 
 # Documentation Management
 
-## The 6-Sector Hierarchy
+## The 13-Sector Hierarchy
 
 All knowledge must be dispersed into the appropriate specialized directory to ensure high-quality AI context mapping and prevent documentation bloat. Technical specifications MUST live in the project repository (docs-as-code) rather than external wikis to ensure atomic versioning and peer review.
 
@@ -22,7 +22,8 @@ All knowledge must be dispersed into the appropriate specialized directory to en
 | **Regulations**| `docs/regulations/` | Compliance mappings (PIPEDA, GDPR, Law 25). |
 | **Guides** | `docs/guides/` | The "Environment" (Onboarding and Installation). |
 | **Reference** | `docs/reference/` | Domain-specific knowledge and IDV methods. |
-| **Research** | `docs/research/` | Deep-dive R&D logs (RAD) and Architectural Decisions (ADR). |
+| **Research** | `docs/research/` | Deep-dive R&D logs (RAD). |
+| **Decisions** | `docs/adr/` | Architectural Decision Records (ADR). |
 
 ## Workflows
 
@@ -63,9 +64,10 @@ Before making significant architectural choices, create a DD record in `docs/dis
 
 ### 7. Architectural Decision Records (ADR)
 Record hard-to-reverse or surprising technical decisions in `docs/adr/`.
-- **Format**: `XXXX-slug.md`. Keep it concise (1-3 sentences for context/decision).
+- **Format**: `ADR-slug.md`. Keep it concise (1-3 sentences for context/decision).
 - **Linking**: Cross-link to related **DD** or **PRD** records.
 
 ## Discovery Trail
+- **2026-05-19**: Unified hierarchy to a 13-Sector model to prevent numbering confusion and explicitly mapped Architectural Decision Records to `docs/adr/` to fix a contradictory rule.
 - **2026-05-18**: Integrated `DESIGN.md` root specification into the 6-sector hierarchy. Added bootstrapping workflow to ensure `DESIGN.md` is created following the Google spec. Defined `DESIGN.md` and `docs/design/` as the exclusive domain of the **Designer Persona**.
 - **2026-05-18 (v2)**: Introduced Polymorphic Layouts (Documentation Archetypes). Added `docs/mandates/templates/` directory to house blueprints for `standard` and `game-design` layouts. Linked layout selection to the user's active persona preference.

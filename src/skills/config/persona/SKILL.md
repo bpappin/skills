@@ -24,17 +24,19 @@ The agent must manage persona state using a global, project-specific JSON file t
     *   When adding a new persona or creating the file, the agent must use the following JSON schema:
         ```json
         {
-          "active_persona_id": "dev-1",
+          "active_persona_id": "brill-1",
           "personas": {
-            "dev-1": {
-              "name": "Alex",
-              "role": "Developer",
-              "specialty": "Backend/Ktor"
+            "brill-1": {
+              "name": "Brill",
+              "role": ["Developer", "Designer"],
+              "specialty": ["Backend", "UX Mechanics"],
+              "layout_preference": "standard"
             },
-            "designer-1": {
+            "jordan-1": {
               "name": "Jordan",
               "role": "Designer",
-              "specialty": "UX Mechanics"
+              "specialty": "Game Design",
+              "layout_preference": "game-design"
             }
           }
         }
@@ -45,8 +47,8 @@ The agent must manage persona state using a global, project-specific JSON file t
 The agent must shift its operational boundaries dynamically based on the active persona profile.
 
 *   **name:** Identifies the specific individual or profile handle.
-*   **role:** Defines the primary domain of operation.
-*   **specialty:** Further narrows the focus within the role.
+*   **role:** Defines the primary domain of operation (Can be a String or an Array of Strings for "dual-hat" personas).
+*   **specialty:** Further narrows the focus within the role (Can be a String or an Array).
 *   **layout_preference:** The default documentation archetype to use (e.g., `standard`, `game-design`).
 
 ### Initialization Workflow
@@ -59,3 +61,4 @@ If `persona.json` is missing or a new persona is being created, the agent must a
 
 ## Discovery Trail
 - **2026-05-18**: Added `layout_preference` to persona profiles to support polymorphic documentation archetypes. Included bootstrapping prompts for known layouts (`standard`, `game-design`).
+- **2026-05-20**: Upgraded persona schema to support "dual-hat" setups (e.g., arrays for `role` and `specialty`) to seamlessly blend responsibilities when a user is acting as both Developer and Designer.

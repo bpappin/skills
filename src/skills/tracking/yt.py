@@ -92,7 +92,7 @@ def parse_duration(duration_str):
     return minutes
 
 def update_id_in_index_files(old_id, new_id, file_basename, is_dry_run):
-    index_files = list(Path("docs").rglob("README.md")) + list(Path("docs/issue").rglob("*.md"))
+    index_files = list(Path("docs").rglob("README.md")) + list(Path("docs/prd").rglob("*.md")) + list(Path("docs/ac").rglob("*.md"))
     for idx_file in index_files:
         if not idx_file.exists(): continue
         try:
@@ -293,7 +293,7 @@ def main():
             print("--- RUNNING IN DRY RUN MODE ---")
             
         local_ids = set()
-        search_paths = [Path("docs/issue"), Path("docs/gap")]
+        search_paths = [Path("docs/prd"), Path("docs/ac"), Path("docs/gap")]
         for path in search_paths:
             if not path.exists():
                 continue

@@ -27,30 +27,44 @@ All knowledge must be dispersed into the appropriate specialized directory to en
 
 ## Workflows
 
-### 1. Polymorphic Layouts (Archetypes)
+### 1. Document Metadata (YAML Frontmatter)
+All specification documents (PRDs, ACs, and GAPs) MUST lead with a YAML frontmatter block for system metadata, bounded by `---` at the top of the file:
+```yaml
+---
+id: #NEW            # Stays '#NEW' until synced with YouTrack, which updates it to the YouTrack key (e.g., EVO-85)
+status: TODO        # TODO, WIP, DONE, OBSOLETE
+type: PRD           # PRD, AC, Gap, Design
+priority: High      # Optional: High, Medium, Low
+parent: EVO-34      # Optional: Link to YouTrack parent Epic key
+---
+```
+
+### 2. Polymorphic Layouts (Archetypes)
 When creating new documentation (PRDs, GAPs, Designs), the agent must select the correct layout based on the active persona:
 1.  **Detection**: Check the active persona's `layout_preference`.
 2.  **Selection**: 
     - Use `docs/mandates/templates/prd-game-design.md` if layout is `game-design`.
     - Use `docs/mandates/templates/prd-standard.md` if layout is `standard` or no persona is active.
-3.  **Customization**: If the user asks for a specific layout not in their persona, honor the request but tag the document with `**Layout:** [type]` in the metadata.
+3.  **Customization**: If the user asks for a specific layout not in their persona, honor the request but specify it in the YAML frontmatter (e.g., `layout: game-design`).
 
-### 2. Bootstrapping DESIGN.md
+### 3. Bootstrapping DESIGN.md
 If the root `DESIGN.md` is missing, the agent MUST offer to bootstrap it using the [Google DESIGN.md specification](https://stitch.withgoogle.com/docs/design-md/specification/). It should incorporate project-specific UI rules found in any legacy design documentation.
 
-### 3. Spec Pairing (PRD + AC)
+### 4. Spec Pairing (PRD + AC)
 When a feature is defined, it is recorded as a pair of files using a shared ID:
 1.  **Requirement**: `docs/prd/[ID]-slug.md`. Contains user stories and implementation decisions.
 2.  **Verification**: `docs/ac/[ID]-slug.md`. Contains testable Gherkin-style scenarios.
 3.  **Note**: If a task is purely informational or non-testable, omit the AC and mark the PRD's Verification section as "N/A".
 
-### 4. Migration Workflow ("migrate docs")
+### 5. Migration Workflow ("migrate docs")
 Use this to ingest legacy documentation or clean up an unorganized repository.
 1.  **Scan**: Search the project root and folders like `wiki/`, `notes/`, or `architecture/` for `.md` and `.txt` files.
 2.  **Classify**: Semantically analyze the content to determine its target sector (e.g., "Given/When/Then" ➔ `docs/ac/`).
 3.  **Report**: Present a proposal table of source files and their proposed structured paths.
 4.  **Execute**: Move files, update cross-references, and initialize missing `README.md` indexes.
-5.  **Refactor**: Rename any existing `docs/issue/` directory to `docs/prd/`.
+5.  **Refactor**: 
+    - Convert any legacy inline metadata (e.g., `**ID:**`, `**Status:**`) into the YAML frontmatter block format at the top of the file.
+    - Rename any existing `docs/issue/` directory to `docs/prd/`.
 
 ### 5. Agentic Proactivity (Soft Offer)
 Monitor the conversation for "Resolution Signals" and offer to record them:

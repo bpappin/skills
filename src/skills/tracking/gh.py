@@ -274,35 +274,51 @@ def create_github_issue(title, body, labels=None):
         return (None, None)
 
 def sync_requirement_file(filepath, project_metadata=None):
-    """Parses a PRD or AC markdown file and syncs it with GitHub."""
+    """Parses a PRD, AC, or GAP markdown file and syncs it with GitHub."""
     with open(filepath, "r") as f:
         content = f.read()
     
-    id_match = re.search(r"\*\*ID:\*\*\s+\[(.*?)\]", content)
-    status_match = re.search(r"\*\*Status:\*\*\s+(.*)", content)
-    # Layout is optional and doesn't affect sync logic, but we acknowledge it
-    layout_match = re.search(r"\*\*Layout:\*\*\s+(.*)", content)
-    
-    if not id_match:
+    fm_match = re.match(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
+    if not fm_match:
         return
         
-    issue_id = id_match.group(1).strip()
-    status = status_match.group(1).strip() if status_match else "TODO"
+    fm_text = fm_match.group(1)
+    fm = {}
+    for line in fm_text.splitlines():
+        if ":" in line:
+            k, v = line.split(":", 1)
+            fm[k.strip().lower()] = v.strip().strip('"').strip("'")
+            
+    issue_id = fm.get("id")
+    if not issue_id:
+        return
+        
+    status = fm.get("status", "TODO")
     
     title_match = re.search(r"^#\s+(.*)", content, re.MULTILINE)
     title = title_match.group(1).strip() if title_match else filepath.stem
     
-    gh_state = "closed" if status in ["DONE", "OBSOLETE"] else "open"
+    status_val = status.strip().upper() if status else "TODO"
+    gh_state = "closed" if status_val in ["DONE", "COMPLETED", "CLOSED", "OBSOLETE"] else "open"
     
     # Map PRD/GAP status to Project Column names
     status_map = {
         "TODO": "Backlog",
+        "WIP": "In progress",
         "IN_PROGRESS": "In progress",
         "IN-PROGRESS": "In progress",
+        "DEVELOP": "In progress",
+        "REVIEW": "In progress",
+        "IN_REVIEW": "In progress",
+        "TEST": "In progress",
+        "STAGING": "In progress",
         "DONE": "Done",
-        "OBSOLETE": "Done"
+        "COMPLETED": "Done",
+        "CLOSED": "Done",
+        "OBSOLETE": "Done",
+        "DEFERRED": "Backlog"
     }
-    target_column = status_map.get(status, "Backlog")
+    target_column = status_map.get(status_val, "Backlog")
 
     default_labels = ["documentation-sync"]
     if "gap" in filepath.parts:
@@ -316,7 +332,7 @@ def sync_requirement_file(filepath, project_metadata=None):
             new_id, node_id = create_github_issue(title, f"Sync source: {filepath}\n\n{content}", labels=default_labels)
             if new_id:
                 real_id = f"{new_id}"
-                new_content = content.replace("**ID:** [#NEW]", f"**ID:** [{real_id}]")
+                new_content = re.sub(r"^id:\s*['\"]?#NEW['\"]?\b", f"id: {real_id}", content, flags=re.MULTILINE)
                 if not DRY_RUN:
                     with open(filepath, "w") as f:
                         f.write(new_content)

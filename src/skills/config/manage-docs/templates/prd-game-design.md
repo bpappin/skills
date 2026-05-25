@@ -1,8 +1,9 @@
+---
+id: #NEW
+status: TODO
+layout: game-design
+---
 # GDD: [Mechanic Name]
-
-**ID:** [#NEW]
-**Status:** TODO
-**Layout:** game-design
 
 ## 1. Concept Overview
 High-level description of the mechanic or feature and how it fits into the overall game experience.

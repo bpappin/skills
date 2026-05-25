@@ -48,8 +48,5 @@
 **write-a-skill**: Create new agent skills with proper structure, progressive disclosure, and bundled resources.
 
 ### Tracking
-**generate-epic**: Generate comprehensive Agile Epic documents (Format B).
-
-**generate-issue**: Generate local Markdown issue documents (Format A).
 
 **sync**: Publish local Markdown issue documents (Format A and Format B) to a remote issue tracker.

@@ -32,7 +32,10 @@ def load_config_and_secrets():
                     os.environ[key.strip()] = value.strip().strip('"').strip("'")
     
     # Optional youtrack.json override
-    yt_json_path = Path("youtrack.json")
+    yt_json_path = Path(".config/youtrack.json")
+    if not yt_json_path.exists():
+        yt_json_path = Path("youtrack.json")
+        
     if yt_json_path.exists():
         with open(yt_json_path, "r") as f:
             yt_config = json.load(f)
@@ -41,14 +44,12 @@ def load_config_and_secrets():
     config.setdefault("url", os.environ.get("YOUTRACK_URL"))
     config.setdefault("token", os.environ.get("YOUTRACK_TOKEN"))
     
-    if project_id:
-        specific_token_key = f"{project_id}_YOUTRACK_TOKEN"
-        config["token"] = os.environ.get(specific_token_key) or config["token"]
-        
-    config.setdefault("epic_project", project_id)
-    config.setdefault("client_project", project_id)
-    config.setdefault("server_project", project_id)
-    config.setdefault("kanban_projects", [project_id])
+    active_project_id = config.get("project_id") or project_id
+    default_proj = config.get("default_project") or config.get("youtrack_project") or active_project_id
+    config.setdefault("epic_project", default_proj)
+    config.setdefault("client_project", default_proj)
+    config.setdefault("server_project", default_proj)
+    config.setdefault("kanban_projects", [default_proj])
     config.setdefault("temp_id_prefix", ["STORY", "3"])
     config.setdefault("tech_debt_title", "Technical Debt")
     config.setdefault("transition_epics", False)
@@ -61,20 +62,39 @@ def load_config_and_secrets():
     return config
 
 def get_target_state(status_prefix, project_id, config):
+    if not status_prefix:
+        status_prefix = "TODO"
+    status_val = status_prefix.strip().upper()
+    
     mapping = {
         "TODO": "Open",
         "WIP": "In Progress",
+        "IN_PROGRESS": "In Progress",
+        "DEVELOP": "In Progress",
+        "REVIEW": "In Review",
+        "IN_REVIEW": "In Review",
+        "TEST": "Test",
+        "STAGING": "Staging",
         "DONE": "Done",
-        "OBSOLETE": "Canceled"
+        "COMPLETED": "Done",
+        "CLOSED": "Done",
+        "OBSOLETE": "Canceled",
+        "CANCELED": "Canceled",
+        "CANCELLED": "Canceled",
+        "DEFERRED": "Triage",
+        "TRIAGE": "Triage"
     }
-    state = mapping.get(status_prefix, "Open")
+    state = mapping.get(status_val, "Open")
     if project_id in config.get("kanban_projects", []):
         kanban_mapping = {
             "Open": "Backlog",
             "In Progress": "Develop",
             "In Review": "Review",
+            "Test": "Test",
+            "Staging": "Staging",
             "Done": "Done",
-            "Canceled": "Done"
+            "Canceled": "Obsolete",
+            "Triage": "Triage"
         }
         return kanban_mapping.get(state, "Backlog")
     return state
@@ -119,18 +139,24 @@ def sync_file(filepath, client, config, is_dry_run, local_ids):
     with open(filepath, "r") as f:
         content = f.read()
         
-    id_match = re.search(r"\*\*ID:\*\*\s+\[(.*?)\]", content)
-    if not id_match:
+    fm_match = re.match(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
+    if not fm_match:
         return
         
-    issue_id = id_match.group(1).strip()
-    status_match = re.search(r"\*\*Status:\*\*\s+(.*)", content)
-    type_match = re.search(r"\*\*Type:\*\*\s+(.*)", content)
-    parent_match = re.search(r"\*\*Parent:\*\*\s+\[(.*?)\]", content)
-    
-    status = status_match.group(1).strip() if status_match else "TODO"
-    issue_type = type_match.group(1).strip() if type_match else "Story"
-    parent_id = parent_match.group(1).strip() if parent_match else None
+    fm_text = fm_match.group(1)
+    fm = {}
+    for line in fm_text.splitlines():
+        if ":" in line:
+            k, v = line.split(":", 1)
+            fm[k.strip().lower()] = v.strip().strip('"').strip("'")
+            
+    issue_id = fm.get("id")
+    if not issue_id:
+        return
+        
+    status = fm.get("status", "TODO")
+    issue_type = fm.get("type", "Story")
+    parent_id = fm.get("parent")
     
     title_match = re.search(r"^#\s+(.*)", content, re.MULTILINE)
     title = title_match.group(1).strip() if title_match else filepath.stem
@@ -165,12 +191,14 @@ def sync_file(filepath, client, config, is_dry_run, local_ids):
             
             client.update_issue(internal_id, summary=f"[{real_id}] {title}")
             
-            new_content = content.replace("**ID:** [#NEW]", f"**ID:** [{real_id}]")
+            new_content = re.sub(r"^id:\s*['\"]?#NEW['\"]?\b", f"id: {real_id}", content, flags=re.MULTILINE)
             with open(filepath, "w") as f:
                 f.write(new_content)
             print(f"  Updated {filepath} with [{real_id}]")
             update_id_in_index_files("[#NEW]", f"[{real_id}]", filepath.name, is_dry_run)
-    elif issue_id.isdigit() or "-" in issue_id:
+        else:
+            print(f"[DRY RUN] Would create new {issue_type}: {title} (state: {target_state})")
+    elif issue_id.startswith("EVO-") or "-" in issue_id or issue_id.isdigit():
         if not is_dry_run:
             query = f'project: {target_project} "{issue_id}"'
             existing = client.search_issues(query)
@@ -179,6 +207,8 @@ def sync_file(filepath, client, config, is_dry_run, local_ids):
                 client.update_issue(internal_id, summary=f"[{issue_id}] {title}", description=f"Source: {filepath}\n\n{content}")
                 client.set_issue_field(internal_id, status_field, {"name": target_state})
                 print(f"Updated {issue_type} {issue_id} -> {target_state}")
+        else:
+            print(f"[DRY RUN] Would update {issue_type} {issue_id} -> {target_state}")
                 
     if real_id != "#NEW":
         local_ids.add(real_id)
@@ -192,19 +222,20 @@ def sync_file(filepath, client, config, is_dry_run, local_ids):
             except:
                 pass
 
-def orphan_detection(client, config, local_ids):
+def orphan_detection(client, config, local_ids, is_dry_run=False):
     print("Checking for orphaned stories and epics in YouTrack...")
     tech_debt_epic_id = None
-    try:
-        tech_debt_query = f'project: {config["epic_project"]} "{config["tech_debt_title"]}"'
-        existing_tech_debt = client.search_issues(tech_debt_query)
-        if existing_tech_debt:
-            tech_debt_epic_id = existing_tech_debt[0]['id']
-        else:
-            res = client.create_issue(config["epic_project"], config["tech_debt_title"], "Repository for orphaned or unmapped stories.", issue_type="Epic")
-            tech_debt_epic_id = res['id']
-    except Exception:
-        pass
+    if not is_dry_run:
+        try:
+            tech_debt_query = f'project: {config["epic_project"]} "{config["tech_debt_title"]}"'
+            existing_tech_debt = client.search_issues(tech_debt_query)
+            if existing_tech_debt:
+                tech_debt_epic_id = existing_tech_debt[0]['id']
+            else:
+                res = client.create_issue(config["epic_project"], config["tech_debt_title"], "Repository for orphaned or unmapped stories.", issue_type="Epic")
+                tech_debt_epic_id = res['id']
+        except Exception:
+            pass
 
     projects_to_check = set([config["server_project"], config["client_project"], config["epic_project"]])
     
@@ -221,6 +252,9 @@ def orphan_detection(client, config, local_ids):
                 summary = issue.get("summary", "")
                 if "[" in summary and "]" in summary:
                     print(f"  Orphan detected: {rid}")
+                    if is_dry_run:
+                        print(f"    [DRY RUN] Would link {rid} to Tech Debt epic and mark as Obsolete/Canceled/Orphaned.")
+                        continue
                     if project_id != config["epic_project"] and tech_debt_epic_id:
                         try:
                             client.link_issues(tech_debt_epic_id, issue['id'])
@@ -302,8 +336,7 @@ def main():
                     continue
                 sync_file(filepath, client, config, is_dry_run, local_ids)
                 
-        if not is_dry_run:
-            orphan_detection(client, config, local_ids)
+        orphan_detection(client, config, local_ids, is_dry_run)
 
 if __name__ == "__main__":
     main()

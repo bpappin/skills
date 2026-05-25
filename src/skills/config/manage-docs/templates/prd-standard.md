@@ -1,8 +1,9 @@
+---
+id: #NEW
+status: TODO
+layout: standard
+---
 # PRD: [Feature Name]
-
-**ID:** [#NEW]
-**Status:** TODO
-**Layout:** standard
 
 ## 1. Objective
 A concise statement of what this feature solves and for whom.

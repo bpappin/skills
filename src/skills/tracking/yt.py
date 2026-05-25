@@ -85,6 +85,10 @@ def get_target_state(status_prefix, project_id, config):
         "TRIAGE": "Triage"
     }
     state = mapping.get(status_val, "Open")
+    
+    if state == "Done" and config.get("completed_state"):
+        state = config["completed_state"]
+        
     if project_id in config.get("kanban_projects", []):
         kanban_mapping = {
             "Open": "Backlog",
@@ -96,7 +100,7 @@ def get_target_state(status_prefix, project_id, config):
             "Canceled": "Obsolete",
             "Triage": "Triage"
         }
-        return kanban_mapping.get(state, "Backlog")
+        return kanban_mapping.get(state, state)
     return state
 
 def parse_duration(duration_str):
@@ -135,7 +139,88 @@ def update_id_in_index_files(old_id, new_id, file_basename, is_dry_run):
         except Exception as e:
             pass
 
-def sync_file(filepath, client, config, is_dry_run, local_ids):
+def replace_markdown_links(text, doc_mapping):
+    # 1. Replace markdown links [Label](../path/file.md) -> [Label](EVO-xxx)
+    pattern = r"\[([^\]]+)\]\(([^)]*?)([a-zA-Z0-9_-]+)\.md\)"
+    
+    def replacer(match):
+        label = match.group(1)
+        stem = match.group(3)
+        ref_id = doc_mapping.get(stem) or doc_mapping.get(f"{stem}.md")
+        if ref_id:
+            return f"[{label}]({ref_id})"
+        return match.group(0)
+        
+    text = re.sub(pattern, replacer, text)
+    
+    # 2. Replace raw mentions of filenames like AC-0016-brief-selector.md -> EVO-xxx
+    for doc_key, ref_id in doc_mapping.items():
+        if doc_key.endswith(".md"):
+            escaped_key = re.escape(doc_key)
+            pattern_raw = rf"\b(?:AC-|PRD-)?{escaped_key}\b"
+            text = re.sub(pattern_raw, ref_id, text, flags=re.IGNORECASE)
+            
+    return text
+
+def post_sync_file(filepath, client, config, is_dry_run, doc_mapping):
+    with open(filepath, "r") as f:
+        content = f.read()
+        
+    fm_match = re.match(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
+    if not fm_match:
+        return
+        
+    fm_text = fm_match.group(1)
+    fm = {}
+    for line in fm_text.splitlines():
+        if ":" in line:
+            k, v = line.split(":", 1)
+            fm[k.strip().lower()] = v.strip().strip('"').strip("'")
+            
+    issue_id = fm.get("id")
+    if not issue_id or issue_id == "#NEW":
+        issue_id = doc_mapping.get(filepath.name)
+        if not issue_id:
+            return
+            
+    # Process description content to replace file links with YouTrack issue IDs
+    resolved_content = replace_markdown_links(content, doc_mapping)
+    
+    # Update description in YouTrack
+    internal_id = None
+    if not is_dry_run:
+        query = f'"{issue_id}"'
+        existing = client.search_issues(query)
+        if existing:
+            internal_id = existing[0]['id']
+            client.update_issue(internal_id, description=f"Source: {filepath}\n\n{resolved_content}")
+    else:
+        print(f"[DRY RUN] Would update description with resolved links for {issue_id}")
+        
+    # Detect other files in doc_mapping mentioned in resolved_content and create relations
+    referenced_ids = set()
+    for doc_key, ref_id in doc_mapping.items():
+        if ref_id == issue_id:
+            continue
+        if doc_key in content:
+            referenced_ids.add(ref_id)
+            
+    for ref_id in referenced_ids:
+        if not is_dry_run:
+            query = f'"{issue_id}"'
+            existing = client.search_issues(query)
+            ref_query = f'"{ref_id}"'
+            ref_res = client.search_issues(ref_query)
+            if existing and ref_res:
+                try:
+                    client.add_issue_link(existing[0]['id'], ref_res[0]['id'], link_name="Relates")
+                    print(f"  Linked {issue_id} relates to {ref_id}")
+                except Exception as e:
+                    pass
+        else:
+            print(f"  [DRY RUN] Would link {issue_id} relates to {ref_id}")
+
+def sync_file(filepath, client, config, is_dry_run, local_ids, doc_mapping):
     with open(filepath, "r") as f:
         content = f.read()
         
@@ -182,33 +267,69 @@ def sync_file(filepath, client, config, is_dry_run, local_ids):
         if not is_dry_run:
             print(f"Creating new {issue_type}: {title}")
             custom_fields = {status_field: {"name": target_state}}
+            if "custom_fields" in config and isinstance(config["custom_fields"], dict):
+                for k, v in config["custom_fields"].items():
+                    if isinstance(v, str):
+                        custom_fields[k] = {"name": v}
+                    else:
+                        custom_fields[k] = v
             if issue_type.lower() == "epic":
                 custom_fields["Subsystem"] = {"name": "Epic"}
                 
-            res = client.create_issue(target_project, f"[#NEW] {title}", f"Source: {filepath}\n\n{content}", issue_type=issue_type, custom_fields=custom_fields)
+            res = client.create_issue(target_project, title, f"Source: {filepath}\n\n{content}", issue_type=issue_type, custom_fields=custom_fields)
             internal_id = res.get('id')
             real_id = res.get('idReadable', internal_id)
-            
-            client.update_issue(internal_id, summary=f"[{real_id}] {title}")
             
             new_content = re.sub(r"^id:\s*['\"]?#NEW['\"]?\b", f"id: {real_id}", content, flags=re.MULTILINE)
             with open(filepath, "w") as f:
                 f.write(new_content)
-            print(f"  Updated {filepath} with [{real_id}]")
+            print(f"  Updated {filepath} with {real_id}")
             update_id_in_index_files("[#NEW]", f"[{real_id}]", filepath.name, is_dry_run)
         else:
-            print(f"[DRY RUN] Would create new {issue_type}: {title} (state: {target_state})")
+            real_id = f"EVO-MOCK-{len(doc_mapping) + 1}"
+            cf_dry = {}
+            if "custom_fields" in config and isinstance(config["custom_fields"], dict):
+                for k, v in config["custom_fields"].items():
+                    if k == "Subsystem" and issue_type.lower() == "epic":
+                        cf_dry[k] = "Epic"
+                    else:
+                        cf_dry[k] = v
+            print(f"[DRY RUN] Would create new {issue_type}: {title} (state: {target_state}, mock ID: {real_id}, custom fields: {cf_dry})")
+            
+        doc_mapping[filepath.name] = real_id
+        doc_mapping[filepath.stem] = real_id
     elif issue_id.startswith("EVO-") or "-" in issue_id or issue_id.isdigit():
         if not is_dry_run:
             query = f'project: {target_project} "{issue_id}"'
             existing = client.search_issues(query)
             if existing:
                 internal_id = existing[0]['id']
-                client.update_issue(internal_id, summary=f"[{issue_id}] {title}", description=f"Source: {filepath}\n\n{content}")
+                client.update_issue(internal_id, summary=title, description=f"Source: {filepath}\n\n{content}")
                 client.set_issue_field(internal_id, status_field, {"name": target_state})
+                
+                # Apply configured custom fields on update
+                if "custom_fields" in config and isinstance(config["custom_fields"], dict):
+                    for k, v in config["custom_fields"].items():
+                        if k == "Subsystem" and issue_type.lower() == "epic":
+                            val = {"name": "Epic"}
+                        elif isinstance(v, str):
+                            val = {"name": v}
+                        else:
+                            val = v
+                        try:
+                            client.set_issue_field(internal_id, k, val)
+                        except Exception as e:
+                            print(f"  Warning: Failed to set custom field '{k}' on update: {e}")
                 print(f"Updated {issue_type} {issue_id} -> {target_state}")
         else:
-            print(f"[DRY RUN] Would update {issue_type} {issue_id} -> {target_state}")
+            cf_dry = {}
+            if "custom_fields" in config and isinstance(config["custom_fields"], dict):
+                for k, v in config["custom_fields"].items():
+                    if k == "Subsystem" and issue_type.lower() == "epic":
+                        cf_dry[k] = "Epic"
+                    else:
+                        cf_dry[k] = v
+            print(f"[DRY RUN] Would update {issue_type} {issue_id} -> {target_state} (custom fields: {cf_dry})")
                 
     if real_id != "#NEW":
         local_ids.add(real_id)
@@ -249,8 +370,8 @@ def orphan_detection(client, config, local_ids, is_dry_run=False):
             if rid and rid not in local_ids:
                 if project_id == config["epic_project"] and not config.get("transition_epics", False):
                     continue
-                summary = issue.get("summary", "")
-                if "[" in summary and "]" in summary:
+                description = issue.get("description", "")
+                if description and description.startswith("Source:"):
                     print(f"  Orphan detected: {rid}")
                     if is_dry_run:
                         print(f"    [DRY RUN] Would link {rid} to Tech Debt epic and mark as Obsolete/Canceled/Orphaned.")
@@ -327,14 +448,51 @@ def main():
             print("--- RUNNING IN DRY RUN MODE ---")
             
         local_ids = set()
+        doc_mapping = {}
         search_paths = [Path("docs/prd"), Path("docs/ac"), Path("docs/gap")]
+        
+        # Build initial doc mapping for existing IDs
         for path in search_paths:
             if not path.exists():
                 continue
             for filepath in path.rglob("*.md"):
                 if filepath.name == "README.md":
                     continue
-                sync_file(filepath, client, config, is_dry_run, local_ids)
+                try:
+                    with open(filepath, "r") as f:
+                        content = f.read()
+                    fm_match = re.match(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
+                    if fm_match:
+                        fm_text = fm_match.group(1)
+                        fm = {}
+                        for line in fm_text.splitlines():
+                            if ":" in line:
+                                k, v = line.split(":", 1)
+                                fm[k.strip().lower()] = v.strip().strip('"').strip("'")
+                        issue_id = fm.get("id")
+                        if issue_id and issue_id != "#NEW":
+                            doc_mapping[filepath.name] = issue_id
+                            doc_mapping[filepath.stem] = issue_id
+                except Exception:
+                    pass
+
+        # First pass: sync files (creates #NEW and updates statuses/summaries)
+        for path in search_paths:
+            if not path.exists():
+                continue
+            for filepath in path.rglob("*.md"):
+                if filepath.name == "README.md":
+                    continue
+                sync_file(filepath, client, config, is_dry_run, local_ids, doc_mapping)
+                
+        # Second pass: resolve description links and link tickets in YouTrack
+        for path in search_paths:
+            if not path.exists():
+                continue
+            for filepath in path.rglob("*.md"):
+                if filepath.name == "README.md":
+                    continue
+                post_sync_file(filepath, client, config, is_dry_run, doc_mapping)
                 
         orphan_detection(client, config, local_ids, is_dry_run)
 

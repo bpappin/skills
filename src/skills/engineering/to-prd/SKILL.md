@@ -9,11 +9,10 @@ This skill synthesizes current context into a functional specification consistin
 
 ## Process
 
-### 1. ID Initialization
-When creating new requirement files:
-- Set `id: #NEW` in the YAML frontmatter block at the top of the files.
-- Name the files using a placeholder slug (e.g., `docs/prd/NEW-slug.md` and `docs/ac/NEW-slug.md`).
-- Running the sync script (`sync` skill) will later publish these to the remote issue tracker, automatically replacing `#NEW` with the authoritative remote ID (e.g., `EVO-85`) within the file frontmatter and updating any index files.
+### 1. ID Acquisition
+Before creating files, the agent MUST obtain a unique ID:
+- **Remote**: If a sync target is configured, run the sync script (e.g., `gh.py`) in `create-skeleton` mode to get a real issue ID.
+- **Local**: If no remote is available, use the next sequential ID from the `docs/prd/` directory.
 
 ### 2. Synthesis
 Identify the major modules and opportunities to extract "Deep Modules" (isolatable, testable logic). Use the project's domain glossary and respect existing ADRs.

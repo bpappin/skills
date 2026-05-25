@@ -42,8 +42,16 @@ After initialization, the agent MUST offer to organize existing documentation:
 > *"I noticed existing documentation files scattered in your project. Would you like me to analyze and organize them into the new 6-sector hierarchy (Mandates, Stories, Discovery, etc.)?"*
 *   **Action**: If yes, trigger the `migrate docs` workflow from the `manage-docs` skill.
 
-### 4. Agent Mandates (`AGENTS.md`)
-*   **Action:** Generate or audit `AGENTS.md` at the project root. Ensure the **"Update Docs Rule"** correctly references the `manage-docs` skill.
+### 4. Agent Mandates (`AGENTS.md` and `CLAUDE.md`)
+*   **Audit AGENTS.md**: Audit `AGENTS.md` at the project root.
+    - **If missing**: Create it from `AGENTS_TEMPLATE.md`.
+    - **If present**: Ensure it includes the **Local & Library Skill Discovery** rule.
+    - **Conflict Resolution**: If the file already exists, you MUST NOT overwrite it. Instead, parse the file:
+        1. If the `Local & Library Skill Discovery` rule is present but outdated (e.g. referencing old `.skills/` library workspace rules rather than `META-INF/ai-skills/` or `.ai-skills/`), replace that specific section with the new standard version.
+        2. If the section is missing entirely, append it under the `AI Interaction Guidelines` section (creating the section header if missing).
+        3. Do not modify or discard any custom project conventions, architecture overviews, or directories defined by developers.
+*   **Redirect CLAUDE.md**: Generate a root `CLAUDE.md` file that explicitly redirects Claude Code to read `AGENTS.md` (e.g., *"Before taking action, you MUST read the instructions in [AGENTS.md](AGENTS.md) and adhere to the project's local skill workflows."*).
+*   **Recommend GEMINI.md**: Print a recommendation for Gemini users to append the global skill discovery rules to their `~/.gemini/GEMINI.md` user_global configuration file.
 *   **Safety**: Remind the user that technical specs live in `/docs` (not Wikis) for versioning.
 
 ### 5. Local Agent Configuration (`~/.config/agents/<project_id>/`)

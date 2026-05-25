@@ -18,8 +18,6 @@
 
 **tdd**: Test-driven development with red-green-refactor loop.
 
-**to-ai-skill**: Scaffold and maintain machine-readable AI skill instructions bundled within this library for consuming AI agents.
-
 **to-design**: Formalizes the design-capturing process as a structured agent capability to ensure visual samples are generated and properly registered.
 
 **to-issues**: Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices.

@@ -1,11 +1,11 @@
 ---
 name: manage-docs
-description: Manage the 13-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions. Use when commanded to "update docs", "migrate docs", or when project standards change.
+description: Manage the 14-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions. Use when commanded to "update docs", "migrate docs", or when project standards change.
 ---
 
 # Documentation Management
 
-## The 13-Sector Hierarchy
+## The 14-Sector Hierarchy
 
 All knowledge must be dispersed into the appropriate specialized directory to ensure high-quality AI context mapping and prevent documentation bloat. Technical specifications MUST live in the project repository (docs-as-code) rather than external wikis to ensure atomic versioning and peer review.
 
@@ -24,6 +24,7 @@ All knowledge must be dispersed into the appropriate specialized directory to en
 | **Reference** | `docs/reference/` | Domain-specific knowledge and IDV methods. |
 | **Research** | `docs/research/` | Deep-dive R&D logs (RAD). |
 | **Decisions** | `docs/adr/` | Architectural Decision Records (ADR). |
+| **Vendors** | `docs/vendors/` | Third-party vendor specifications, integration manuals, and schemas. |
 
 ## Workflows
 

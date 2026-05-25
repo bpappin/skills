@@ -57,7 +57,7 @@ The **setup-project** skill will take over and autonomously:
 ## 🧩 Core Skill Categories
 
 ### 🛠️ Configuration & Onboarding
-* **manage-docs**: Manage the 6-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
+* **manage-docs**: Manage the 13-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
 * **manage-skills**: Manage the lifecycle, organization, and synchronization of AI agent skills between local project workspaces and master skill sources.
 * **persona**: Initialize and manage persona state via a global persona.json file.
 * **setup-project**: Onboard and configure a project workspace for tracking, sync, and agent interaction.
@@ -67,8 +67,9 @@ The **setup-project** skill will take over and autonomously:
 * **improve-codebase-architecture**: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/.
 * **prototype**: Build a throwaway prototype to flesh out a design before committing to it.
 * **tdd**: Test-driven development with red-green-refactor loop.
-* **to-issues**: (deprecated in favor of to-prd specs) Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices.
+* **to-ai-skill**: Scaffold and maintain machine-readable AI skill instructions bundled within this library for consuming AI agents.
 * **to-design**: Formalizes the design-capturing process as a structured agent capability to ensure visual samples are generated and properly registered.
+* **to-issues**: Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices.
 * **to-prd**: The primary workhorse. Synthesizes context into an **ID-First Spec Pair** (PRD and matching AC).
 * **triage**: Triage issues through a state machine driven by triage roles.
 * **zoom-out**: Tell the agent to zoom out and give broader context or a higher-level perspective.
@@ -95,7 +96,7 @@ The **setup-project** skill will take over and autonomously:
 ## 🚀 Extended Capabilities
 
 ### 🆔 ID-First Traceability
-Our **to-prd** skill implements an "ID-First" workflow. Before creating local documentation, the agent acquires an authoritative ID from your remote issue tracker (GitHub/YouTrack). This ensures that code, commits, and documents are linked to a permanent identity from the first line of code.
+Our **to-prd** skill implements an "ID-First" workflow. Local requirement documents are initialized with `id: #NEW` in their YAML frontmatter. Running the sync script publishes the ticket to the remote issue tracker (GitHub/YouTrack) and automatically updates the local frontmatter `id` field with the authoritative remote ID. This ensures that specs, code, and commits are linked to a permanent remote identity from the beginning.
 
 ### 🖇️ Atomic Spec-Pairing
 Technical requirements are recorded as an unbreakable pair:

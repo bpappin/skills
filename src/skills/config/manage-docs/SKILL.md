@@ -1,6 +1,6 @@
 ---
 name: manage-docs
-description: Manage the 12-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions. Use when commanded to "update docs", "migrate docs", or when project standards change.
+description: Manage the 13-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions. Use when commanded to "update docs", "migrate docs", or when project standards change.
 ---
 
 # Documentation Management

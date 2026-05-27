@@ -1,6 +1,6 @@
 # Agentic Engineering Skills
 
-A centralized library of specialized instructions, workflows, and tools for AI agents (Gemini CLI and Claude Code). This repository serves as the base upstream source for seeding project-attached intelligence.
+A centralized library of specialized instructions, workflows, and tools for AI agents (Gemini CLI and Claude Code) conforming to the [Agent Skills Standard](https://agentskills.io/). This repository serves as the base upstream source for seeding project-attached intelligence.
 
 ---
 
@@ -12,7 +12,7 @@ Many of the core engineering and productivity skills in this repository were see
 
 ## 🧠 Philosophy: Project-Attached Skills
 
-I follow a **"Project-Attached"** model for agent intelligence. Instead of installing skills into a global registry, they are carried within each repository's .skills/ directory. This ensures:
+I follow a **"Project-Attached"** model for agent intelligence. Instead of installing skills into a global registry, they are carried within each repository's .agents/skills/ directory. This ensures:
 1.  **Portability**: Any developer who clones the project immediately inherits its specialized intelligence.
 2.  **Context-Safety**: Agents are locked to the specific patterns and mandates of the project they are currently working on.
 3.  **Versioning**: Skills evolve with the codebase they support.
@@ -20,46 +20,68 @@ I follow a **"Project-Attached"** model for agent intelligence. Instead of insta
 
 ---
 
-## 🚀 Usage: Seeding a New Project
+## ⚙️ Installation & Usage
 
-To add these skills to a new or existing project, follow the **Seed & Initialize** workflow.
+Depending on your workflow, you can use these skills under the **Project-Attached** model (recommended) or install them globally for all workspaces.
 
-### 1. Seed the Project
-Copy the src/skills/ directory from this repository into the root of your target project, renaming it to .skills/:
+### Option A: Project-Attached (Recommended)
 
-```bash
-# From this repository
-cp -R src/skills/ /path/to/your/project/.skills/
-```
+To carry these skills inside a specific repository so they are version-controlled and portable:
 
-### 2. Initialize the Agent
-Open your AI agent (Gemini CLI or Claude Code) in the target project and command it to run the setup skill:
+1. **Seed the Project**: Copy the `src/skills/` directory from this repository into the root of your target project, renaming it to `.agents/skills/`:
+   ```bash
+   cp -R src/skills/ /path/to/your/project/.agents/skills/
+   ```
 
-```text
-Run project setup
-```
+2. **Initialize the Agent**: Start your agent (Gemini CLI or Claude Code) in the target project and command it:
+   ```text
+   Run project setup
+   ```
 
-### 3. Automated Onboarding
-The **setup-project** skill will take over and autonomously:
-*   Identify the project (ID, Sync Targets). The `project_id` is the most important as it will create `~/.secret/agents/<project_id>` and `~/.config/agents/<project_id>`.
-*   Create the **AI-Optimized Documentation Hierarchy** (mandates/, prd/, ac/, discovery/, gap/, etc.).
-*   Generate or audit the **AGENTS.md** context-mapping file.
-*   **Intelligent Migration**: Offer to analyze and organize existing documentation into the new hierarchy.
+3. **Automated Onboarding**: The **setup-project** skill will take over and automatically:
+   * Identify the project (ID, Sync Targets).
+   * Create the AI-optimized documentation hierarchy (`mandates/`, `prd/`, `ac/`, `discovery/`, `gap/`, etc.).
+   * Generate or audit the `AGENTS.md` context-mapping file.
+
+---
+
+### Option B: Global Registry Installation (Gemini CLI)
+
+If you want these skills globally available in any directory without attaching them to individual projects:
+
+1. Run the Gemini installation tool from this repository:
+   ```bash
+   ./tools/install-gemini.sh --global
+   ```
+2. In your active Gemini session, reload your registry:
+   ```text
+   /skills reload
+   ```
+
+---
+
+### Option C: Global Claude Code Integration
+
+To integrate these instructions directly into Claude Code's global configuration:
+
+1. Run the Claude installation tool from this repository:
+   ```bash
+   ./tools/install-claude.sh
+   ```
 
 ---
 
 ## 📂 Repository Structure
 
-- [src/skills/](./src/skills/): The "exploded" source files for each skill. This is the directory you copy into your projects.
-- [tools/](./tools/): (Optional) Scripts for legacy global installation or bulk packaging.
-- [src/obsolete/](./src/obsolete/): Legacy monolithic skill files preserved for reference.
+- [src/skills/](./src/skills/): The source files for each skill. This is the directory you copy into your projects.
+- [tools/](./tools/): Scripts for global installation or Claude Code integration.
 
 ## 🧩 Core Skill Categories
 
 ### 🛠️ Configuration & Onboarding
 * **manage-docs**: Manage the 13-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
 * **manage-skills**: Manage the lifecycle, organization, and synchronization of AI agent skills between local project workspaces and master skill sources.
-* **persona**: Initialize and manage persona state via a global persona.json file.
+* **manage-persona**: Initialize and manage persona state via a global persona.json file.
 * **setup-project**: Onboard and configure a project workspace for tracking, sync, and agent interaction.
 
 ### 📐 Engineering & Standards
@@ -75,7 +97,7 @@ The **setup-project** skill will take over and autonomously:
 * **zoom-out**: Tell the agent to zoom out and give broader context or a higher-level perspective.
 
 ### ⚖️ Governance & R&D
-* **rad-research**: Manage Technical Research & Development (R&D) logs.
+* **to-research**: Manage Technical Research & Development (R&D) logs.
 * **regulatory-compliance**: Manage and track regulatory requirements (PIPEDA, GDPR, etc.).
 
 ### Misc, Odds & Ends
@@ -89,7 +111,7 @@ The **setup-project** skill will take over and autonomously:
 * **write-a-skill**: Create new agent skills with proper structure, progressive disclosure, and bundled resources.
 
 ### 📊 Tracking & Roadmap
-* **sync**: Publish local Markdown issue documents (Format A and Format B) to a remote issue tracker.
+* **sync-tracking**: Push local Markdown requirement documents (PRDs and ACs) to a remote issue tracker (YouTrack, GitHub, Jira) using local Python scripts.
 
 ---
 

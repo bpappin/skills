@@ -1,22 +1,36 @@
 # Agent Capabilities Index
 
-### Config
-**manage-docs**: Manage the 13-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
+**caveman**: Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler while keeping full technical accuracy.
 
-**manage-skills**: Manage the lifecycle, organization, and synchronization of AI agent skills between local project workspaces and master skill sources.
+**git-guardrails-claude-code**: Set up Claude Code hooks to block dangerous git commands.
 
-**persona**: Initialize and manage persona state via a global persona.json file.
+**git-guardrails-gemini**: Codifies the strict Git safety rules for Gemini CLI.
 
-**setup-project**: Onboard and configure a project workspace for tracking, sync, and agent interaction.
+**grill-me**: Interview the user relentlessly about a plan or design until reaching shared understanding.
 
-### Engineering
 **grill-with-docs**: Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise.
+
+**handoff**: Compact the current conversation into a handoff document for another agent to pick up.
 
 **improve-codebase-architecture**: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/.
 
+**manage-docs**: Manage the 13-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
+
+**manage-persona**: Initialize and manage persona state via a global persona.json file.
+
+**manage-skills**: Manage the lifecycle, organization, and synchronization of AI agent skills between local project workspaces and master skill sources.
+
 **prototype**: Build a throwaway prototype to flesh out a design before committing to it.
 
+**regulatory-compliance**: Manage and track regulatory requirements (PIPEDA, GDPR, etc.).
+
+**setup-project**: Onboard and configure a project workspace for tracking, sync, and agent interaction.
+
+**sync-tracking**: Push local Markdown requirement documents (PRDs and ACs) to a remote issue tracker (YouTrack, GitHub, Jira) using local Python scripts.
+
 **tdd**: Test-driven development with red-green-refactor loop.
+
+**to-ai-skill**: Generates and updates a machine-readable AI skill document bundled within this published library.
 
 **to-design**: Formalizes the design-capturing process as a structured agent capability to ensure visual samples are generated and properly registered.
 
@@ -24,29 +38,10 @@
 
 **to-prd**: Turn conversation context and codebase understanding into a formal PRD and matching AC spec.
 
+**to-research**: Manage Technical Research & Development (R&D) logs.
+
 **triage**: Triage issues through a state machine driven by triage roles.
-
-**zoom-out**: Tell the agent to zoom out and give broader context or a higher-level perspective.
-
-### Governance
-**rad-research**: Manage Technical Research & Development (R&D) logs.
-
-**regulatory-compliance**: Manage and track regulatory requirements (PIPEDA, GDPR, etc.).
-
-### Misc
-**git-guardrails-claude-code**: Set up Claude Code hooks to block dangerous git commands.
-
-**git-guardrails-gemini**: Codifies the strict Git safety rules for Gemini CLI.
-
-### Productivity
-**caveman**: Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler while keeping full technical accuracy.
-
-**grill-me**: Interview the user relentlessly about a plan or design until reaching shared understanding.
-
-**handoff**: Compact the current conversation into a handoff document for another agent to pick up.
 
 **write-a-skill**: Create new agent skills with proper structure, progressive disclosure, and bundled resources.
 
-### Tracking
-
-**sync**: Publish local Markdown issue documents (Format A and Format B) to a remote issue tracker.
+**zoom-out**: Tell the agent to zoom out and give broader context or a higher-level perspective.

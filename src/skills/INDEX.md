@@ -12,6 +12,8 @@
 
 **handoff**: Compact the current conversation into a handoff document for another agent to pick up.
 
+**housekeeping**: Perform workspace housekeeping, cleanup audits, and prepare handoff/commit documentation at the end of a work session.
+
 **improve-codebase-architecture**: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/.
 
 **manage-docs**: Manage the 13-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.

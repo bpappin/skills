@@ -108,6 +108,7 @@ To integrate these instructions directly into Claude Code's global configuration
 * **caveman**: Ultra-compressed communication mode to save tokens.
 * **grill-me**: Interview the user relentlessly about a plan or design.
 * **handoff**: Compact the current conversation into a handoff document for another agent to pick up.
+* **housekeeping**: Perform workspace housekeeping, cleanup audits, and prepare handoff/commit documentation at the end of a work session.
 * **write-a-skill**: Create new agent skills with proper structure, progressive disclosure, and bundled resources.
 
 ### 📊 Tracking & Roadmap

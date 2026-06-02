@@ -34,6 +34,11 @@ Execute the script from the root of the project workspace.
     # Run the sync command which automatically scans the documentation paths
     python3 .agents/skills/sync-tracking/scripts/yt.py sync
     ```
+*   **Opening the Tracker:** Launch the tracker's website or project board in a browser.
+    ```bash
+    # Launch the configured tracker website
+    python3 .agents/skills/sync-tracking/scripts/yt.py open
+    ```
 
 ### 4. Post-Sync Validation
 *   Check the output of the script to confirm successful sync.

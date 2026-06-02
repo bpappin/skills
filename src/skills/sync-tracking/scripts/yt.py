@@ -407,6 +407,7 @@ def main():
     work_parser.add_argument("--comment", default="")
     
     sync_parser = subparsers.add_parser("sync", help="Sync stories from Markdown")
+    subparsers.add_parser("open", help="Open the YouTrack tracker website in a browser")
     
     args = parser.parse_args()
     try:
@@ -414,6 +415,16 @@ def main():
     except SystemExit:
         return
         
+    if args.command == "open":
+        url = config.get("url")
+        if not url:
+            print("Error: YouTrack URL not configured.")
+            return
+        print(f"Opening YouTrack URL: {url}")
+        import webbrowser
+        webbrowser.open(url)
+        return
+
     API_ENABLED = bool(config.get("url") and config.get("token"))
     if not API_ENABLED:
         print("Note: YOUTRACK_URL or YOUTRACK_TOKEN not configured.")

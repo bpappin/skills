@@ -379,11 +379,41 @@ def sync_project_docs():
             sync_requirement_file(filepath, project_metadata)
 
 if __name__ == "__main__":
-    if DRY_RUN:
-        print("--- RUNNING IN DRY RUN MODE ---")
+    import argparse
+    import webbrowser
+
+    parser = argparse.ArgumentParser(description="GitHub Synchronization Tool")
+    subparsers = parser.add_subparsers(dest="command")
+    subparsers.add_parser("sync", help="Sync local requirements to GitHub")
+    subparsers.add_parser("open", help="Open the GitHub repository or project board in a browser")
     
-    if not SYNC_ENABLED and not DRY_RUN:
-        print("Note: GitHub Token or Repository not configured. Issue synchronization is disabled.")
-    
-    if config:
-        sync_project_docs()
+    args = parser.parse_args()
+    command = args.command or "sync"
+
+    if command == "open":
+        url = GITHUB_PROJECT_URL
+        if not url:
+            if REPO:
+                url = f"https://github.com/{REPO}"
+            elif config and "github_repo" in config:
+                repo_val = config["github_repo"]
+                if repo_val.startswith("http"):
+                    url = repo_val
+                else:
+                    url = f"https://github.com/{repo_val}"
+        
+        if not url:
+            print("Error: GitHub Project or Repository not configured.")
+            sys.exit(1)
+        
+        print(f"Opening GitHub URL: {url}")
+        webbrowser.open(url)
+    elif command == "sync":
+        if DRY_RUN:
+            print("--- RUNNING IN DRY RUN MODE ---")
+        
+        if not SYNC_ENABLED and not DRY_RUN:
+            print("Note: GitHub Token or Repository not configured. Issue synchronization is disabled.")
+        
+        if config:
+            sync_project_docs()

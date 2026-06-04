@@ -9,7 +9,11 @@ This document contains useful housekeeping prompts to use when wrapping up a cha
 When you are about to finish or delete a chat session, use the following prompt to ensure that any important decisions, setup steps, or context are preserved in the codebase documentation:
 
 ```text
-Are there any design decisions, setup steps, or context from this chat that we should preserve in docs/ or AGENTS.md before I delete this conversation? If so, write them to the appropriate files.
+Task: Preserve Chat Context & Decisions
+Summary: Identifies key design choices, setup steps, or architectural context from the current session and writes them to docs/ or AGENTS.md before the chat is deleted.
+
+Prompt:
+Are there any design decisions, setup steps, or context from this chat that we should preserve in docs/ or AGENTS.md before I delete this conversation? If so, list them with a short explanation and write them to the appropriate files.
 ```
 
 ### Why This is Important
@@ -28,7 +32,11 @@ Are there any design decisions, setup steps, or context from this chat that we s
 Before concluding coding tasks, use this prompt to check for leftover debugging artifacts and temporary files:
 
 ```text
-Before we conclude, please check all modified files in this session for any debug logs, temporary comments, print statements, unused imports, or leftover scratch files that we should clean up or delete.
+Task: Code Cleanliness & Cleanup Audit
+Summary: Scans modified files for debug logs, temporary comments, print statements, unused imports, or leftover scratch files before final staging.
+
+Prompt:
+Before we conclude, please check all modified files in this session for any debug logs, temporary comments, print statements, unused imports, or leftover scratch files that we should clean up or delete. Provide a list of identified items with a title and a brief summary of what needs cleanup.
 ```
 
 ### Why This is Important
@@ -42,7 +50,11 @@ Before we conclude, please check all modified files in this session for any debu
 Use this prompt to prepare clear documentation for the Git log and team reviews:
 
 ```text
-Prepare a clear Git commit message and a brief Pull Request description summarizing the changes we made, the rationale behind any design choices, and how they were verified.
+Task: Commit & PR Documentation Prep
+Summary: Generates a clear Git commit message and Pull Request description summarizing session changes, rationales, and verification.
+
+Prompt:
+Prepare a clear Git commit message and a brief Pull Request description summarizing the changes we made, the rationale behind any design choices, and how they were verified. Ensure each change description includes a clear title and a short summary.
 ```
 
 ### Why This is Important
@@ -56,7 +68,11 @@ Prepare a clear Git commit message and a brief Pull Request description summariz
 Use this prompt to verify feature completeness and track outstanding issues or technical debt:
 
 ```text
-Compare the work we completed in this session against our original objectives. List any edge cases, outstanding tasks, or potential technical debt that we should document as future work.
+Task: Goal Alignment & Remaining Tasks
+Summary: Compares completed work against original objectives and documents remaining tasks, edge cases, or technical debt.
+
+Prompt:
+Compare the work we completed in this session against our original objectives. List any edge cases, outstanding tasks, or potential technical debt that we should document as future work, providing a title and short summary for each.
 ```
 
 ### Why This is Important
@@ -74,7 +90,11 @@ Compare the work we completed in this session against our original objectives. L
 Use this prompt to ensure that any runtime/environment configuration updates are not missed:
 
 ```text
-Did we introduce any new environment variables, configuration settings, or dependencies during this session? If so, verify that they are documented in README.md, setup scripts, or .env.example.
+Task: Environment & Configuration Check
+Summary: Checks if any new environment variables, configuration settings, or dependencies were introduced and verifies they are documented.
+
+Prompt:
+Did we introduce any new environment variables, configuration settings, or dependencies during this session? If so, verify that they are documented in README.md, setup scripts, or .env.example, listing each update with a title and brief summary.
 ```
 
 ### Why This is Important

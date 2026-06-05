@@ -79,7 +79,7 @@ To integrate these instructions directly into Claude Code's global configuration
 ## 🧩 Core Skill Categories
 
 ### 🛠️ Configuration & Onboarding
-* **manage-docs**: Manage the 13-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
+* **manage-docs**: Manage the 15-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
 * **manage-skills**: Manage the lifecycle, organization, and synchronization of AI agent skills between local project workspaces and master skill sources.
 * **manage-persona**: Initialize and manage persona state via a global persona.json file.
 * **setup-project**: Onboard and configure a project workspace for tracking, sync, and agent interaction.
@@ -132,6 +132,7 @@ A unique documentation model designed specifically to maximize AI context retrie
 *   **Mandates**: Global "Law" (ARCH, SPEC).
 *   **Stories (PRD)**: Feature requirements.
 *   **Criteria (AC)**: Success outcomes.
+*   **QA / Test Plans**: Comprehensive QA Test Plans and verification protocols.
 *   **Discovery (DD)**: Research and due-diligence records.
 *   **Roadmap (GAP)**: Functional gaps and technical debt.
 

@@ -1,11 +1,11 @@
 ---
 name: manage-docs
-description: Manage the 14-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions. Use when commanded to "update docs", "migrate docs", or when project standards change.
+description: Manage the 15-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions. Use when commanded to "update docs", "migrate docs", or when project standards change.
 ---
 
 # Documentation Management
 
-## The 14-Sector Hierarchy
+## The 15-Sector Hierarchy
 
 All knowledge must be dispersed into the appropriate specialized directory to ensure high-quality AI context mapping and prevent documentation bloat. Technical specifications MUST live in the project repository (docs-as-code) rather than external wikis to ensure atomic versioning and peer review.
 
@@ -17,6 +17,7 @@ All knowledge must be dispersed into the appropriate specialized directory to en
 | **Mockups** | `docs/design/` | Individual feature designs and mockups. **Domain: Designer Persona.** |
 | **Stories** | `docs/prd/` | Feature requirements and user stories (**PRDs**). Linked to **AC**. |
 | **Criteria** | `docs/ac/` | Testable success outcomes (**ACs**). Linked to **PRD**. |
+| **QA / Test Plans** | `docs/qa/` | Comprehensive QA Test Plans, manual verification protocols, compliance/persistence audits, and regression test records. |
 | **Discovery** | `docs/discovery/` | The "Why" and "Due Diligence" (DD). Vendor research and cost analysis. |
 | **Roadmap** | `docs/gap/` | The "Future" (GAPs). Transient trackers for missing capabilities. |
 | **Regulations**| `docs/regulations/` | Compliance mappings (PIPEDA, GDPR, Law 25). |
@@ -29,23 +30,35 @@ All knowledge must be dispersed into the appropriate specialized directory to en
 ## Workflows
 
 ### 1. Document Metadata (YAML Frontmatter)
-All specification documents (PRDs, ACs, and GAPs) MUST lead with a YAML frontmatter block for system metadata, bounded by `---` at the top of the file:
+All specification documents (PRDs, ACs, GAPs, and QA Test Plans) MUST lead with a YAML frontmatter block for system metadata, bounded by `---` at the top of the file:
 ```yaml
 ---
 id: #NEW            # Stays '#NEW' until synced with YouTrack, which updates it to the YouTrack key (e.g., EVO-85)
-status: TODO        # TODO, WIP, DONE, OBSOLETE
-type: PRD           # PRD, AC, Gap, Design
+status: TODO        # TODO, WIP, DONE/READY, OBSOLETE, COMPLETED
+type: PRD           # PRD, AC, Gap, Design, QA
 priority: High      # Optional: High, Medium, Low
 parent: EVO-34      # Optional: Link to YouTrack parent Epic key
 ---
 ```
 
+For QA Test Plans specifically, the YAML frontmatter MUST contain:
+```yaml
+---
+id: #NEW
+status: TODO        # TODO, WIP, READY, COMPLETED
+type: QA            # QA
+priority: High      # High, Medium, Low
+parent: [YouTrack Epic/Story Key]
+---
+```
+
 ### 2. Polymorphic Layouts (Archetypes)
-When creating new documentation (PRDs, GAPs, Designs), the agent must select the correct layout based on the active persona:
+When creating new documentation (PRDs, GAPs, Designs, QA Test Plans), the agent must select the correct layout based on the active persona:
 1.  **Detection**: Check the active persona's `layout_preference`.
 2.  **Selection**: 
     - Use `docs/mandates/templates/prd-game-design.md` if layout is `game-design`.
     - Use `docs/mandates/templates/prd-standard.md` if layout is `standard` or no persona is active.
+    - Use `docs/mandates/templates/qa-standard.md` for QA Test Plans.
 3.  **Customization**: If the user asks for a specific layout not in their persona, honor the request but specify it in the YAML frontmatter (e.g., `layout: game-design`).
 
 ### 3. Bootstrapping DESIGN.md
@@ -83,6 +96,7 @@ Record hard-to-reverse or surprising technical decisions in `docs/adr/`.
 - **Linking**: Cross-link to related **DD** or **PRD** records.
 
 ## Discovery Trail
+- **2026-06-04**: Expanded documentation hierarchy to 15 sectors, added `docs/qa/` for QA / Test Plans, and defined the QA Test Plan archetype.
 - **2026-05-19**: Unified hierarchy to a 13-Sector model to prevent numbering confusion and explicitly mapped Architectural Decision Records to `docs/adr/` to fix a contradictory rule.
 - **2026-05-18**: Integrated `DESIGN.md` root specification into the 6-sector hierarchy. Added bootstrapping workflow to ensure `DESIGN.md` is created following the Google spec. Defined `DESIGN.md` and `docs/design/` as the exclusive domain of the **Designer Persona**.
 - **2026-05-18 (v2)**: Introduced Polymorphic Layouts (Documentation Archetypes). Added `docs/mandates/templates/` directory to house blueprints for `standard` and `game-design` layouts. Linked layout selection to the user's active persona preference.

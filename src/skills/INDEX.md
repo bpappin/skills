@@ -16,7 +16,7 @@
 
 **improve-codebase-architecture**: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/.
 
-**manage-docs**: Manage the 13-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
+**manage-docs**: Manage the 15-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
 
 **manage-persona**: Initialize and manage persona state via a global persona.json file.
 
@@ -25,6 +25,8 @@
 **prototype**: Build a throwaway prototype to flesh out a design before committing to it.
 
 **regulatory-compliance**: Manage and track regulatory requirements (PIPEDA, GDPR, etc.).
+
+**setup-gitlab-duo**: Configure GitLab Duo custom merge request review instructions at the project level.
 
 **setup-project**: Onboard and configure a project workspace for tracking, sync, and agent interaction.
 

@@ -8,13 +8,14 @@ All AI assistants MUST read and adhere to the instructions in this file. This is
 
 ### Core Mandates
 
-1.  **Context Mapping**: You must map your context directly to the established **13-Sector Documentation Hierarchy** before taking action:
+1.  **Context Mapping**: You must map your context directly to the established **15-Sector Documentation Hierarchy** before taking action:
     - 📐 **Mandates** (`./docs/mandates/`): Technical patterns ([ARCH.md](./docs/mandates/ARCH.md)) and business logic ([SPEC.md](./docs/mandates/SPEC.md)).
     - 📋 **Templates** (`./docs/mandates/templates/`): Document layout blueprints.
     - 🎨 **Design** ([DESIGN.md](./DESIGN.md) at root): Canonical design tokens and layout specs.
     - 🖌️ **Mockups** (`./docs/design/`): User interface mockups and screens.
     - 📝 **Stories** (`./docs/prd/`): Product requirements and stories (PRDs).
     - ✅ **Criteria** (`./docs/ac/`): Gherkin verification scenarios (ACs).
+    - 🧪 **QA / Test Plans** (`./docs/qa/`): Comprehensive QA Test Plans and verification protocols.
     - 🔍 **Discovery** (`./docs/discovery/`): Due diligence, vendor analysis (DDs).
     - 🛠️ **Roadmap** (`./docs/gap/`): Transient trackers for missing capabilities (GAPs).
     - 🛡️ **Regulations** (`./docs/regulations/`): Compliance mappings (PIPEDA, GDPR, Law 25).
@@ -22,6 +23,7 @@ All AI assistants MUST read and adhere to the instructions in this file. This is
     - 🧠 **Reference** (`./docs/reference/`): Domain entities and nomenclature.
     - 🔬 **Research** (`./docs/research/`): Deep-dive R&D log entries (RAD).
     - 💡 **Decisions** (`./docs/adr/`): Architectural Decision Records (ADRs).
+    - 🤝 **Vendors** (`./docs/vendors/`): Third-party vendor specifications, integration manuals, and schemas.
 2.  **Cross-Platform Synchronization**: Whenever you modify core shared libraries, you MUST also update and verify the corresponding bridges or consumers.
 3.  **The "Update Docs" Rule**: When told to "update docs", you MUST trigger the **[manage-docs](./.agents/skills/manage-docs/SKILL.md)** skill. You must intelligently disperse new information into the appropriate specialized directories (`mandates/`, `ac/`, `gap/`, `regulations/`, etc.) rather than creating generic text blocks in this file.
 4.  **Path Resolution**: Always use absolute paths starting from the project root for any file operations.

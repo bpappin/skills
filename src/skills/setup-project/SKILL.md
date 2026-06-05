@@ -34,11 +34,13 @@ The agent must verify or initialize the hierarchy:
 *   `docs/mandates/`: Technical and functional overviews (`ARCH.md`, `SPEC.md`).
 *   `docs/prd/`: Feature stories and requirements.
 *   `docs/ac/`: Testable acceptance criteria.
+*   `docs/qa/`: Comprehensive QA Test Plans and verification protocols.
 *   `docs/discovery/`: Due Diligence (DD) research and cost evaluations.
 *   `docs/gap/`: Roadmap and functional gaps.
 *   `docs/adr/`: Architectural Decision Records.
 *   `docs/regulations/`: Regulatory compliance mappings.
 *   `docs/research/`: Deep-dive RAD logs.
+*   `docs/vendors/`: Third-party vendor specifications and integration schemas.
 *   `docs/guides/`, `docs/reference/`, `docs/design/`.
 
 ### 3. Legacy Doc Discovery
@@ -80,6 +82,7 @@ To ensure the agent functions correctly as project standards evolve, the agent s
     - *Use:* "I can synchronize my capabilities with your global library if you have one. If you'd rather I just work with what's in this project and not ask again, let me know and I'll stay local."
 
 ## Discovery Trail
+- **2026-06-04**: Expanded Documentation Architecture to 15 sectors, explicitly listing `docs/qa/` and `docs/vendors/`.
 - **2026-05-19**: Refactored secret verification. Removed the general "Secrets" check from `setup-project` and delegated it to specialized skills (e.g., `sync`) to ensure agents only prompt for secrets when needed.
 - **2026-05-18**: Added "Immediate Capture" and "Version Control" mandates to ensure `.agents/config/project.json` is written to disk and un-ignored in `.gitignore` immediately upon establishing the `project_id`. This guarantees other agents can reliably locate global state.
 - **2026-05-18**: Added "Simplified Workflow" and `sync_enabled` flag to help non-technical members opt out of automated tracking and credential prompts. Refined health check guidance to be more permissive.

@@ -29,9 +29,9 @@ Automatically configure GitLab Duo custom merge request review instructions at t
 ### 2. Map Standards to GitLab Duo Format
 Construct instructions mapping code review rules into blocks:
 - **Severity Levels:** Ensure the review outputs use:
-  - `🔴 CR: Critical` - Runtime errors, bugs, security issues, performance blockages.
-  - `🟡 IM: Important` - Missing error handling, API contract divergence, maintainability concerns.
-  - `🟢 NP: Non-Priority` - Minor refactoring suggestions, style deviations, optional optimizations.
+  - `CR: Critical` - Runtime errors, bugs, security issues, performance blockages.
+  - `IM: Important` - Missing error handling, API contract divergence, maintainability concerns.
+  - `NP: Non-Priority` - Minor refactoring suggestions, style deviations, optional optimizations.
   - `Q: Question` - Requests for clarity or trade-off explanations.
 - **Language/Pattern Matching:** Group rules using specific glob filters (e.g., `**/*.kt` for Kotlin/Android, `**/*.{ts,tsx}` for TypeScript/React).
 - **Fallback Template:** If no `CODE_REVIEW_STANDARDS.md` is present, construct instructions based on standard programming language paradigms and the severity structure above.
@@ -52,7 +52,7 @@ instructions:
       - "**/*"
       - "!docs/**/*"
     instructions: |
-      1. Categorize comments by severity: 🔴 CR (Critical), 🟡 IM (Important), 🟢 NP (Non-Priority), or Q (Question).
+      1. Categorize comments by severity: CR (Critical), IM (Important), NP (Non-Priority), or Q (Question).
       2. Ensure error paths are explicitly handled.
 ```
 

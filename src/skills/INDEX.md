@@ -28,6 +28,8 @@
 
 **setup-gitlab-duo**: Configure GitLab Duo custom merge request review instructions at the project level.
 
+**setup-github-copilot**: Configure GitHub Copilot custom instructions at the repository level.
+
 **setup-project**: Onboard and configure a project workspace for tracking, sync, and agent interaction.
 
 **sync-tracking**: Push local Markdown requirement documents (PRDs and ACs) to a remote issue tracker (YouTrack, GitHub, Jira) using local Python scripts.

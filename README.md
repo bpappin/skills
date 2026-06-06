@@ -93,6 +93,7 @@ To integrate these instructions directly into Claude Code's global configuration
 * **to-design**: Formalizes the design-capturing process as a structured agent capability to ensure visual samples are generated and properly registered.
 * **to-issues**: Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices.
 * **to-prd**: The primary workhorse. Synthesizes context into an **ID-First Spec Pair** (PRD and matching AC).
+* **to-wiring**: Audit, check, and maintain the application's internal feature wiring rules in WIRING.md.
 * **triage**: Triage issues through a state machine driven by triage roles.
 * **zoom-out**: Tell the agent to zoom out and give broader context or a higher-level perspective.
 

@@ -46,6 +46,8 @@
 
 **to-research**: Manage Technical Research & Development (R&D) logs.
 
+**to-wiring**: Audit, check, and maintain the application's internal feature wiring rules in WIRING.md.
+
 **triage**: Triage issues through a state machine driven by triage roles.
 
 **write-a-skill**: Create new agent skills with proper structure, progressive disclosure, and bundled resources.

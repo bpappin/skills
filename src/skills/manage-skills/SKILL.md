@@ -60,17 +60,22 @@ Triggered by commands like "Refresh skills", "Import skills", or "Fetch skills".
         *   Trigger a configuration audit to update settings (e.g., `AGENTS.md` scanning rules).
     - **Action on No/Skip**: Proceed with the sync using `.agents/skills/` (if desired by the user), but make sure to prompt the user about migration again the next time any skill operations are run. The legacy `.skills/` directory **MUST** be left completely intact.
 2.  **Detection**: Compare local .agents/skills/ with the registered master sources.
-2.  **Reporting**: Present a categorized report:
+3.  **Reporting**: Present a categorized report:
     - **New**: Skills available in sources but missing locally.
     - **Updates**: Local skills that are identical to an older master version but have a newer version available.
     - **Divergent**: Local skills that have been modified and differ from the latest master version.
-3.  **Conflict Resolution**: 
+    - **Custom**: Local skills that exist in `.agents/skills/` but are NOT present in any master source.
+4.  **Conflict Resolution**: 
     - For **New** and **Update** items: Ask for permission to install/overwrite.
     - For **Divergent** items: **STOP** and display a diff. 
         *   **Interactive Option:** If the client supports the `ask_question` tool, present a single-select question modal with choices: `Overwrite local changes (use latest master)`, `Keep local changes (ignore master updates)`, or `Publish local changes to master instead`.
         *   **Fallback:** Otherwise, ask the user in chat: *"The local version has diverged. Do you want to overwrite your local changes, keep your version, or publish your changes to the master source instead?"*
-4.  **Execute**: Copy the entire directory (scripts/resources included) only after user confirmation.
-5.  **Post-Refresh Audit**: After a major refresh, the agent should offer to run a **Configuration Audit** (from the setup-project skill) to ensure the project settings are compatible with the latest skill versions.
+    - For **Custom** items: These must be preserved by default and left completely untouched.
+        *   **Naming Collisions**: If a new skill in the master source shares the same name as a local custom skill, the agent **MUST STOP** and prompt the user:
+            - **Interactive Option:** If the client supports the `ask_question` tool, present a single-select question modal with choices: `Rename local custom skill (e.g. custom-[name]) and import master`, `Overwrite local custom skill (Warning: local changes will be lost)`, or `Skip importing master skill`.
+            - **Fallback:** Otherwise, ask the user in chat.
+5.  **Execute**: Copy the entire directory (scripts/resources included) only after user confirmation.
+6.  **Post-Refresh Audit**: After a major refresh, the agent should offer to run a **Configuration Audit** (from the setup-project skill) to ensure the project settings are compatible with the latest skill versions.
 
 ### 3. Upstream Sync (Publish/Export: Project ➔ Source)
 Triggered ONLY by an explicit command (e.g., "Publish skill [name]", "Export skill [name]", or "Save skill [name] to master").
@@ -128,6 +133,7 @@ The agent must provide clear explanations of its capabilities when explicitly as
 - **PII Scrubbing**: Ensure all logic in the master source is generic and scrubbed of project-specific PII (unless it's in the Discovery Trail for context).
 
 ## Discovery Trail
+- **2026-06-06**: Explicitly added "Custom" skill category and name-collision conflict resolution rules to downstream sync workflow, ensuring local custom skills are never overwritten or deleted by default.
 - **2026-05-18**: Added "Skill Drill-down Help" workflow to allow users to ask for details on specific skills (e.g., "Help manage-docs").
 - **2026-05-18**: Removed skill linking from the index to ensure portability and visibility. Mandated plain bold text for skill names.
 - **2026-05-18**: Refined skill indexing to ensure the skill name (not the filename) is used as the link text for better readability.

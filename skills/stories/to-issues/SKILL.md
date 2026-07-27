@@ -1,0 +1,91 @@
+---
+name: to-issues
+description: Break a plan, spec, or PRD into independently-grabbable tracker stories using tracer-bullet vertical slices. Use when the user wants to convert a plan into issues, create implementation tickets, or break down work into stories.
+license: MIT
+compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
+metadata:
+  author: bpappin
+  version: "1.0"
+---
+
+# To Issues
+
+Break a plan into independently-grabbable stories using vertical slices
+(tracer bullets), published to the project's tracker in the canonical story
+format so the story-workflow skill can pick each one up directly.
+
+**Tracker dispatch:** read `.agents/config/story-tools.json` →
+`tracker.type` (absent → `youtrack`) and use that binding's commands:
+
+- `youtrack` → [references/tracker-youtrack.md](references/tracker-youtrack.md)
+
+Story bodies follow [references/ac-format.md](references/ac-format.md) —
+the same contract every story-tools skill parses.
+
+## Process
+
+### 1. Gather context
+
+Work from whatever is already in the conversation. If the user passes an
+issue reference (ID, URL, or a PRD path), fetch/read it fully — body,
+comments, requirements.
+
+### 2. Explore the codebase (optional)
+
+If you haven't already, explore enough to use the project's domain glossary
+in titles and descriptions, and to respect ADRs in the area you're touching.
+
+### 3. Draft vertical slices
+
+Break the plan into **tracer bullet** stories. Each is a thin vertical
+slice that cuts through ALL integration layers end-to-end, NOT a horizontal
+slice of one layer.
+
+Slices may be **HITL** (require human interaction — an architectural
+decision, a design review) or **AFK** (implementable and mergeable without
+human interaction). Prefer AFK where possible.
+
+- Each slice delivers a narrow but COMPLETE path through every layer
+  (schema, API, UI, tests)
+- A completed slice is demoable or verifiable on its own
+- Prefer many thin slices over few thick ones
+
+### 4. Quiz the user
+
+Present the breakdown as a numbered list. For each slice: **Title**,
+**Type** (HITL/AFK), **Blocked by** (which slices must complete first),
+**Requirements covered** (R-numbers / user stories from the source PRD).
+
+Ask: does the granularity feel right? Are the dependencies correct? Should
+any slices merge or split? Are HITL/AFK assignments right? Iterate until
+approved.
+
+### 5. Publish to the tracker
+
+For each approved slice, create a story via the tracker binding, in
+dependency order (blockers first) so you can reference real IDs. Each story
+body, in canonical format:
+
+```markdown
+<end-to-end behavior of this slice - what, not layer-by-layer how.
+No file paths or code snippets, except a prototype-derived snippet that
+encodes a decision (state machine, schema, type shape) - trimmed to the
+decision-rich parts.>
+
+## Acceptance Criteria
+- [ ] Verifiable outcome 1
+- [ ] Verifiable outcome 2
+
+## References
+- docs/prd/<source>.md
+- <parent issue ID, if the source was an issue>
+```
+
+Then, via the binding: link blockers (depends-on), tag AFK slices
+`ready-for-agent`, tag `needs-gherkin` where a slice has strict rules or
+planned test automation.
+
+### 6. Close the loop
+
+If the source was a PRD, update its `## Stories` table with the new IDs
+and the requirements each covers. Do NOT close or modify any parent issue.

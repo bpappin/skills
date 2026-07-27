@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>story-tools · how the system fits together</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --ink-1: #0b0b0b;
+    --ink-2: #52514e;
+    --ink-3: #898781;
+    --hairline: #e1e0d9;
+    --border: rgba(11,11,11,0.10);
+    --knowledge: #2a78d6;   /* categorical slot 1 */
+    --work: #eb6834;        /* categorical slot 2 */
+    --knowledge-wash: rgba(42,120,214,0.07);
+    --work-wash: rgba(235,104,52,0.08);
+    --gen: #898781;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --ink-1: #ffffff;
+      --ink-2: #c3c2b7;
+      --ink-3: #898781;
+      --hairline: #2c2c2a;
+      --border: rgba(255,255,255,0.10);
+      --knowledge: #3987e5;
+      --work: #d95926;
+      --knowledge-wash: rgba(57,135,229,0.10);
+      --work-wash: rgba(217,89,38,0.10);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: transparent; }
+  .viz-root {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--ink-1);
+    padding: 28px;
+    min-height: 100vh;
+  }
+  .frame { max-width: 1060px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .rule {
+    color: var(--ink-2); font-size: 13.5px; margin-top: 6px; margin-bottom: 22px;
+  }
+  .rule b { color: var(--ink-1); font-weight: 600; }
+
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 170px 1fr;
+    gap: 0;
+    align-items: stretch;
+  }
+  .side {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 16px 14px;
+  }
+  .side h2 {
+    font-size: 14px; font-weight: 650; display: flex; align-items: center; gap: 8px;
+  }
+  .side h2 .dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .side .sub { font-size: 12px; color: var(--ink-2); margin: 3px 0 12px 18px; }
+  .k h2 .dot { background: var(--knowledge); }
+  .w h2 .dot { background: var(--work); }
+  .k { border-top: 3px solid var(--knowledge); }
+  .w { border-top: 3px solid var(--work); }
+
+  .home {
+    display: grid; grid-template-columns: 92px 1fr;
+    font-size: 12.5px; padding: 5px 8px; border-radius: 6px;
+  }
+  .home:nth-child(odd) { background: var(--knowledge-wash); }
+  .home code { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: var(--ink-1); }
+  .home span { color: var(--ink-2); }
+  .home.gen { border: 1px dashed var(--hairline); background: none; margin-top: 8px; }
+  .home.gen code, .home.gen span { color: var(--ink-3); }
+  .rootnote { font-size: 11.5px; color: var(--ink-3); margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--hairline); }
+
+  .block {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; background: var(--work-wash);
+  }
+  .block + .block { margin-top: 12px; }
+  .block h3 { font-size: 12.5px; font-weight: 650; }
+  .block h3 small { color: var(--ink-3); font-weight: 500; }
+  .block p { font-size: 12px; color: var(--ink-2); margin-top: 4px; line-height: 1.45; }
+  .block code { font-family: ui-monospace, Menlo, monospace; font-size: 11px; }
+  .block.kb { background: none; border-style: dashed; }
+  .block.kb h3, .block.kb p { color: var(--ink-2); }
+
+  /* bridges */
+  .bridges { display: flex; flex-direction: column; justify-content: center; gap: 26px; padding: 0 6px; }
+  .bridge { text-align: center; }
+  .bridge .lbl { font-size: 11px; color: var(--ink-2); line-height: 1.35; margin-top: 2px; }
+  .bridge .lbl code { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; color: var(--ink-1); }
+  .arrow { display: block; width: 100%; height: 14px; }
+  .arrow line { stroke-width: 2; }
+  .arrow polygon { stroke: none; }
+  .a-pub line { stroke: var(--knowledge); } .a-pub polygon { fill: var(--knowledge); }
+  .a-pull line { stroke: var(--work); } .a-pull polygon { fill: var(--work); }
+  .a-ref line { stroke: var(--ink-3); stroke-dasharray: 4 4; }
+  .a-ref polygon { fill: var(--ink-3); }
+
+  /* agent band */
+  .agents {
+    margin-top: 18px; background: var(--surface-1);
+    border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+  }
+  .agents h2 { font-size: 13px; font-weight: 650; }
+  .agents .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chip {
+    font-size: 11.5px; padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--ink-1); background: var(--page);
+    font-family: ui-monospace, Menlo, monospace;
+  }
+  .chip.mcp { border-color: var(--work); }
+  .chip.skill { border-color: var(--knowledge); }
+  .loop {
+    margin-top: 12px; font-size: 12px; color: var(--ink-2);
+    border-top: 1px solid var(--hairline); padding-top: 10px; line-height: 1.5;
+  }
+  .loop b { color: var(--ink-1); font-weight: 600; }
+  .loop .guard { color: var(--work); font-weight: 600; }
+
+  @media (max-width: 760px) {
+    .cols { grid-template-columns: 1fr; }
+    .bridges { flex-direction: row; padding: 10px 0; }
+    .bridge { flex: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="viz-root">
+  <div class="frame">
+    <h1>story-tools — how the system fits together</h1>
+    <p class="rule">One rule decides where everything lives: <b>if it tracks work it's a YouTrack issue; if it's knowledge it's a repo file.</b> The whole tree syncs — knowledge mirrors to hierarchical articles, work lives as issues. Each mirror is one-way, so there is exactly one source of truth per thing.</p>
+
+    <div class="cols">
+      <!-- LEFT: repo -->
+      <section class="side k">
+        <h2><span class="dot"></span>Git repo — knowledge <small style="color:var(--ink-3);font-weight:500">(canonical)</small></h2>
+        <p class="sub">Answers a question; never "done"; no status frontmatter</p>
+        <div class="home"><code>adr/</code><span>why we chose this</span></div>
+        <div class="home"><code>prd/</code><span>what we want &amp; why</span></div>
+        <div class="home"><code>spec/</code><span>how the system works</span></div>
+        <div class="home"><code>design/</code><span>what it looks like</span></div>
+        <div class="home"><code>research/</code><span>what we investigated</span></div>
+        <div class="home"><code>reference/</code><span>external facts — vendors · prospects · regulations</span></div>
+        <div class="home"><code>guides/</code><span>how to do X</span></div>
+        <div class="home"><code>qa/</code><span>how we verify, repeatably</span></div>
+        <div class="home gen"><code>youtrack/</code><span>generated snapshot — never hand-edited</span></div>
+        <p class="rootnote"><code>DESIGN.md</code> at repo root · vendors = using now, prospects = want to approach</p>
+      </section>
+
+      <!-- MIDDLE: bridges -->
+      <div class="bridges" aria-label="bridges between repo and YouTrack">
+        <div class="bridge">
+          <svg class="arrow a-pub" viewBox="0 0 120 14" preserveAspectRatio="none" role="img" aria-label="publish, left to right">
+            <line x1="2" y1="7" x2="106" y2="7"/><polygon points="106,1 118,7 106,13"/>
+          </svg>
+          <div class="lbl"><code>yt-publish</code><br>docs tree → article tree<br>one-way · idempotent</div>
+        </div>
+        <div class="bridge">
+          <svg class="arrow a-pull" viewBox="0 0 120 14" preserveAspectRatio="none" role="img" aria-label="pull, right to left">
+            <line x1="118" y1="7" x2="14" y2="7"/><polygon points="14,1 2,7 14,13"/>
+          </svg>
+          <div class="lbl"><code>yt-pull</code><br>stories → <code>docs/youtrack/</code><br>generated snapshot</div>
+        </div>
+        <div class="bridge">
+          <svg class="arrow a-ref" viewBox="0 0 120 14" preserveAspectRatio="none" role="img" aria-label="cross references, both directions">
+            <line x1="14" y1="7" x2="106" y2="7"/>
+            <polygon points="14,1 2,7 14,13"/><polygon points="106,1 118,7 106,13"/>
+          </svg>
+          <div class="lbl">cross-links only<br>PRD "Stories" table ↔<br>story <code>## References</code></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: YouTrack -->
+      <section class="side w">
+        <h2><span class="dot"></span>YouTrack — rattlebox <small style="color:var(--ink-3);font-weight:500">(EVO)</small></h2>
+        <p class="sub">Everything with a lifecycle; will someday be "done"</p>
+        <div class="block">
+          <h3>Issues — work <small>(canonical)</small></h3>
+          <p>Epics → stories. Each story: narrative, <code>## Acceptance Criteria</code> checklist <i>(= the scope)</i>, optional <code>## QA</code> Gherkin. Discovered work = new issue, linked <i>discovered&nbsp;from</i>. Old GAP reminders live here now — triaged on the board, not rotting in a folder.</p>
+        </div>
+        <div class="block kb">
+          <h3>Knowledge base — generated mirror</h3>
+          <p>"Project Docs" root → article per directory → article per doc, matching the file tree. Stamped <i>do-not-edit</i>; stories link readable ADRs/PRDs here.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- AGENT BAND -->
+    <section class="agents">
+      <h2>Agents (Claude, Gemini, Copilot, Codex …)</h2>
+      <div class="row">
+        <span class="chip skill">story-workflow</span>
+        <span class="chip skill">story-reconcile</span>
+        <span class="chip skill">project-docs</span>
+        <span class="chip mcp">story_* MCP tools&nbsp;·&nbsp;/mcp?customToolPackages=story-tools</span>
+        <span class="chip">.agents/config/story-tools.json → instance&nbsp;+&nbsp;project</span>
+      </div>
+      <p class="loop">
+        The session loop: <b>set_focus</b> → <b>get_story_context</b> (the AC list <i>is</i> the scope) → work → <b>update_ac</b> as items verifiably finish → anything out of scope takes the <span class="guard">add_discovered_work off-ramp</span> and you return to the story → <b>complete_story</b> gates closing (all AC checked; QA section if <code>needs-gherkin</code>). Skills ride in the repo (<code>.agents/skills/</code>); credentials stay per-user; the pointer file binds repo → instance.
+      </p>
+    </section>
+  </div>
+</div>
+</body>
+</html>

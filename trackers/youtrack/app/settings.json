@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Story Tools Settings",
+  "properties": {
+    "readOnlyMode": {
+      "title": "Read-only mode",
+      "description": "When enabled, story_* tools refuse all writes (AC updates, scope changes, discovered-work issues). Agents receive the proposed change back so they can hand it to a human instead. Note: this only governs the story_* tools; to block ALL agent writes including the predefined create_issue/update_issue tools, use a token from a read-only account (see docs/permissions.md).",
+      "type": "boolean",
+      "x-scope": "GLOBAL"
+    }
+  }
+}

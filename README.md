@@ -1,141 +1,88 @@
 # Agentic Engineering Skills
 
-A centralized library of specialized instructions, workflows, and tools for AI agents (Gemini CLI and Claude Code) conforming to the [Agent Skills Standard](https://agentskills.io/). This repository serves as the base upstream source for seeding project-attached intelligence.
+A curated library of agent skills conforming to the
+[Agent Skills Standard](https://agentskills.io/), plus **story-tools** — a
+tracker-backed workflow system that keeps AI-assisted development sessions
+from spiralling in scope. Skills are grouped by function; each skill is
+self-contained (its scripts, references, and assets live inside its own
+directory) and works with any agent that supports the standard.
 
----
+Every skill here must meet the requirements in
+[docs/skill-standards.md](docs/skill-standards.md) — spec conformance
+(`skills-ref validate`), strict self-containment, progressive-disclosure
+budgets, trigger-optimized descriptions, and non-interactive script
+interfaces.
 
-## 🙏 Attributions & Inspiration
+## Philosophy: project-attached skills
 
-Many of the core engineering and productivity skills in this repository were seeded, inspired by or adapted from the excellent work of **[Matt Pocock](https://github.com/mattpocock/skills)**. I highly recommend exploring his original repository for foundational AI agent skill patterns.
+Skills are carried inside each repository (`.agents/skills/`), not a global
+registry:
 
----
+1. **Portability** — anyone who clones the project inherits its skills.
+2. **Context-safety** — agents are locked to the patterns of the project
+   they're working on.
+3. **Versioning** — skills evolve with the codebase they support.
+4. **Work lives in the tracker, knowledge lives in the repo** — stories and
+   acceptance criteria belong to the issue tracker; PRDs, ADRs, and research
+   stay in `docs/` and publish to the tracker's knowledge base.
 
-## 🧠 Philosophy: Project-Attached Skills
+## The story-tools suite
 
-I follow a **"Project-Attached"** model for agent intelligence. Instead of installing skills into a global registry, they are carried within each repository's .agents/skills/ directory. This ensures:
-1.  **Portability**: Any developer who clones the project immediately inherits its specialized intelligence.
-2.  **Context-Safety**: Agents are locked to the specific patterns and mandates of the project they are currently working on.
-3.  **Versioning**: Skills evolve with the codebase they support.
-4.  **Atomic Specs**: Technical specifications (PRDs and ACs) live in the repository (docs-as-code) to ensure atomic versioning and review alongside implementation changes.
+Twelve of these skills form a coupled system installed together by the
+wizard:
 
----
+```
+./scripts/install.sh
+```
 
-## ⚙️ Installation & Usage
+The wizard is the only place credentials are handled — skills never ask for
+tokens. It stores connections under `~/.agents/story-tools/`, registers the
+MCP server per agent (Claude Code, Gemini CLI, VS Code/Copilot, Codex),
+deploys the YouTrack app when permissions allow, and binds projects via a
+non-secret pointer at `<repo>/.agents/config/story-tools.json`. Re-running
+it reviews every stored value.
 
-Depending on your workflow, you can use these skills under the **Project-Attached** model (recommended) or install them globally for all workspaces.
+The pipeline: **triage** (inbound) / **to-prd** → **to-issues** (planning) →
+**grill-with-docs** (domain model) → **story-workflow** (execution, with the
+discovered-work off-ramp) → **housekeeping** + **handoff** (session close) →
+**story-reconcile** (adoption/migration) → **project-docs** + **to-research**
++ **regulatory-compliance** (knowledge & compliance).
 
-### Option A: Project-Attached (Recommended)
+## Repository map
 
-To carry these skills inside a specific repository so they are version-controlled and portable:
+| Directory | Contents |
+|---|---|
+| `skills/stories/` | Tracker discipline: story-workflow, story-reconcile, to-issues, triage |
+| `skills/docs/` | Documentation system: project-docs, to-prd, to-research, grill-with-docs, to-wiring, regulatory-compliance |
+| `skills/sessions/` | Session lifecycle & communication: handoff, housekeeping, grill-me, zoom-out, caveman |
+| `skills/engineering/` | Practice: tdd, prototype, improve-codebase-architecture, to-design |
+| `skills/authoring/` | Making skills: write-a-skill, to-ai-skill |
+| `skills/setup/` | Agent/tool configuration: git-guardrails (Claude Code, Gemini), setup-github-copilot, setup-gitlab-duo |
+| `trackers/youtrack/` | YouTrack binding infrastructure: the story-tools MCP app, `deploy.sh`, `smoke.sh`, tests |
+| `scripts/` | `install.sh` — the suite wizard |
+| `docs/` | System docs: architecture ADRs, permissions, system diagram, [skill standards](docs/skill-standards.md) |
 
-1. **Seed the Project**: Copy the `src/skills/` directory from this repository into the root of your target project, renaming it to `.agents/skills/`:
-   ```bash
-   cp -R src/skills/ /path/to/your/project/.agents/skills/
-   ```
+`trackers/` is deliberately plural: the suite's skills are tracker-agnostic
+(neutral operations dispatched through per-tracker binding files); YouTrack
+is the first binding, GitHub/Jira can follow without touching the skills.
 
-2. **Initialize the Agent**: Start your agent (Gemini CLI or Claude Code) in the target project and command it:
-   ```text
-   Run project setup
-   ```
+## Using independent skills
 
-3. **Automated Onboarding**: The **setup-project** skill will take over and automatically:
-   * Identify the project (ID, Sync Targets).
-   * Create the AI-optimized documentation hierarchy (`mandates/`, `prd/`, `ac/`, `discovery/`, `gap/`, etc.).
-   * Generate or audit the `AGENTS.md` context-mapping file.
+Skills outside the suite attach à la carte — copy the ones you want into a
+project:
 
----
+```bash
+cp -R skills/engineering/tdd /path/to/project/.agents/skills/
+```
 
-### Option B: Global Registry Installation (Gemini CLI)
+Agents that read `.agents/skills/` (or a `.claude/skills` / `.github/skills`
+symlink, which the wizard creates) pick them up on restart.
 
-If you want these skills globally available in any directory without attaching them to individual projects:
+## Attributions
 
-1. Run the Gemini installation tool from this repository:
-   ```bash
-   ./tools/install-gemini.sh --global
-   ```
-2. In your active Gemini session, reload your registry:
-   ```text
-   /skills reload
-   ```
-
----
-
-### Option C: Global Claude Code Integration
-
-To integrate these instructions directly into Claude Code's global configuration:
-
-1. Run the Claude installation tool from this repository:
-   ```bash
-   ./tools/install-claude.sh
-   ```
-
----
-
-## 📂 Repository Structure
-
-- [src/skills/](./src/skills/): The source files for each skill. This is the directory you copy into your projects.
-- [tools/](./tools/): Scripts for global installation or Claude Code integration.
-
-## 🧩 Core Skill Categories
-
-### 🛠️ Configuration & Onboarding
-* **manage-docs**: Manage the 15-sector documentation hierarchy, perform semantic migrations of legacy documentation, and provide proactive recording of architectural and functional decisions.
-* **manage-skills**: Manage the lifecycle, organization, and synchronization of AI agent skills between local project workspaces and master skill sources.
-* **manage-persona**: Initialize and manage persona state via a global persona.json file.
-* **setup-project**: Onboard and configure a project workspace for tracking, sync, and agent interaction.
-
-### 📐 Engineering & Standards
-* **grill-with-docs**: Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise.
-* **improve-codebase-architecture**: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/.
-* **prototype**: Build a throwaway prototype to flesh out a design before committing to it.
-* **tdd**: Test-driven development with red-green-refactor loop.
-* **to-ai-skill**: Scaffold and maintain machine-readable AI skill instructions bundled within this library for consuming AI agents.
-* **to-design**: Formalizes the design-capturing process as a structured agent capability to ensure visual samples are generated and properly registered.
-* **to-issues**: Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices.
-* **to-prd**: The primary workhorse. Synthesizes context into an **ID-First Spec Pair** (PRD and matching AC).
-* **to-wiring**: Audit, check, and maintain the application's internal feature wiring rules in WIRING.md.
-* **triage**: Triage issues through a state machine driven by triage roles.
-* **zoom-out**: Tell the agent to zoom out and give broader context or a higher-level perspective.
-
-### ⚖️ Governance & R&D
-* **to-research**: Manage Technical Research & Development (R&D) logs.
-* **regulatory-compliance**: Manage and track regulatory requirements (PIPEDA, GDPR, etc.).
-
-### Misc, Odds & Ends
-* **git-guardrails-claude-code**: Set up Claude Code hooks to block dangerous git commands.
-* **git-guardrails-gemini**: Codifies the strict Git safety rules for Gemini CLI.
-
-### ⚡ Productivity
-* **caveman**: Ultra-compressed communication mode to save tokens.
-* **grill-me**: Interview the user relentlessly about a plan or design.
-* **handoff**: Compact the current conversation into a handoff document for another agent to pick up.
-* **housekeeping**: Perform workspace housekeeping, cleanup audits, and prepare handoff/commit documentation at the end of a work session.
-* **write-a-skill**: Create new agent skills with proper structure, progressive disclosure, and bundled resources.
-
-### 📊 Tracking & Roadmap
-* **sync-tracking**: Push local Markdown requirement documents (PRDs and ACs) to a remote issue tracker (YouTrack, GitHub, Jira) using local Python scripts.
-
----
-
-## 🚀 Extended Capabilities
-
-### 🆔 ID-First Traceability
-Our **to-prd** skill implements an "ID-First" workflow. Local requirement documents are initialized with `id: #NEW` in their YAML frontmatter. Running the sync script publishes the ticket to the remote issue tracker (GitHub/YouTrack) and automatically updates the local frontmatter `id` field with the authoritative remote ID. This ensures that specs, code, and commits are linked to a permanent remote identity from the beginning.
-
-### 🖇️ Atomic Spec-Pairing
-Technical requirements are recorded as an unbreakable pair:
-1.  **Requirement (PRD)**: The user story and implementation decisions.
-2.  **Verification (AC)**: The testable success criteria (Gherkin-style).
-This pairing ensures that the "What" is always strictly linked to the "Proof."
-
-### 📂 AI-Optimized Documentation Hierarchy
-A unique documentation model designed specifically to maximize AI context retrieval accuracy while preventing documentation bloat:
-*   **Mandates**: Global "Law" (ARCH, SPEC).
-*   **Stories (PRD)**: Feature requirements.
-*   **Criteria (AC)**: Success outcomes.
-*   **QA / Test Plans**: Comprehensive QA Test Plans and verification protocols.
-*   **Discovery (DD)**: Research and due-diligence records.
-*   **Roadmap (GAP)**: Functional gaps and technical debt.
+Several skills were seeded by, inspired by, or adapted from the excellent
+work of [Matt Pocock](https://github.com/mattpocock/skills) — his repository
+is worth exploring for foundational agent-skill patterns.
 
 ---
 *Maintained by Brill Pappin.*

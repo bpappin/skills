@@ -37,3 +37,7 @@ agent can continue the work.
   the story itself is the source of truth for progress.
 - If the user passed arguments, treat them as a description of what the
   next session will focus on and tailor the doc accordingly.
+- A handoff usually ends the working session: if this session's time isn't
+  logged yet, propose one entry (rounded to 15m) on the story that got most
+  of it, and record it via story-workflow's `work.logTime` once the user
+  approves the number.

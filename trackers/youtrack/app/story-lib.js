@@ -6,6 +6,13 @@ const parser = require('./ac-parser');
 const DISCOVERED_LINK = 'discovered from';
 const NEEDS_GHERKIN_TAG = 'needs-gherkin';
 
+// Workflow/triage machinery tags - never treated as topical grouping tags,
+// never inherited by discovered work. Everything else on a story is topical.
+const RESERVED_TAGS = [
+  'needs-gherkin', 'discovered', 'ready-for-agent', 'ready-for-human',
+  'needs-triage', 'needs-info', 'bug', 'enhancement', 'wontfix', 'Star',
+];
+
 function currentUser() {
   // Spike S3: confirm User.current resolves to the MCP caller inside aiTools.
   const user = entities.User.current;
@@ -32,6 +39,35 @@ function resolveIssue(issueId) {
     return { error: 'Issue ' + id + ' not found or not visible to you.' };
   }
   return { issue, id };
+}
+
+function topicalTags(issue) {
+  const out = [];
+  const tags = issue.tags;
+  if (!tags) return out;
+  tags.forEach((t) => {
+    if (RESERVED_TAGS.indexOf(t.name) === -1) out.push(t.name);
+  });
+  return out;
+}
+
+function allTags(issue) {
+  const out = [];
+  const tags = issue.tags;
+  if (!tags) return out;
+  tags.forEach((t) => { if (t.name !== 'Star') out.push(t.name); });
+  return out;
+}
+
+/** Best-effort read of a field's display value; null when absent/unreadable. */
+function fieldString(issue, fieldName) {
+  try {
+    const v = issue.fields[fieldName];
+    if (v === null || v === undefined) return null;
+    return v.name !== undefined ? v.name : '' + v;
+  } catch (e) {
+    return null;
+  }
 }
 
 function hasTag(issue, tagName) {
@@ -79,6 +115,10 @@ function readOnlyRefusal(ctx, proposed) {
 }
 
 exports.readOnlyRefusal = readOnlyRefusal;
+exports.RESERVED_TAGS = RESERVED_TAGS;
+exports.topicalTags = topicalTags;
+exports.allTags = allTags;
+exports.fieldString = fieldString;
 exports.DISCOVERED_LINK = DISCOVERED_LINK;
 exports.NEEDS_GHERKIN_TAG = NEEDS_GHERKIN_TAG;
 exports.currentUser = currentUser;

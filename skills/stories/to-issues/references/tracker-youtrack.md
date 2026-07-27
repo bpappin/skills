@@ -11,3 +11,6 @@ story-tools installer - never collected in chat.
 | Link to a parent issue | `link_issues` "subtask of" when the source was an epic/issue; otherwise reference it in `## References` |
 | Tag AFK-ready slices | `manage_issue_tags` → `ready-for-agent` |
 | Tag strict-rule slices | `manage_issue_tags` → `needs-gherkin` (gates completion on a `## QA` Gherkin section) |
+| Topical batch tag | `manage_issue_tags` → the Title Case feature/PRD name (e.g. `Trust Insights`); query later with `tag: {Trust Insights}` |
+| Set Priority | `update_issue` → Priority (Show-stopper/Critical/Major/Normal/Minor) |
+| Set Estimation | `update_issue` → Estimation (e.g. `4h`, `1d`; requires time tracking enabled - the installer turns it on, or Project Settings > Time Tracking) |

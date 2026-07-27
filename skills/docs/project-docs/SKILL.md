@@ -49,6 +49,14 @@ to title/date only — never status/id fields. PRDs list their stories as
 YouTrack IDs (the template shows how); they never contain acceptance
 criteria.
 
+**Every docs directory carries a `README.md` index** (template:
+`assets/templates/readme.md`) whose `# H1` is the directory's
+human-readable name — "Architecture Decision Records", not "adr". Someone
+who doesn't know the acronyms must be able to navigate by titles alone.
+The publisher uses that README as the directory's article in the knowledge
+base, so the title and intro are what non-repo readers see. `docs/README.md`
+does the same for the root. Create one whenever you create a directory.
+
 ## Publishing to the tracker's knowledge base
 
 The whole docs tree mirrors into the tracker's knowledge area as a matching
@@ -66,9 +74,17 @@ YouTrack).
 - Credentials come from the story-tools installer's profiles — if the
   script can't authenticate, tell the user to run `install.sh`. Never ask
   for or accept tokens in conversation.
+- **Human-readable hierarchy.** Directory articles are titled from the
+  directory's `README.md` H1 (that README is the article body too); dirs
+  without one fall back to a built-in title map for the standard taxonomy
+  ("Architecture Decision Records", "Product Requirements", ...), then to a
+  title-cased dir name. Document articles are titled from each file's H1.
+  Nothing in the knowledge base should show a bare slug like "adr".
 - The tracker snapshot dir (e.g. `docs/youtrack/`) is never published —
   that would mirror the tracker back into itself. Non-markdown files are skipped; add
   glob lines to `docs/.yt-publish-ignore` to exclude anything else.
+- Preview first: `--dry-run` prints the exact article tree (titles,
+  hierarchy, create/update actions) offline, no credentials needed.
 - Run after doc changes merge, or on request ("publish docs").
 
 ## Reorganizing / adopting this taxonomy

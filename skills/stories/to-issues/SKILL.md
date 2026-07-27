@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
 ---
 
 # To Issues
@@ -54,11 +54,13 @@ human interaction). Prefer AFK where possible.
 
 Present the breakdown as a numbered list. For each slice: **Title**,
 **Type** (HITL/AFK), **Blocked by** (which slices must complete first),
-**Requirements covered** (R-numbers / user stories from the source PRD).
+**Requirements covered** (R-numbers / user stories from the source PRD),
+**Priority** (proposed - default Normal; the user owns the final call), and
+**Estimate** (a rough one: 1h / 4h / 1d - calibration data, not a promise).
 
 Ask: does the granularity feel right? Are the dependencies correct? Should
-any slices merge or split? Are HITL/AFK assignments right? Iterate until
-approved.
+any slices merge or split? Are HITL/AFK assignments right? Do the
+priorities and estimates look sane? Iterate until approved.
 
 ### 5. Publish to the tracker
 
@@ -81,9 +83,13 @@ decision-rich parts.>
 - <parent issue ID, if the source was an issue>
 ```
 
-Then, via the binding: link blockers (depends-on), tag AFK slices
-`ready-for-agent`, tag `needs-gherkin` where a slice has strict rules or
-planned test automation.
+Then, via the binding: link blockers (depends-on), set each story's
+Priority and Estimation as approved, tag AFK slices `ready-for-agent`, tag
+`needs-gherkin` where a slice has strict rules or planned test automation,
+and apply one shared **topical tag** to the whole batch - Title Case,
+human-readable, usually the feature or PRD name ("Trust Insights") - so the
+slices group together in searches and board swimlanes. Reuse the project's
+existing topical tags where one fits; never invent near-duplicates.
 
 ### 6. Close the loop
 

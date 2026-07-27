@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "0.4"
+  version: "0.5"
 ---
 
 # Story Workflow
@@ -37,6 +37,8 @@ one this project's config names, never another.
 | `ac.add` | Expand scope — explicit user approval only |
 | `work.discovered` | Log out-of-scope work as a NEW linked issue |
 | `story.completeCheck` | Verdict: all AC done? QA required and present? |
+| `work.logTime` | Record human-approved session time on a story |
+| `story.next` | Pick the next story: highest priority, ready first |
 
 The story format is the same everywhere (see
 [references/ac-format.md](references/ac-format.md)): a `## Acceptance
@@ -45,11 +47,14 @@ Criteria` markdown task list in the issue body, optional `## References`
 
 ## Session start
 
-1. `focus.get` — if a story is focused, confirm it with the user; if not,
-   ask which story to work, then `focus.set`.
-2. `story.context` — read the AC list and open `## References` docs before
-   writing any code.
-3. Restate scope to the user in one line: the unchecked AC items.
+1. Note the current time — this is the session's start for time logging.
+2. `focus.get` — if a story is focused, confirm it with the user; if not,
+   ask which story to work ("start the next story" → `story.next`: the
+   highest-priority ready story), then `focus.set`.
+3. `story.context` — read the AC list and open `## References` docs before
+   writing any code. The context includes priority and tags — the tags tell
+   you what this story groups with.
+4. Restate scope to the user in one line: the unchecked AC items.
 
 ## While working
 
@@ -64,6 +69,35 @@ Criteria` markdown task list in the issue body, optional `## References`
 - `ac.add` is allowed only when the user explicitly asks to widen this
   story's scope. When in doubt, offer `work.discovered` first.
 
+## Session time
+
+Sessions are the unit of time tracking: the user is either working or not,
+and they decide which. At session close (completion, handoff, housekeeping,
+or "I'm done"), compute end minus session start, round to the nearest 15
+minutes, and propose ONE entry: "This session was about 2h - log it on
+PROJ-123?" On approval, `work.logTime`. If several stories shared the
+session, propose logging it on the one that got most of the time; offer a
+coarse split only when it was genuinely even. Rules:
+
+- **Never log time silently** - every entry is a number the user approved.
+- Gaps inside a session are work (thinking counts); don't subtract them.
+- An absurd computed number (unclosed session overnight) → ask what the
+  session actually took and log that.
+- "Log 30m on PROJ-123" from the user at any moment → `work.logTime`
+  directly, no proposal needed.
+
+## Priority and tags
+
+- Priority is read from context, set by triage/planning. Never change a
+  story's priority on your own; suggest a change to the user instead.
+- Topical tags are Title Case, human-readable ("Trust Insights", not
+  "trust-insights") and mark what groups together. Reserved workflow tags
+  (`ready-for-agent`, `needs-gherkin`, `discovered`, triage roles) are
+  machinery - never repurpose them.
+- Discovered work inherits the story's topical tags automatically and lands
+  at default priority - urgency is a triage decision, never copied from the
+  current story.
+
 ## Completing
 
 1. `story.completeCheck` — if not ready, work through what it reports; do
@@ -73,6 +107,7 @@ Criteria` markdown task list in the issue body, optional `## References`
    ([references/ac-format.md](references/ac-format.md)).
 3. When ready: confirm with the user, then move the story's state using the
    binding's state tool. Mention any open discovered-work issues.
+4. Offer the session time entry (see Session time) if not yet logged.
 
 ## Read-only mode
 

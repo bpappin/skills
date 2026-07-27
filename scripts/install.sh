@@ -358,6 +358,47 @@ pick_project() {  # sets PROJECT_DIR/PROJECT_NAME (may be empty = user-level onl
   fi
 }
 
+enable_time_tracking() {  # $1 = YouTrack project key; best-effort, never fatal
+  local key="$1" pid settings enabled est spent
+  pid=$(curl -sS -m 15 -H "Authorization: Bearer $YOUTRACK_TOKEN" \
+      "${YOUTRACK_URL%/}/api/admin/projects?fields=id,shortName&query=$key" 2>/dev/null \
+    | sed -nE 's/.*\{"id":"([^"]+)","shortName":"'"$key"'".*/\1/p' | head -1)
+  # tolerate field-order differences
+  [[ -z "$pid" ]] && pid=$(curl -sS -m 15 -H "Authorization: Bearer $YOUTRACK_TOKEN" \
+      "${YOUTRACK_URL%/}/api/admin/projects?fields=shortName,id&query=$key" 2>/dev/null \
+    | sed -nE 's/.*"shortName":"'"$key"'","id":"([^"]+)".*/\1/p' | head -1)
+  if [[ -z "$pid" ]]; then
+    say "  time tracking: could not look up project $key (needs admin read) - enable it"
+    say "  manually if you want spent-time logging: Project Settings > Time Tracking."
+    return 0
+  fi
+  settings=$(curl -sS -m 15 -H "Authorization: Bearer $YOUTRACK_TOKEN" \
+      "${YOUTRACK_URL%/}/api/admin/projects/$pid/timeTrackingSettings?fields=enabled,estimate(field(name)),timeSpent(field(name))" 2>/dev/null)
+  if [[ "$settings" == *'"enabled":true'* ]]; then
+    say "  time tracking: already enabled on $key"
+  else
+    local code
+    code=$(curl -sS -m 15 -o /dev/null -w "%{http_code}" -X POST \
+      -H "Authorization: Bearer $YOUTRACK_TOKEN" -H "Content-Type: application/json" \
+      -d '{"enabled":true}' \
+      "${YOUTRACK_URL%/}/api/admin/projects/$pid/timeTrackingSettings?fields=enabled" 2>/dev/null)
+    if [[ "$code" == 200 ]]; then
+      say "  time tracking: enabled on $key (story_log_work records session time)"
+    else
+      say "  time tracking: could not enable on $key (HTTP $code - usually needs project"
+      say "  admin). Enable manually: Project Settings > Time Tracking. Skipping."
+      return 0
+    fi
+    settings=$(curl -sS -m 15 -H "Authorization: Bearer $YOUTRACK_TOKEN" \
+      "${YOUTRACK_URL%/}/api/admin/projects/$pid/timeTrackingSettings?fields=enabled,estimate(field(name)),timeSpent(field(name))" 2>/dev/null)
+  fi
+  [[ "$settings" != *'"estimate":{"field"'* ]] && \
+    say "  note: no Estimation field attached yet - add one under Project Settings >"
+  [[ "$settings" != *'"estimate":{"field"'* ]] && \
+    say "  Time Tracking if you want estimates on stories (the to-issues skill sets them)."
+  return 0
+}
+
 bind_project_interactive() {  # uses PROJECT_DIR/PROJECT_NAME from pick_project
   [[ -z "$PROJECT_DIR" ]] && { say "  no project selected - skipped"; return; }
   # collision check: already bound to a DIFFERENT connection?
@@ -378,6 +419,7 @@ bind_project_interactive() {  # uses PROJECT_DIR/PROJECT_NAME from pick_project
   ro="$(ask "Read-only? Agents propose changes but never write (y/N)" "${cur_ro:+y}")"
   [[ "$ro" =~ ^[Yy] ]] && ro="true" || ro=""
   attach_project "$PROJECT_DIR" "$yt_project" "$ro" link
+  enable_time_tracking "$yt_project"
   # remember for next run (most recent first, deduped)
   mkdir -p "$CONF_DIR"
   { echo "$PROJECT_DIR"; grep -vxF "$PROJECT_DIR" "$CONF_DIR/recent-projects" 2>/dev/null || true; } \

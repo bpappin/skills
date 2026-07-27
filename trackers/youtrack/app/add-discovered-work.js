@@ -5,7 +5,7 @@ exports.aiTool = {
   name: 'add_discovered_work',
   description:
     'THE SCOPE-GUARD OFF-RAMP. When you discover work that does not serve an AC item of the current story (a bug, a refactor, a missing feature, a good idea), call this to log it as a NEW issue linked to the current story - then return to the story. ' +
-    'This is the default action for anything out of scope; never silently expand the current story instead. The new issue starts unassigned and unscheduled so it can be triaged later.',
+    'This is the default action for anything out of scope; never silently expand the current story instead. The new issue starts unassigned at the project default priority (urgency is a triage decision - never copy the current story\'s priority) and inherits the story\'s topical tags so the work stays grouped.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -62,10 +62,23 @@ exports.aiTool = {
       }
     }
 
+    // Grouping travels with the off-ramp: inherit topical tags (never the
+    // workflow/triage machinery tags, and never the priority).
+    const inherited = [];
+    lib.topicalTags(source).forEach((name) => {
+      try {
+        created.addTag(name);
+        inherited.push(name);
+      } catch (e) {
+        // tag not creatable/visible for this user - skip
+      }
+    });
+
     return {
       newIssueId: created.id,
       linkedTo: source.id,
       linkType: linkType,
+      inheritedTags: inherited,
       message:
         'Discovered work logged as ' + created.id + ' - it will be triaged separately. Now continue working on ' + source.id + '; do not start the new issue.',
     };
@@ -76,6 +89,7 @@ exports.aiTool = {
       newIssueId: { type: 'string' },
       linkedTo: { type: 'string' },
       linkType: { type: ['string', 'null'] },
+      inheritedTags: { type: 'array', items: { type: 'string' } },
       message: { type: 'string' },
     },
     required: ['newIssueId'],

@@ -80,7 +80,16 @@ issue; let the maintainer pick.
 4. **Grill (if needed).** If the issue needs fleshing out, run a
    question-driven session with the maintainer until the spec is solid.
 
-5. **Apply the outcome:**
+5. **Set priority and tags.** Triage owns Priority (Show-stopper/Critical/
+   Major/Normal/Minor via the binding) - set it deliberately on every issue
+   that leaves triage; discovered-work issues arrive at the default
+   priority precisely so this step decides their real urgency. Curate
+   topical tags: Title Case, human-readable ("Trust Insights"), reusing
+   existing tags over inventing near-duplicates. Reserved workflow tags
+   (the role tags, `needs-gherkin`, `discovered`) are machinery, not
+   topics.
+
+6. **Apply the outcome:**
    - `ready-for-agent` — write the **acceptance criteria into the issue
      description** as a canonical `## Acceptance Criteria` task list (this
      makes the issue directly workable by the story-workflow skill), and

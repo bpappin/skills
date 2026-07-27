@@ -2,30 +2,40 @@
 # One-way publisher: the repo docs tree -> YouTrack knowledge-base articles.
 #
 # Mirrors the file hierarchy as the article hierarchy:
-#   "Project Docs" (root)
-#     └── reference            (article per directory, any depth)
-#           └── vendors
-#                 └── OSM      (article per .md file)
+#   "Project Docs" (root, or docs/README.md's H1)
+#     └── Reference            (article per directory, any depth)
+#           └── Vendors
+#                 └── OpenStreetMap   (article per .md file, titled by H1)
 #
-# Usage: yt-publish.sh [--dirs adr,prd,...] [--project KEY] [DOCS_DIR]
+# Usage: yt-publish.sh [--dirs adr,prd,...] [--project KEY] [--dry-run] [DOCS_DIR]
 #   --dirs     limit to these top-level subdirs (default: every subdir)
 #   --project  YouTrack project key (default: $YOUTRACK_PROJECT or
 #              .agents/config/story-tools.json next to DOCS_DIR)
+#   --dry-run  print the article tree (titles + hierarchy + actions) without
+#              touching YouTrack; needs no credentials
 #   DOCS_DIR   default ./docs
 #
+# Directory articles are titled for humans: a README.md inside a directory
+# IS that directory's article (its H1 = the title, its body = the landing
+# content). Without a README, a built-in title map covers the standard
+# taxonomy dirs (adr -> "Architecture Decision Records", ...), else the
+# dir name is title-cased. docs/README.md does the same for the root.
+#
 # Always skipped: docs/youtrack/ (the yt-pull snapshot - publishing it
-# would mirror YouTrack into YouTrack), non-.md files, README.md indexes,
-# and any path matching a glob line in DOCS_DIR/.yt-publish-ignore.
+# would mirror YouTrack into YouTrack), non-.md files, and any path
+# matching a glob line in DOCS_DIR/.yt-publish-ignore. README.md files
+# are consumed as directory articles, never published as leaves.
 #
 # One-way, idempotent: DOCS_DIR/.yt-articles.json maps path -> article id
 # (commit it). Articles carry a do-not-edit banner. The repo is canonical.
 set -euo pipefail
 
-DIRS=""; PROJECT="${YOUTRACK_PROJECT:-}"; DOCS_DIR="./docs"
+DIRS=""; PROJECT="${YOUTRACK_PROJECT:-}"; DOCS_DIR="./docs"; DRY=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dirs) DIRS="$2"; shift 2;;
     --project) PROJECT="$2"; shift 2;;
+    --dry-run) DRY=1; shift;;
     *) DOCS_DIR="$1"; shift;;
   esac
 done
@@ -44,16 +54,16 @@ if [[ -z "${YOUTRACK_URL:-}" ]]; then
 fi
 YOUTRACK_URL="${YOUTRACK_URL:-${YOUTRACK_HOST:-}}"
 YOUTRACK_TOKEN="${YOUTRACK_TOKEN:-${YOUTRACK_API_TOKEN:-}}"
-[[ -z "$YOUTRACK_URL" || -z "$YOUTRACK_TOKEN" ]] && { echo "error: no YouTrack credentials found" >&2; exit 1; }
+[[ "$DRY" != 1 && ( -z "$YOUTRACK_URL" || -z "$YOUTRACK_TOKEN" ) ]] && { echo "error: no YouTrack credentials found" >&2; exit 1; }
 
 if [[ -z "$PROJECT" ]]; then
   for pf in "$DOCS_DIR/../.agents/config/story-tools.json" "$DOCS_DIR/../.agents/youtrack.json"; do
     [[ -f "$pf" ]] && { PROJECT=$(sed -nE 's/.*"project": *"([^"]+)".*/\1/p' "$pf" | head -1); break; }
   done
 fi
-[[ -z "$PROJECT" ]] && { echo "error: no project key (--project, \$YOUTRACK_PROJECT, or .agents/config/story-tools.json)" >&2; exit 1; }
+[[ "$DRY" != 1 && -z "$PROJECT" ]] && { echo "error: no project key (--project, \$YOUTRACK_PROJECT, or .agents/config/story-tools.json)" >&2; exit 1; }
 
-export YOUTRACK_URL YOUTRACK_TOKEN PROJECT DIRS DOCS_DIR
+export YOUTRACK_URL YOUTRACK_TOKEN PROJECT DIRS DOCS_DIR DRY
 python3 <<'EOF'
 import fnmatch, json, os, re, sys, urllib.request, urllib.parse, datetime
 
@@ -62,8 +72,40 @@ TOKEN = os.environ['YOUTRACK_TOKEN']
 PROJECT = os.environ['PROJECT']
 ONLY = [d.strip() for d in os.environ['DIRS'].split(',') if d.strip()]
 DOCS = os.environ['DOCS_DIR'].rstrip('/')
+DRY = os.environ.get('DRY') == '1'
 MAP_PATH = os.path.join(DOCS, '.yt-articles.json')
 ALWAYS_SKIP = {'youtrack'}
+
+# Human-readable fallback titles for directories without a README.md index.
+DEFAULT_TITLES = {
+    'adr': 'Architecture Decision Records',
+    'prd': 'Product Requirements',
+    'spec': 'Specifications',
+    'design': 'Design',
+    'research': 'Research & Development',
+    'reference': 'Reference',
+    'guides': 'Guides',
+    'qa': 'QA & Test Plans',
+    'vendors': 'Vendors',
+    'prospects': 'Prospects',
+    'regulations': 'Regulations',
+    'out-of-scope': 'Out of Scope',
+}
+
+def h1(text):
+    m = re.search(r'^#\s+(.+)$', text, re.M)
+    return m.group(1).strip() if m else None
+
+def dir_article(abspath, entry, rel):
+    """Title + body for a directory article. A README.md index inside the
+    directory IS the article: its H1 is the title, its body the content."""
+    readme = os.path.join(abspath, 'README.md')
+    if os.path.exists(readme):
+        text = open(readme, encoding='utf-8').read()
+        title = h1(text) or DEFAULT_TITLES.get(entry) or entry.replace('-', ' ').title()
+        return title, text, f'docs/{rel}/README.md'
+    title = DEFAULT_TITLES.get(entry) or entry.replace('-', ' ').title()
+    return title, None, None
 
 ignore_globs = []
 ign = os.path.join(DOCS, '.yt-publish-ignore')
@@ -90,16 +132,20 @@ def exists(article_id):
     except urllib.error.HTTPError:
         return False
 
-projects = api(f'/api/admin/projects?fields=id,shortName&query={urllib.parse.quote(PROJECT)}')
-pid = next((p['id'] for p in projects if p.get('shortName') == PROJECT), None)
-if not pid:
-    sys.exit(f'error: project {PROJECT} not found or not visible')
+pid = None
+if not DRY:
+    projects = api(f'/api/admin/projects?fields=id,shortName&query={urllib.parse.quote(PROJECT)}')
+    pid = next((p['id'] for p in projects if p.get('shortName') == PROJECT), None)
+    if not pid:
+        sys.exit(f'error: project {PROJECT} not found or not visible')
 
 amap = json.load(open(MAP_PATH)) if os.path.exists(MAP_PATH) else {}
 stamp = datetime.date.today().isoformat()
 
 def upsert(key, summary, content, parent_id=None):
     aid = amap.get(key)
+    if DRY:
+        return aid or f'dry:{key}', ('updated' if aid else 'created')
     payload = {'summary': summary, 'content': content}
     if aid and exists(aid):
         api(f'/api/articles/{aid}?fields=id', payload)
@@ -128,12 +174,18 @@ def publish_dir(relpath, parent_id):
             if ignored(rel):
                 counts['skipped'] += 1
                 continue
-            dir_id, act = upsert(rel + '/', entry,
-                f'Generated mirror of `docs/{rel}/` ({stamp}). Do not edit here.', parent_id)
+            title, body, src = dir_article(full, entry, rel)
+            if body is not None:
+                banner = (f'> **Generated** from `{src}` ({stamp}) - the repo is canonical. '
+                          'Do not edit this article; edit the file and re-publish.\n\n')
+                content = banner + body
+            else:
+                content = f'Generated mirror of `docs/{rel}/` ({stamp}). Do not edit here.'
+            dir_id, act = upsert(rel + '/', title, content, parent_id)
             sub = publish_dir(rel, dir_id)
             if sub == 0 and act == 'created':
                 pass  # empty branch stays as a placeholder; harmless
-            print(f'  {act}: {rel}/')
+            print(f'  {act}: {rel}/ -> "{title}"')
             n += sub
         elif entry.endswith('.md') and entry != 'README.md':
             if ignored(rel):
@@ -150,13 +202,22 @@ def publish_dir(relpath, parent_id):
             n += 1
     return n
 
-root_id, act = upsert('__root__', 'Project Docs',
-    f'Generated mirror of the repository `docs/` tree ({stamp}). '
-    'THE REPO IS CANONICAL - do not edit these articles; edit the repo and re-publish.')
-print(f'  {act}: Project Docs (root)')
+root_title, root_body = 'Project Docs', None
+root_readme = os.path.join(DOCS, 'README.md')
+if os.path.exists(root_readme):
+    text = open(root_readme, encoding='utf-8').read()
+    root_title = h1(text) or root_title
+    root_body = text
+root_banner = (f'> **Generated** mirror of the repository `docs/` tree ({stamp}) - '
+    'THE REPO IS CANONICAL. Do not edit these articles; edit the repo and re-publish.\n\n')
+root_id, act = upsert('__root__', root_title, root_banner + (root_body or ''))
+print(f'  {act}: "{root_title}" (root)')
 total = publish_dir('', root_id)
 
-json.dump(dict(sorted(amap.items())), open(MAP_PATH, 'w'), indent=2)
+if not DRY:
+    json.dump(dict(sorted(amap.items())), open(MAP_PATH, 'w'), indent=2)
+else:
+    print('\n(dry run - nothing sent to YouTrack, map not written)')
 print(f"\nPublished {total} docs ({counts['created']} created, {counts['updated']} updated, "
       f"{counts['skipped']} ignored). Map: {MAP_PATH} (commit it).")
 EOF

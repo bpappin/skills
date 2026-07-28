@@ -255,15 +255,39 @@ setup_server() {
     warn "could not read link types (check token scope) - skipped link-type setup"
   fi
 
-  # 'needs-gherkin' tag - create if missing (status-aware)
-  local tags
+  # Workflow tags - create the full reserved set if missing, shared with
+  # All Users where the token allows (a tag created ad hoc by one account
+  # is otherwise invisible to teammates).
+  local tags wf_tag created=0 shared=0
   if tags="$(yt GET "/api/tags?fields=name&\$top=500" 2>/dev/null)"; then
-    if grep -q '"needs-gherkin"' <<<"$tags"; then
-      ok "tag 'needs-gherkin' exists"
-    elif yt POST "/api/tags?fields=id" '{"name":"needs-gherkin"}' >/dev/null 2>&1; then
-      ok "tag 'needs-gherkin' created (owned by your account - share it if teammates will use it)"
+    local all_users_id
+    all_users_id="$(yt GET "/api/groups?fields=id,name&\$top=50" 2>/dev/null \
+      | python3 -c 'import json,sys; gs=json.load(sys.stdin); print(next((g["id"] for g in gs if g.get("name")=="All Users"),""))' 2>/dev/null || true)"
+    for wf_tag in needs-triage needs-info ready-for-agent ready-for-human \
+                  wontfix triaged discovered needs-gherkin; do
+      if grep -q "\"$wf_tag\"" <<<"$tags"; then
+        continue
+      fi
+      local body="{\"name\":\"$wf_tag\"}"
+      if [[ -n "$all_users_id" ]]; then
+        body="{\"name\":\"$wf_tag\",\"readSharingSettings\":{\"permittedGroups\":[{\"id\":\"$all_users_id\"}]},\"updateSharingSettings\":{\"permittedGroups\":[{\"id\":\"$all_users_id\"}]}}"
+      fi
+      if yt POST "/api/tags?fields=id" "$body" >/dev/null 2>&1; then
+        created=$((created+1)); [[ -n "$all_users_id" ]] && shared=$((shared+1))
+      elif yt POST "/api/tags?fields=id" "{\"name\":\"$wf_tag\"}" >/dev/null 2>&1; then
+        created=$((created+1))
+      else
+        warn "could not create tag '$wf_tag' - create it in YouTrack before the workflow first needs it"
+      fi
+    done
+    if [[ "$created" -gt 0 ]]; then
+      if [[ "$shared" -gt 0 ]]; then
+        ok "workflow tags created ($created) and shared with All Users"
+      else
+        ok "workflow tags created ($created) - owned by your account; share them if teammates will use them"
+      fi
     else
-      warn "could not create tag 'needs-gherkin' - create it in YouTrack when you first need a QA-gated story"
+      ok "workflow tags all present"
     fi
   else
     warn "could not read tags (check token scope) - skipped tag setup"

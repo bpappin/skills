@@ -3,7 +3,7 @@
 const entities = require('@jetbrains/youtrack-scripting-api/entities');
 const parser = require('./ac-parser');
 
-const VERSION = '0.4.0';  // keep in sync with manifest.json (tests/version.test.js enforces)
+const VERSION = '0.4.1';  // keep in sync with manifest.json (tests/version.test.js enforces)
 const DISCOVERED_LINK = 'discovered from';
 const NEEDS_GHERKIN_TAG = 'needs-gherkin';
 
@@ -11,7 +11,8 @@ const NEEDS_GHERKIN_TAG = 'needs-gherkin';
 // never inherited by discovered work. Everything else on a story is topical.
 const RESERVED_TAGS = [
   'needs-gherkin', 'discovered', 'ready-for-agent', 'ready-for-human',
-  'needs-triage', 'needs-info', 'bug', 'enhancement', 'wontfix', 'Star',
+  'needs-triage', 'needs-info', 'triaged', 'bug', 'enhancement', 'wontfix',
+  'Star',
 ];
 
 function currentUser() {

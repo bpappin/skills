@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Story Workflow
@@ -61,6 +61,11 @@ Criteria` markdown task list in the issue body, optional `## References`
    writing any code. The context includes priority and tags — the tags tell
    you what this story groups with.
 4. Restate scope to the user in one line: the unchecked AC items.
+5. Move the story onto the board: set Stage to the project's in-progress
+   column (e.g. "Develop") using the binding's state tool — announce it in
+   the scope line, don't ask. Read the actual column names from the
+   project's dimensions; never invent one. Already in progress → no-op.
+   Leave State alone — it records how the story resolves, not where it is.
 
 ## While working
 
@@ -107,7 +112,8 @@ coarse split only when it was genuinely even. Rules:
   what they approve.
   Release membership is the Fix versions field (shown in context), never a
   tag. Reserved workflow tags (`ready-for-agent`, `needs-gherkin`,
-  `discovered`, triage roles) are machinery - never repurpose them.
+  `discovered`, `triaged`, triage roles) are machinery - never repurpose
+  them.
 - Discovered work inherits the story's topical tags automatically and lands
   at default priority - urgency is a triage decision, never copied from the
   current story.
@@ -120,9 +126,14 @@ coarse split only when it was genuinely even. Rules:
    behavior into a `## QA` section
    ([references/ac-format.md](references/ac-format.md)).
 3. When ready: confirm with the user, then move the story using the
-   binding's state tool. Where the project separates flow from resolution
-   (a Stage field AND a State field), set BOTH: Stage to its done column,
-   State to how it concluded (usually Fixed/Verified). Mention any open
+   binding's state tool. Where the board has a testing/review column
+   (e.g. "Testing", "Review"), Stage goes THERE, not to done — completion
+   by the implementer means ready-for-verification; a human (or the QA
+   pass) moves it to done. Only boards without a review column go
+   straight to the done column. Where the project separates flow from
+   resolution (a Stage field AND a State field), also set State to how it
+   concluded (usually Fixed) — the story can sit in Testing with State
+   Fixed; that is the two fields doing their jobs. Mention any open
    discovered-work issues.
 4. Offer the session time entry (see Session time) if not yet logged.
 

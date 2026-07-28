@@ -18,7 +18,8 @@ YouTrack app; YouTrack's built-in MCP tools are always present alongside.
 | `story.completeCheck` | `story_complete_story` - checks AC, `needs-gherkin` tag vs `## QA` | Parse AC yourself: all checked? tag present but no QA section? Report; don't close otherwise |
 | `work.logTime` | `story_log_work(minutes, comment?)` - human-approved only | No work-item tool built in: tell the user the number to enter via YouTrack's `work` command, or post it as a comment (`Session time: 2h`) for later entry |
 | `story.next` | `search_issues`: `project: {KEY} tag: {ready-for-agent} #Unresolved sort by: priority asc` (drop the tag term if the project doesn't use triage) | same |
-| State change on completion | predefined `update_issue` - projects with Stage + State set both (Stage → done column, State → resolution e.g. Fixed); single-field projects set that field | same |
+| Stage on pickup | predefined `update_issue` - Stage → the in-progress column (read real values via `story_project_dimensions`; fallback: ask once and remember for the session) | same, values from the board |
+| State change on completion | predefined `update_issue` - boards with a testing/review column: Stage → that column (a human moves it to done after verification); otherwise Stage → done column. Stage+State projects also set State → resolution (e.g. Fixed); single-field projects set that field | same |
 | Priority / Estimation set (planning, triage only) | predefined `update_issue` field commands | same |
 
 Focus is safe in read-only mode (it writes only your own app-scoped marker).

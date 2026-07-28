@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.6"
+  version: "1.7"
 ---
 
 # To Issues
@@ -90,7 +90,10 @@ decision-rich parts.>
 ```
 
 Then, via the binding: link blockers (depends-on), set each story's
-Priority, Subsystem, and Estimation as approved, tag AFK slices `ready-for-agent`, tag
+Priority, Subsystem, and Estimation as approved, tag every story `triaged`
+(the quiz WAS its triage - these stories are born dispositioned, and
+`tag: -triaged` must stay the reliable untriaged-work query), tag AFK
+slices `ready-for-agent`, tag
 `needs-gherkin` where a slice has strict rules or planned test automation,
 and apply one shared **topical tag** to the whole batch - Title Case,
 human-readable, usually the feature or PRD name ("Trust Insights") - so the

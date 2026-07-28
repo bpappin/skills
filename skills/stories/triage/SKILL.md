@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.8"
+  version: "1.9"
 ---
 
 # Triage
@@ -46,6 +46,14 @@ Transitions: unlabeled → `needs-triage` first; from there → `needs-info`,
 `ready-for-agent`, `ready-for-human`, or `wontfix`. `needs-info` returns to
 `needs-triage` once the reporter replies. The maintainer can override at
 any time — flag unusual transitions and ask before proceeding.
+
+**The `triaged` marker.** Whenever an issue leaves `needs-triage` for a
+disposition (`ready-for-agent`, `ready-for-human`, `wontfix` — not
+`needs-info`, which returns to triage), remove `needs-triage` and add the
+`triaged` tag. It never comes off once earned; `tag: -triaged` is then the
+one query that finds everything still awaiting a first (or repeat) triage.
+Like the role tags, `triaged` is machinery — never topical, never
+inherited by discovered work.
 
 ## Invocation
 
@@ -107,8 +115,8 @@ issue; let the maintainer pick.
    project-settings change and may need an admin. Curate topical tags:
    Title Case, human-readable ("Trust Insights"),
    reusing existing tags over inventing near-duplicates. Reserved workflow
-   tags (the role tags, `needs-gherkin`, `discovered`) are machinery, not
-   topics. **Human-added tags are data**: users tag stories to group things
+   tags (the role tags, `triaged`, `needs-gherkin`, `discovered`) are
+   machinery, not topics. **Human-added tags are data**: users tag stories to group things
    their own way - never remove or rename a tag on your own initiative,
    even one that looks redundant. Tidying is fine when the user directs
    it ("remove the X tag", "merge these two"), and you may PROPOSE a

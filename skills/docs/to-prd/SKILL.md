@@ -5,18 +5,19 @@ license: MIT
 compatibility: Standalone for the PRD document; creating the verification stories uses the to-issues skill and the project's tracker.
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Product Requirements (to-prd)
 
-Synthesize the current context into a **PRD document** in `docs/development/prd/`. The
+Synthesize the current context into a **PRD document** in the **Product Requirements** section of
+`docs/knowledge/`. The
 PRD carries requirements and intent; **verification lives on tracker
 stories** (their `## Acceptance Criteria` checklists), never in a companion
 AC file — the tracker is the source of truth for anything with done-ness.
 
 Works with the project-docs skill: this skill is the authoring workflow;
-project-docs owns the taxonomy, the template, and publishing.
+project-docs owns the conventions, the template, and the KB sync.
 
 ## Process
 
@@ -25,16 +26,18 @@ project-docs owns the taxonomy, the template, and publishing.
 From the conversation and the codebase: identify the problem, the actors,
 and the major modules — look for opportunities to extract deep modules
 (isolatable, testable logic). Use the project's domain glossary and respect
-existing ADRs. If research fed this (docs/development/research/), reference it.
+existing ADRs. If research fed this (the Research section of `docs/knowledge/`), reference it.
 
 ### 2. Write the PRD
 
-Create `docs/development/prd/<slug>.md` from the project-docs template
-(`assets/templates/prd.md` in that skill). No id/status frontmatter, no
-sync IDs — the filename slug is the identity. Sections:
+Create `<slug>.md` in the Product Requirements section directory of
+`docs/knowledge/` (find it by its README H1; create it per project-docs if
+missing) from the project-docs template (`assets/templates/prd.md` in that
+skill). No id/status frontmatter — the `# Title` heading names the KB
+article, and the sync gives the file its ID-prefixed name. Sections:
 
 - **Problem** — from the user's perspective, with the discovery trail
-  (link `docs/development/research/` records that led here).
+  (link Research records that led here).
 - **Goals / Non-goals** — non-goals are the requirements-level scope guard.
 - **Requirements** — numbered (R1, R2 …) narrative requirements, backed by
   an extensive list of user stories ("As an <actor>, I want <feature>, so
@@ -44,6 +47,9 @@ sync IDs — the filename slug is the identity. Sections:
   (state machine, schema, type shape) more precisely than prose.
 - **Stories** — the table of tracker story IDs. Leave it with a
   placeholder note until step 3 fills it.
+
+Run the project-docs sync after writing — the PRD becomes a KB article
+immediately (and again after step 3 fills the Stories table).
 
 ### 3. Create the verification
 

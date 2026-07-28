@@ -77,6 +77,17 @@ case "$(basename "${DOCS_DIR%/}")" in
     exit 1;;
 esac
 
+# guard: the three-zone PARENT is not a publish root either. Publishing
+# docs/ itself makes docs/README.md (the front door) the mirror root,
+# nests Product Development beneath it, and lifts the REPO root README
+# as a stray top-level article.
+if [[ -d "$DOCS_DIR/development" ]]; then
+  echo "error: '$DOCS_DIR' is the zone parent, not a publish root - publish its" >&2
+  echo "development/ zone instead (the default). docs/README.md is picked up" >&2
+  echo "automatically as the top-level guide article." >&2
+  exit 1
+fi
+
 [[ "$DRY" != 1 && ( -z "$YOUTRACK_URL" || -z "$YOUTRACK_TOKEN" ) ]] && { echo "error: no YouTrack credentials found" >&2; exit 1; }
 
 if [[ -z "$PROJECT" ]]; then

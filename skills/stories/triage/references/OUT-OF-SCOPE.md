@@ -1,9 +1,9 @@
 # Out-of-Scope Knowledge Base
 
-`docs/development/reference/out-of-scope/` stores persistent records of rejected
-feature requests — one file per **concept**, not per issue. It lives under
-`reference/` because a rejection with its reasoning is *knowledge* (per the
-project-docs taxonomy), and being in `docs/` means it publishes to the
+An **Out of Scope** section (under Reference in `docs/knowledge/`)
+stores persistent records of rejected feature requests — one file per
+**concept**, not per issue. A rejection with its reasoning is *knowledge*
+(per project-docs), and living in `docs/knowledge/` means it syncs to the
 tracker's knowledge base with everything else.
 
 Two purposes:
@@ -16,13 +16,14 @@ Two purposes:
 ## Structure and format
 
 ```
-docs/development/reference/out-of-scope/
-├── dark-mode.md
-├── plugin-system.md
-└── graphql-api.md
+docs/knowledge/<Reference>/<Out of Scope>/
+├── EVO-A-51_dark-mode.md
+├── EVO-A-52_plugin-system.md
+└── EVO-A-53_graphql-api.md
 ```
 
-Kebab-case concept names, recognizable from the filename alone. Each file
+Concept-named titles, recognizable at a glance (the sync adds the
+article-ID prefix). Each file
 is a short design-document-style note — paragraphs, code samples where they
 sharpen the reasoning:
 

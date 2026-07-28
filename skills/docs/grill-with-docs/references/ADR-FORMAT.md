@@ -1,14 +1,16 @@
 # ADR Guidance
 
-ADRs live in `docs/development/adr/` (project-docs taxonomy) and use the project-docs
+ADRs live in the Architecture Decision Records section of
+`docs/knowledge/` (project-docs) and use the project-docs
 ADR template (`assets/templates/adr.md` in that skill): title, date,
 status, Context, Decision, Consequences. Keep each section tight — an ADR
 can be a few sentences per section. The value is recording *that* a
 decision was made and *why*.
 
-Name files `ADR-<slug>.md` (or follow the project's existing convention if
-one is established — consistency within a repo beats either default).
-Create `docs/development/adr/` lazily, when the first ADR is needed.
+Title articles `ADR-<slug>` (or follow the project's existing convention
+— consistency within a repo beats either default); the sync names the
+files by article ID. Create the section lazily, when the first ADR is
+needed.
 
 ## When to offer an ADR — the triple test
 

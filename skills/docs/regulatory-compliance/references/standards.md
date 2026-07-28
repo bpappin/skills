@@ -1,6 +1,6 @@
 # Regulatory Standards Catalog
 
-Core principles of commonly-active regulations. Use this to verify ADRs and designs. Project-specific implementation mappings live in the project, at docs/development/reference/regulations/<NAME>.md.
+Core principles of commonly-active regulations. Use this to verify ADRs and designs. Project-specific implementation mappings live in the project's Regulations section of docs/knowledge/ (<NAME>.md).
 
 ## 🇨🇦 PIPEDA (Personal Information Protection and Electronic Documents Act)
 *   **Principle 4.4 (Limiting Collection)**: PII must only be collected if necessary.

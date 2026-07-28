@@ -6,7 +6,7 @@ Search the repo for task-shaped content:
 
 - `docs/**/gap*`, `**/GAP*` - the retired GAP system
 - `## Acceptance Criteria`, `## AC`, checklist blocks (`- [ ]`) inside
-  `docs/development/prd/**` and similar
+  `docs/knowledge/**` (PRDs and similar)
 - `TODO.md`, `BACKLOG.md`, `docs/todo*`
 
 For each discrete item record: `source` (file + heading), `text`,
@@ -69,7 +69,7 @@ with Phase 5 once the human confirms.
 
 - [ ] Every APPROVED item has a story ID or an archive location
 - [ ] Fresh snapshot (binding command) contains every created story
-- [ ] `grep -r "Acceptance Criteria" docs/development/prd/` returns nothing live
+- [ ] `grep -r "Acceptance Criteria" docs/knowledge/` returns nothing live
 - [ ] Archived files intact under `docs/_archive/`
 - [ ] Final report: created N, matched M (K AC added), obsoleted X,
       questions resolved Q, deferred D

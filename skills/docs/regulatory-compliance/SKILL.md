@@ -4,7 +4,7 @@ description: Manage and track regulatory requirements (PIPEDA, GDPR, etc.). Use 
 license: MIT
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Regulatory Compliance & Audit
@@ -30,10 +30,11 @@ principles of common regulations are catalogued in
 
 ## Where things live
 
-- Per-regulation mapping documents: `docs/development/reference/regulations/<NAME>.md`
-  (project-docs taxonomy — this is project knowledge, so it lives in the
-  repo and syncs to the knowledge base with the rest of `docs/`).
-- Index: `docs/development/reference/regulations/README.md`.
+- Per-regulation mapping documents: `<NAME>.md` files in the
+  **Regulations** section of `docs/knowledge/` (project knowledge — an
+  auditor reads these in the knowledge base; the project-docs sync keeps
+  both sides current).
+- Index: that section's `README.md` (the section article).
 - Compliance mappings for a design use
   [references/alignment-template.md](references/alignment-template.md).
 - Remediation work found by an audit goes to the tracker, never to
@@ -45,18 +46,20 @@ principles of common regulations are catalogued in
 
 When asked to "add a regulation" (e.g., "Add HIPAA"):
 
-1. Create the mapping file `docs/development/reference/regulations/<NAME>.md` using
+1. Create the mapping file `<NAME>.md` in the Regulations section of
+   `docs/knowledge/` (create the section per project-docs if missing) using
    the standard table format: | Requirement | Implementation | Status |.
 2. Add `<NAME>` to the `"active_regulations"` array in
    `.agents/config/project.json`.
-3. Update the index at `docs/development/reference/regulations/README.md`.
+3. Update the section's `README.md` index, then run the project-docs
+   sync.
 
 ### 2. Pre-implementation assessment
 
 Before starting work on a new ADR or feature:
 
-1. Read the active regulations and their mapping files under
-   `docs/development/reference/regulations/`.
+1. Read the active regulations and their mapping files in the
+   Regulations section of `docs/knowledge/`.
 2. Analyze the proposed design: does it store cleartext PII? Does it
    have a deletion path? Is collection limited to what's necessary?
 3. Generate an initial **Compliance Mapping** from
@@ -69,10 +72,11 @@ When asked to "audit for compliance":
 
 1. Search `docs/` and the source tree for PII exposure (emails, raw
    phone numbers, cleartext identifiers).
-2. Review all ADRs in `docs/development/adr/`: each should have a "Regulatory
+2. Review all ADRs in the Architecture Decision Records section: each
+   should have a "Regulatory
    Alignment" section covering the active regulations.
-3. Update the progress tables in the corresponding
-   `docs/development/reference/regulations/<NAME>.md` files.
+3. Update the progress tables in the corresponding mapping files, then
+   sync docs.
 4. Route findings that require code or design changes to the tracker:
    the discovered-work off-ramp (story-workflow) for items found while a
    story is focused, or the to-issues skill for a planned remediation
@@ -85,7 +89,7 @@ principles:
 
 1. IMMEDIATELY pause.
 2. Reference the specific Article or Principle being contravened, citing
-   the project's mapping doc (`docs/development/reference/regulations/<NAME>.md`) or
+   the project's mapping doc (Regulations section, `<NAME>.md`) or
    [references/standards.md](references/standards.md).
 3. Propose a "Privacy by Design" alternative (e.g., "Use HMAC-SHA256
    tokens instead of raw email").
@@ -94,4 +98,4 @@ principles:
 
 - [Regulatory standards catalog](references/standards.md)
 - [Alignment template](references/alignment-template.md)
-- Project mapping docs: `docs/development/reference/regulations/` in the workspace
+- Project mapping docs: the Regulations section of `docs/knowledge/`

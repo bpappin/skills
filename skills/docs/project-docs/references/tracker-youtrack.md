@@ -1,28 +1,38 @@
-# Tracker Binding: YouTrack (docs publishing)
+# Tracker Binding: YouTrack (docs sync)
 
-Publish command (script bundled in this skill):
+Sync command (script bundled in this skill):
 
 ```
-scripts/yt-publish.sh [--dirs adr,prd,...] [--project KEY] [--dry-run] [DOCS_DIR]
+scripts/yt-sync.sh [KB_DIR] [--project KEY] [--root "Title"]
+                   [--pull-only] [--allow-delete] [--force] [--dry-run]
 ```
 
-- Target: YouTrack knowledge-base articles, hierarchical - root article →
-  child article per directory (any depth) → article per `.md` file,
-  matching the tree.
-- Titles are human-readable, never slugs: a directory's `README.md` is
-  consumed as that directory's article (H1 = title, body = content);
-  without one, a built-in map titles the standard taxonomy dirs
-  ("Architecture Decision Records", "Product Requirements", "QA & Test
-  Plans", ...), else the dir name is title-cased. `docs/README.md` names
-  the root article; document articles take each file's H1.
-- `--dry-run` prints the full article tree offline (no credentials) -
-  use it to preview before the first publish.
+- Domain: `KB_DIR` (default `./docs/knowledge`) ⇄ the project's whole
+  knowledge base (`--root "Title"` scopes to one top-level article's
+  subtree; its body becomes `KB_DIR/README.md`).
+- Layout: an article with children is a directory (its body is the
+  directory's `README.md`); a leaf article is a file. Names are
+  ID-prefixed: `EVO-A-12_title-slug.md`, dirs `EVO-A-7_section-name/`.
+- Per-article three-way merge against the base recorded in
+  `KB_DIR/.yt-sync/` (commit it; never hand-edit). Local-only change →
+  push; KB-only change → pull; both → merge, conflicts get git markers
+  and are never pushed until resolved. Exit codes: 0 ok, 1 error,
+  2 conflicts to resolve.
+- Structure flows down: KB moves/renames move local files (reported
+  under Moved - update indexes that referenced old paths). Local moves
+  are moved back. A new local file's directory picks its parent at
+  birth; missing section dirs birth stub section articles from their
+  `README.md`.
+- Deletes: KB delete prunes an unedited local file, conflicts an edited
+  one. Local delete is report-only unless `--allow-delete` (soft-deletes
+  the article).
+- Bootstrap: empty `KB_DIR` pulls the whole KB. Non-empty without sync
+  state refuses unless `--force`, which adopts every file as a new
+  article (the legacy-adoption path).
 - Project key resolves from `--project`, `$YOUTRACK_PROJECT`, or
   `.agents/config/story-tools.json`; credentials from the story-tools
-  installer connections (`~/.agents/story-tools/connections/`).
-- Idempotency map: `DOCS_DIR/.yt-articles.json` (commit it). Articles carry
-  a generated-do-not-edit banner; the repo is canonical, one-way only.
-- Always skipped: `docs/stories/` (the snapshot - never mirror the tracker
-  into itself), non-`.md`, and globs in `DOCS_DIR/.yt-publish-ignore`.
-  `README.md` files publish as their directory's article, never as leaves.
+  installer connections (`~/.agents/story-tools/connections/`). Never
+  ask for or accept tokens in conversation - if authentication fails,
+  tell the user to run `install.sh`.
+- Requires `git` on PATH (three-way merges use `git merge-file`).
 - YouTrack renders the same markdown the repo holds, task lists included.

@@ -4,7 +4,7 @@ description: Grilling session that challenges your plan against the existing dom
 license: MIT
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.2"
 ---
 
 <what-to-do>
@@ -31,14 +31,17 @@ During codebase exploration, also look for existing documentation:
 ### File structure
 
 Most repos have a single context: a root `CONTEXT.md` (the domain glossary
-— the same one to-issues, triage, and zoom-out consume) and `docs/development/adr/`
-(per the project-docs taxonomy). If a `CONTEXT-MAP.md` exists at the root,
+— the same one to-issues, triage, and zoom-out consume) and the
+Architecture Decision Records section of `docs/knowledge/` (per the
+project-docs skill). If a `CONTEXT-MAP.md` exists at the root,
 the repo has multiple contexts, each with its own `CONTEXT.md` and
-optionally its own `docs/development/adr/`; the map points to where each lives.
+optionally its own subsystem subdirectory under Architecture Decision
+Records; the map points to where each lives.
 
 Create files lazily — only when you have something to write. If no
 `CONTEXT.md` exists, create one when the first term is resolved. If no
-`docs/development/adr/` exists, create it when the first ADR is needed.
+Architecture Decision Records section exists, create it when the first
+ADR is needed (project-docs).
 
 ## During the session
 
@@ -76,7 +79,8 @@ no spec content, no scratch notes.
 Only offer an ADR when all three are true (the triple test in
 [references/ADR-FORMAT.md](references/ADR-FORMAT.md)): hard to reverse,
 surprising without context, the result of a real trade-off. ADRs go in
-`docs/development/adr/` using the project-docs template.
+the Architecture Decision Records section of `docs/knowledge/` using the
+project-docs template; sync docs after writing.
 
 ### Route work to the tracker
 

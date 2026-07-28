@@ -142,59 +142,56 @@
 <div class="viz-root">
   <div class="frame">
     <h1>story-tools — how the system fits together</h1>
-    <p class="rule">One rule decides where everything lives: <b>if it tracks work it's a YouTrack issue; if it's knowledge it's a repo file.</b> The whole tree syncs — knowledge mirrors to hierarchical articles, work lives as issues. Each mirror is one-way, so there is exactly one source of truth per thing.</p>
+    <p class="rule"><b>Work is a YouTrack issue. Knowledge is a KB article, mirrored two-way into the repo. Machinery is a plain git file.</b> YouTrack is the organizing surface — humans arrange and edit there; git is the history and merge engine — agents (and humans) edit the mirror, and <code>yt-sync</code> reconciles per-article.</p>
 
     <div class="cols">
       <!-- LEFT: repo -->
       <section class="side k">
-        <h2><span class="dot"></span>Git repo — knowledge <small style="color:var(--ink-3);font-weight:500">(canonical)</small></h2>
-        <p class="sub">Answers a question; never "done"; no status frontmatter</p>
-        <div class="home"><code>adr/</code><span>why we chose this</span></div>
-        <div class="home"><code>prd/</code><span>what we want &amp; why</span></div>
-        <div class="home"><code>spec/</code><span>how the system works</span></div>
-        <div class="home"><code>design/</code><span>what it looks like</span></div>
-        <div class="home"><code>research/</code><span>what we investigated</span></div>
-        <div class="home"><code>reference/</code><span>external facts — vendors · prospects · regulations</span></div>
-        <div class="home"><code>guides/</code><span>how to do X</span></div>
-        <div class="home"><code>qa/</code><span>how we verify, repeatably</span></div>
-        <div class="home gen"><code>youtrack/</code><span>generated snapshot — never hand-edited</span></div>
-        <p class="rootnote"><code>DESIGN.md</code> at repo root · vendors = using now, prospects = want to approach</p>
+        <h2><span class="dot"></span>Git repo <small style="color:var(--ink-3);font-weight:500">(history + merge engine)</small></h2>
+        <p class="sub">Where agents read and write; diffs, blame, merges for everything</p>
+        <div class="home"><code>knowledge/</code><span>THE MIRROR — two-way sync of the whole KB; files named <code>EVO-A-12_title.md</code></span></div>
+        <div class="home"><code>&nbsp;&nbsp;.yt-sync/</code><span>sync state + merge bases — committed, never hand-edited</span></div>
+        <div class="home"><code>README.md</code><span>front door — explains the system; git-native, never synced</span></div>
+        <div class="home"><code>outbox/</code><span>written FOR outsiders — not knowledge, never synced</span></div>
+        <div class="home gen"><code>stories/</code><span>generated issue snapshot — never hand-edited</span></div>
+        <p class="rootnote">Repo root: <code>AGENTS.md</code> · <code>WIRING.md</code> — pure agent machinery, deliberately not in the KB</p>
       </section>
 
       <!-- MIDDLE: bridges -->
       <div class="bridges" aria-label="bridges between repo and YouTrack">
         <div class="bridge">
-          <svg class="arrow a-pub" viewBox="0 0 120 14" preserveAspectRatio="none" role="img" aria-label="publish, left to right">
-            <line x1="2" y1="7" x2="106" y2="7"/><polygon points="106,1 118,7 106,13"/>
+          <svg class="arrow a-pub" viewBox="0 0 120 14" preserveAspectRatio="none" role="img" aria-label="sync, both directions">
+            <line x1="14" y1="7" x2="106" y2="7"/>
+            <polygon points="14,1 2,7 14,13"/><polygon points="106,1 118,7 106,13"/>
           </svg>
-          <div class="lbl"><code>yt-publish</code><br>docs tree → article tree<br>one-way · idempotent</div>
+          <div class="lbl"><code>yt-sync</code><br>content: three-way merge, both ways<br>structure: flows down only</div>
         </div>
         <div class="bridge">
           <svg class="arrow a-pull" viewBox="0 0 120 14" preserveAspectRatio="none" role="img" aria-label="pull, right to left">
             <line x1="118" y1="7" x2="14" y2="7"/><polygon points="14,1 2,7 14,13"/>
           </svg>
-          <div class="lbl"><code>yt-pull</code><br>stories → <code>docs/youtrack/</code><br>generated snapshot</div>
+          <div class="lbl"><code>yt-pull</code><br>stories → <code>docs/stories/</code><br>generated snapshot</div>
         </div>
         <div class="bridge">
           <svg class="arrow a-ref" viewBox="0 0 120 14" preserveAspectRatio="none" role="img" aria-label="cross references, both directions">
             <line x1="14" y1="7" x2="106" y2="7"/>
             <polygon points="14,1 2,7 14,13"/><polygon points="106,1 118,7 106,13"/>
           </svg>
-          <div class="lbl">cross-links only<br>PRD "Stories" table ↔<br>story <code>## References</code></div>
+          <div class="lbl">cross-links<br>PRD "Stories" table ↔<br>story <code>## References</code> (article IDs)</div>
         </div>
       </div>
 
       <!-- RIGHT: YouTrack -->
       <section class="side w">
-        <h2><span class="dot"></span>YouTrack — rattlebox <small style="color:var(--ink-3);font-weight:500">(EVO)</small></h2>
-        <p class="sub">Everything with a lifecycle; will someday be "done"</p>
+        <h2><span class="dot"></span>YouTrack <small style="color:var(--ink-3);font-weight:500">(organizing surface)</small></h2>
+        <p class="sub">Where humans arrange, rename, and edit — no repo access needed</p>
         <div class="block">
           <h3>Issues — work <small>(canonical)</small></h3>
-          <p>Epics → stories. Each story: narrative, <code>## Acceptance Criteria</code> checklist <i>(= the scope)</i>, optional <code>## QA</code> Gherkin. Discovered work = new issue, linked <i>discovered&nbsp;from</i>. Old GAP reminders live here now — triaged on the board, not rotting in a folder.</p>
+          <p>Epics → stories. Each story: narrative, <code>## Acceptance Criteria</code> checklist <i>(= the scope)</i>, optional <code>## QA</code> Gherkin. Discovered work = new issue, linked <i>discovered&nbsp;from</i>.</p>
         </div>
         <div class="block kb">
-          <h3>Knowledge base — generated mirror</h3>
-          <p>"Project Docs" root → article per directory → article per doc, matching the file tree. Stamped <i>do-not-edit</i>; stories link readable ADRs/PRDs here.</p>
+          <h3>Knowledge base — knowledge <small>(owns structure)</small></h3>
+          <p>Sections are top-level articles; a section article's body doubles as its filing guide (it becomes the directory's <code>README.md</code>). Move or rename an article and the repo tree follows on the next sync. Conflicting edits get git markers locally — never force-pushed either way.</p>
         </div>
       </section>
     </div>
@@ -210,7 +207,7 @@
         <span class="chip">.agents/config/story-tools.json → instance&nbsp;+&nbsp;project</span>
       </div>
       <p class="loop">
-        The session loop: <b>set_focus</b> → <b>get_story_context</b> (the AC list <i>is</i> the scope) → work → <b>update_ac</b> as items verifiably finish → anything out of scope takes the <span class="guard">add_discovered_work off-ramp</span> and you return to the story → <b>complete_story</b> gates closing (all AC checked; QA section if <code>needs-gherkin</code>). Skills ride in the repo (<code>.agents/skills/</code>); credentials stay per-user; the pointer file binds repo → instance.
+        The session loop: <b>yt-sync</b> (fresh mirror) → <b>set_focus</b> → <b>get_story_context</b> (the AC list <i>is</i> the scope) → work → <b>update_ac</b> as items verifiably finish → anything out of scope takes the <span class="guard">add_discovered_work off-ramp</span> and you return to the story → doc edits sync back article-by-article as they happen → <b>complete_story</b> gates closing (all AC checked; QA section if <code>needs-gherkin</code>). Skills ride in the repo (<code>.agents/skills/</code>); credentials stay per-user; the pointer file binds repo → instance.
       </p>
     </section>
   </div>

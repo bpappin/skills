@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (read access minimum; see the tracker binding). Writes optional - produces a report instead when read-only.
 metadata:
   author: bpappin
-  version: "0.4"
+  version: "0.5"
 ---
 
 # Story Reconcile
@@ -48,6 +48,23 @@ Bundled resources:
    OBSOLETE (done/abandoned - say why). Flag conflicts where local and
    server disagree; recommend a resolution but let the user decide.
    Present the table and wait for explicit approval.
+
+   **AC are authored, never extracted.** Source text (gap prose, notes,
+   checklist fragments) is raw material for the story's *narrative* - it
+   does not become AC by slicing it into checkboxes. Every AC item you
+   propose must independently pass the ac-format bar: a verifiable
+   outcome, not a fragment, an activity, or a question. When the source
+   doesn't support verifiable AC (most gap files won't):
+   - Create the story **narrative-only**: rich description from the
+     source, an `## Open Questions` section for the questions the source
+     raises, NO fabricated `## Acceptance Criteria` section, tagged
+     `needs-triage`.
+   - AC get authored lazily: the triage skill grills the story into
+     `ready-for-agent` shape when it approaches work, and story-workflow
+     refuses to start a story without AC - that gate is the safety net.
+   - Only author AC during reconciliation for stories the user wants
+     ready NOW; that authoring effort is real - don't spend it on 200
+     backlog items nobody is about to pick up.
 
 4. **Execute.** Only after approval, and only what was approved:
    - Create NEW stories via the binding, `## References` pointing back at

@@ -7,11 +7,17 @@ the story-tools installer - never collected in chat.
 |---|---|
 | Query buckets | `search_issues` - e.g. `project: {KEY} has: -{tag}` for untriaged, `tag: needs-triage`, `tag: needs-info` |
 | Read an issue fully | `get_issue` (+ comments) |
-| Apply category/state roles | `manage_issue_tags` - the role names ARE the tag names (`bug`, `enhancement`, `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`) |
+| Apply category roles | Prefer the project's `Type` field when it has one: `update_issue` → Type = Bug / Feature (boards color and swimlane by Type). Fallback where there is no Type field: `manage_issue_tags` → `bug` / `enhancement` |
+| Apply state roles | `manage_issue_tags` - the role names ARE the tag names (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`) |
+| Set release | `update_issue` → Fix versions (query later with `Fix versions: 1.2`); the field and its version values are project settings - if absent, note it for the maintainer, don't approximate with a tag |
+| Link related issues | `link_issues` - always the most specific type: `duplicates` (then close the duplicate), `depends on` (ordering), `subtask of` (parent epic/feature), `discovered from` (provenance), `relates to` only when nothing sharper fits |
 | Post triage notes / briefs | `add_issue_comment` |
 | Put AC into the description | `story_add_ac` per item, or careful `get_issue` → edit → `update_issue` (canonical `## Acceptance Criteria` section) |
-| Close (wontfix) | `update_issue` state |
+| Close (wontfix) | `update_issue` - set the resolution: State → Won't fix (and Stage → done column where the project has both fields) |
 
 Tags are created on first use; share them with the team in YouTrack so
-everyone sees the same triage state. If the team later prefers a custom
-"Triage" field over tags, only this table changes.
+everyone sees the same triage state. Adding a `Type` field to a project is
+a one-time admin step (Project Settings > Fields > add the default Type
+field); until it exists, the tag fallback keeps working. If the team later
+prefers a custom "Triage" field over the state tags, only this table
+changes.

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.2"
 ---
 
 # To Issues
@@ -57,6 +57,8 @@ Present the breakdown as a numbered list. For each slice: **Title**,
 **Requirements covered** (R-numbers / user stories from the source PRD),
 **Priority** (proposed - default Normal; the user owns the final call), and
 **Estimate** (a rough one: 1h / 4h / 1d - calibration data, not a promise).
+If the work targets a release, confirm it once for the batch - release
+membership is the **Fix versions** field, never a tag.
 
 Ask: does the granularity feel right? Are the dependencies correct? Should
 any slices merge or split? Are HITL/AFK assignments right? Do the
@@ -89,7 +91,8 @@ Priority and Estimation as approved, tag AFK slices `ready-for-agent`, tag
 and apply one shared **topical tag** to the whole batch - Title Case,
 human-readable, usually the feature or PRD name ("Trust Insights") - so the
 slices group together in searches and board swimlanes. Reuse the project's
-existing topical tags where one fits; never invent near-duplicates.
+existing topical tags where one fits; never invent near-duplicates. If a
+target release was confirmed, set Fix versions on each story.
 
 ### 6. Close the loop
 

@@ -3,7 +3,7 @@
 const entities = require('@jetbrains/youtrack-scripting-api/entities');
 const parser = require('./ac-parser');
 
-const VERSION = '0.3.1';  // keep in sync with manifest.json (tests/version.test.js enforces)
+const VERSION = '0.3.4';  // keep in sync with manifest.json (tests/version.test.js enforces)
 const DISCOVERED_LINK = 'discovered from';
 const NEEDS_GHERKIN_TAG = 'needs-gherkin';
 
@@ -60,6 +60,53 @@ function allTags(issue) {
   return out;
 }
 
+function fieldValue(issue, name) {
+  try {
+    const v = issue.fields[name];
+    return v && v.name !== undefined ? v.name : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Two distinct dimensions (Brill's model):
+ *   stage = where the work is in the flow (Stage/Kanban State/Status)
+ *   State = how it concluded (Fixed, Won't fix, Duplicate, ...) - the
+ *           resolution, when the project separates the two.
+ * Projects with only a State field use it for both; then state() reads
+ * State and resolution() is null.
+ */
+function stateName(issue) {
+  const flow = ['Stage', 'Kanban State', 'Status'];
+  for (let i = 0; i < flow.length; i++) {
+    const v = fieldValue(issue, flow[i]);
+    if (v) return v;
+  }
+  return fieldValue(issue, 'State');
+}
+
+function resolutionName(issue) {
+  const flow = ['Stage', 'Kanban State', 'Status'];
+  for (let i = 0; i < flow.length; i++) {
+    if (fieldValue(issue, flow[i])) return fieldValue(issue, 'State');
+  }
+  return null;  // single-state-field project: State IS the flow, no separate resolution
+}
+
+/** Best-effort read of a multi-value field's names; null when absent/unreadable. */
+function fieldNames(issue, fieldName) {
+  try {
+    const v = issue.fields[fieldName];
+    if (!v) return null;
+    const out = [];
+    v.forEach((x) => out.push(x.name !== undefined ? x.name : '' + x));
+    return out;
+  } catch (e) {
+    return null;
+  }
+}
+
 /** Best-effort read of a field's display value; null when absent/unreadable. */
 function fieldString(issue, fieldName) {
   try {
@@ -94,7 +141,7 @@ function miniContext(issue) {
   return {
     id: issue.id,
     summary: issue.summary,
-    state: issue.fields.State ? issue.fields.State.name : null,
+    state: stateName(issue),
     acTotal: parsed.ac.length,
     acOpen: open,
   };
@@ -121,6 +168,9 @@ exports.RESERVED_TAGS = RESERVED_TAGS;
 exports.topicalTags = topicalTags;
 exports.allTags = allTags;
 exports.fieldString = fieldString;
+exports.fieldNames = fieldNames;
+exports.stateName = stateName;
+exports.resolutionName = resolutionName;
 exports.DISCOVERED_LINK = DISCOVERED_LINK;
 exports.NEEDS_GHERKIN_TAG = NEEDS_GHERKIN_TAG;
 exports.currentUser = currentUser;

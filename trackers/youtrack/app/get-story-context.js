@@ -38,7 +38,8 @@ exports.aiTool = {
     return {
       id: issue.id,
       summary: issue.summary,
-      state: issue.fields.State ? issue.fields.State.name : null,
+      state: lib.stateName(issue),
+      resolution: lib.resolutionName(issue),
       assignee: issue.fields.Assignee ? issue.fields.Assignee.login : null,
       project: { key: issue.project.key, name: issue.project.name },
       description: issue.description,
@@ -46,6 +47,7 @@ exports.aiTool = {
       ac: parsed.ac,
       references: parsed.references,
       priority: lib.fieldString(issue, 'Priority'),
+      fixVersions: lib.fieldNames(issue, 'Fix versions'),
       tags: lib.allTags(issue),
       estimation: lib.fieldString(issue, 'Estimation'),
       spentTime: lib.fieldString(issue, 'Spent time'),

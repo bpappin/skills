@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "0.6"
+  version: "0.8"
 ---
 
 # Story Workflow
@@ -97,9 +97,10 @@ coarse split only when it was genuinely even. Rules:
 - Priority is read from context, set by triage/planning. Never change a
   story's priority on your own; suggest a change to the user instead.
 - Topical tags are Title Case, human-readable ("Trust Insights", not
-  "trust-insights") and mark what groups together. Reserved workflow tags
-  (`ready-for-agent`, `needs-gherkin`, `discovered`, triage roles) are
-  machinery - never repurpose them.
+  "trust-insights") and mark what groups together - features, subsystems.
+  Release membership is the Fix versions field (shown in context), never a
+  tag. Reserved workflow tags (`ready-for-agent`, `needs-gherkin`,
+  `discovered`, triage roles) are machinery - never repurpose them.
 - Discovered work inherits the story's topical tags automatically and lands
   at default priority - urgency is a triage decision, never copied from the
   current story.
@@ -111,8 +112,11 @@ coarse split only when it was genuinely even. Rules:
 2. If QA is required and missing, write Gherkin scenarios for the verified
    behavior into a `## QA` section
    ([references/ac-format.md](references/ac-format.md)).
-3. When ready: confirm with the user, then move the story's state using the
-   binding's state tool. Mention any open discovered-work issues.
+3. When ready: confirm with the user, then move the story using the
+   binding's state tool. Where the project separates flow from resolution
+   (a Stage field AND a State field), set BOTH: Stage to its done column,
+   State to how it concluded (usually Fixed/Verified). Mention any open
+   discovered-work issues.
 4. Offer the session time entry (see Session time) if not yet logged.
 
 ## Read-only mode

@@ -1,11 +1,11 @@
 ---
 name: triage
-description: Triage tracker issues through a state machine driven by triage roles. Use when the user wants to create an issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow.
+description: Triage tracker issues through a state machine driven by triage roles. Use when the user wants to create an issue, capture an idea/bug/question to the backlog for later ("record this for later"), triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow.
 license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.3"
 ---
 
 # Triage
@@ -53,6 +53,18 @@ The maintainer describes what they want in natural language: "show me
 anything that needs my attention", "let's look at EVO-42", "move EVO-42 to
 ready-for-agent", "what's ready for agents to pick up?"
 
+## Quick capture
+
+"Record this for later", a half-formed idea, a bug noticed in passing, a
+design question — capture it as an issue IMMEDIATELY and cheaply: a clear
+summary, a narrative description of what's known, an `## Open Questions`
+section for what isn't, and the `needs-triage` state. **No acceptance
+criteria at capture time** — a captured issue is a problem statement, not
+a story yet; AC are authored later, during triage, when the issue
+approaches readiness. Never block a capture on answers the maintainer
+doesn't have yet — capturing the question IS the point. (This replaces the
+old GAP-file habit: raw thoughts go to the backlog, not to docs.)
+
 ## Show what needs attention
 
 Query the tracker and present three buckets, oldest first: **untriaged**
@@ -80,14 +92,20 @@ issue; let the maintainer pick.
 4. **Grill (if needed).** If the issue needs fleshing out, run a
    question-driven session with the maintainer until the spec is solid.
 
-5. **Set priority and tags.** Triage owns Priority (Show-stopper/Critical/
-   Major/Normal/Minor via the binding) - set it deliberately on every issue
-   that leaves triage; discovered-work issues arrive at the default
-   priority precisely so this step decides their real urgency. Curate
-   topical tags: Title Case, human-readable ("Trust Insights"), reusing
-   existing tags over inventing near-duplicates. Reserved workflow tags
-   (the role tags, `needs-gherkin`, `discovered`) are machinery, not
-   topics.
+5. **Set priority, tags, and links.** Triage owns Priority (Show-stopper/
+   Critical/Major/Normal/Minor via the binding) - set it deliberately on
+   every issue that leaves triage; discovered-work issues arrive at the
+   default priority precisely so this step decides their real urgency.
+   Curate topical tags: Title Case, human-readable ("Trust Insights"),
+   reusing existing tags over inventing near-duplicates. Reserved workflow
+   tags (the role tags, `needs-gherkin`, `discovered`) are machinery, not
+   topics. Release membership lives in the **Fix versions** field, not tags
+   - set it when the target release is known. Link relationships you
+   noticed while grilling, using the most
+   specific link type the binding offers: a duplicate gets linked
+   `duplicates` and closed, ordering is `depends on`, a slice of something
+   bigger is `subtask of` - bare `relates to` is the last resort, not the
+   default.
 
 6. **Apply the outcome:**
    - `ready-for-agent` — write the **acceptance criteria into the issue

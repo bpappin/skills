@@ -3,7 +3,7 @@
 const entities = require('@jetbrains/youtrack-scripting-api/entities');
 const parser = require('./ac-parser');
 
-const VERSION = '0.4.1';  // keep in sync with manifest.json (tests/version.test.js enforces)
+const VERSION = '0.4.2';  // keep in sync with manifest.json (tests/version.test.js enforces)
 const DISCOVERED_LINK = 'discovered from';
 const NEEDS_GHERKIN_TAG = 'needs-gherkin';
 
@@ -43,12 +43,16 @@ function resolveIssue(issueId) {
   return { issue, id };
 }
 
+// Case-insensitive: humans Title Case tags ("Triaged"), and a case
+// variant of a machinery tag must never be inherited as topical.
+const RESERVED_LOWER = RESERVED_TAGS.map((t) => t.toLowerCase());
+
 function topicalTags(issue) {
   const out = [];
   const tags = issue.tags;
   if (!tags) return out;
   tags.forEach((t) => {
-    if (RESERVED_TAGS.indexOf(t.name) === -1) out.push(t.name);
+    if (RESERVED_LOWER.indexOf(String(t.name).toLowerCase()) === -1) out.push(t.name);
   });
   return out;
 }

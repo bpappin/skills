@@ -265,8 +265,8 @@ setup_server() {
       | python3 -c 'import json,sys; gs=json.load(sys.stdin); print(next((g["id"] for g in gs if g.get("name")=="All Users"),""))' 2>/dev/null || true)"
     for wf_tag in needs-triage needs-info ready-for-agent ready-for-human \
                   wontfix triaged discovered needs-gherkin; do
-      if grep -q "\"$wf_tag\"" <<<"$tags"; then
-        continue
+      if grep -qi "\"$wf_tag\"" <<<"$tags"; then
+        continue  # exists (any case) - a case variant is the same tag to YouTrack
       fi
       local body="{\"name\":\"$wf_tag\"}"
       if [[ -n "$all_users_id" ]]; then

@@ -162,7 +162,9 @@ if pid:
             lines.append(f'## {name}')
             lines += [f'- {v}' for v in vals] + ['']
 tags = api('/api/tags?fields=name&$top=500')
-topical = sorted({t['name'] for t in tags if t.get('name') and t['name'] not in RESERVED})
+reserved_lower = {r.lower() for r in RESERVED}
+topical = sorted({t['name'] for t in tags
+                  if t.get('name') and t['name'].lower() not in reserved_lower})
 if topical:
     lines.append('## Existing topical tags (reuse before inventing)')
     lines += [f'- {t}' for t in topical] + ['']

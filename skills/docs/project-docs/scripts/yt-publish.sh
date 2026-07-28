@@ -2,7 +2,7 @@
 # One-way publisher: the repo docs tree -> YouTrack knowledge-base articles.
 #
 # Mirrors the file hierarchy as the article hierarchy:
-#   "Project Docs" (root, or docs/README.md's H1)
+#   "Product Development" (root, or docs/README.md's H1)
 #     └── Reference            (article per directory, any depth)
 #           └── Vendors
 #                 └── OpenStreetMap   (article per .md file, titled by H1)
@@ -13,7 +13,7 @@
 #              .agents/config/story-tools.json next to DOCS_DIR)
 #   --dry-run  print the article tree (titles + hierarchy + actions) without
 #              touching YouTrack; needs no credentials
-#   DOCS_DIR   default ./docs
+#   DOCS_DIR   default ./docs/development (the git-canonical zone)
 #
 # Directory articles are titled for humans: a README.md inside a directory
 # IS that directory's article (its H1 = the title, its body = the landing
@@ -21,17 +21,21 @@
 # taxonomy dirs (adr -> "Architecture Decision Records", ...), else the
 # dir name is title-cased. docs/README.md does the same for the root.
 #
-# Always skipped: docs/youtrack/ (the yt-pull snapshot - publishing it
-# would mirror YouTrack into YouTrack), docs/outbox/ (outbound artifacts,
-# never knowledge-base content), non-.md files, and any path
+# Always skipped: docs/stories/ (the yt-pull snapshot - publishing it
+# would mirror YouTrack into YouTrack), docs/product/ (the
+# generated mirror of the KB's Product Management zone), docs/outbox/
+# (outbound artifacts, never knowledge-base content), non-.md files, and any path
 # matching a glob line in DOCS_DIR/.yt-publish-ignore. README.md files
 # are consumed as directory articles, never published as leaves.
 #
 # One-way, idempotent: DOCS_DIR/.yt-articles.json maps path -> article id
-# (commit it). Articles carry a do-not-edit banner. The repo is canonical.
+# (commit it). Articles carry a do-not-edit banner. The repo is canonical:
+# a publish overwrites article CONTENT and re-asserts article POSITION -
+# edits or moves made in YouTrack do not survive the next publish and are
+# never copied back. To move a doc, git mv it and re-publish.
 set -euo pipefail
 
-DIRS=""; PROJECT="${YOUTRACK_PROJECT:-}"; DOCS_DIR="./docs"; DRY=0
+DIRS=""; PROJECT="${YOUTRACK_PROJECT:-}"; DOCS_DIR="./docs/development"; DRY=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dirs) DIRS="$2"; shift 2;;
@@ -47,7 +51,7 @@ if [[ -z "${YOUTRACK_URL:-}" ]]; then
   conn="${YOUTRACK_CONNECTION:-${YOUTRACK_PROFILE:-}}"
   # no explicit connection: the project pointer names it
   if [[ -z "$conn" ]]; then
-    for pf in "$DOCS_DIR/../.agents/config/story-tools.json" "$DOCS_DIR/../.agents/youtrack.json"; do
+    for pf in "$DOCS_DIR/../.agents/config/story-tools.json" "$DOCS_DIR/../../.agents/config/story-tools.json" "$DOCS_DIR/../.agents/youtrack.json" "$DOCS_DIR/../../.agents/youtrack.json"; do
       [[ -f "$pf" ]] && { conn=$(sed -nE 's/.*"connection": *"([^"]+)".*/\1/p' "$pf" | head -1); break; }
     done
   fi
@@ -64,7 +68,7 @@ YOUTRACK_TOKEN="${YOUTRACK_TOKEN:-${YOUTRACK_API_TOKEN:-}}"
 [[ "$DRY" != 1 && ( -z "$YOUTRACK_URL" || -z "$YOUTRACK_TOKEN" ) ]] && { echo "error: no YouTrack credentials found" >&2; exit 1; }
 
 if [[ -z "$PROJECT" ]]; then
-  for pf in "$DOCS_DIR/../.agents/config/story-tools.json" "$DOCS_DIR/../.agents/youtrack.json"; do
+  for pf in "$DOCS_DIR/../.agents/config/story-tools.json" "$DOCS_DIR/../../.agents/config/story-tools.json" "$DOCS_DIR/../.agents/youtrack.json" "$DOCS_DIR/../../.agents/youtrack.json"; do
     [[ -f "$pf" ]] && { PROJECT=$(sed -nE 's/.*"project": *"([^"]+)".*/\1/p' "$pf" | head -1); break; }
   done
 fi
@@ -81,18 +85,19 @@ ONLY = [d.strip() for d in os.environ['DIRS'].split(',') if d.strip()]
 DOCS = os.environ['DOCS_DIR'].rstrip('/')
 DRY = os.environ.get('DRY') == '1'
 MAP_PATH = os.path.join(DOCS, '.yt-articles.json')
-ALWAYS_SKIP = {'youtrack', 'outbox'}
+ALWAYS_SKIP = {'youtrack', 'outbox', 'product-management', 'product', 'stories', '_archive'}
 
 # Human-readable fallback titles for directories without a README.md index.
 DEFAULT_TITLES = {
     'adr': 'Architecture Decision Records',
     'prd': 'Product Requirements',
     'spec': 'Specifications',
-    'design': 'Design',
+    'design': 'Design & Accessibility',
+    'mandates': 'Mandates & Compliance',
     'research': 'Research & Development',
     'reference': 'Reference',
     'guides': 'Guides',
-    'qa': 'QA & Test Plans',
+    'qa': 'Quality Assurance',
     'vendors': 'Vendors',
     'prospects': 'Prospects',
     'regulations': 'Regulations',
@@ -155,6 +160,10 @@ def upsert(key, summary, content, parent_id=None):
         return aid or f'dry:{key}', ('updated' if aid else 'created')
     payload = {'summary': summary, 'content': content}
     if aid and exists(aid):
+        # re-assert the canonical parent: the repo owns the hierarchy, so an
+        # article someone moved in YouTrack snaps back on the next publish
+        if parent_id:
+            payload['parentArticle'] = {'id': parent_id}
         api(f'/api/articles/{aid}?fields=id', payload)
         return aid, 'updated'
     payload['project'] = {'id': pid}
@@ -209,7 +218,7 @@ def publish_dir(relpath, parent_id):
             n += 1
     return n
 
-root_title, root_body = 'Project Docs', None
+root_title, root_body = 'Product Development', None
 root_readme = os.path.join(DOCS, 'README.md')
 if os.path.exists(root_readme):
     text = open(root_readme, encoding='utf-8').read()
@@ -220,6 +229,17 @@ root_banner = (f'> **Generated** mirror of the repository `docs/` tree ({stamp})
 root_id, act = upsert('__root__', root_title, root_banner + (root_body or ''))
 print(f'  {act}: "{root_title}" (root)')
 total = publish_dir('', root_id)
+
+# docs/README.md (one level above DOCS_DIR) is the documentation-system
+# guide: published as a TOP-LEVEL article, sibling of the zone roots.
+guide_path = os.path.join(os.path.dirname(DOCS) or '.', 'README.md')
+if os.path.exists(guide_path):
+    gtext = open(guide_path, encoding='utf-8').read()
+    gtitle = h1(gtext) or 'How This Documentation Works'
+    gbanner = (f'> **Generated** from `docs/README.md` ({stamp}) - the repo is canonical. '
+               'Do not edit this article; edit the file and re-publish.\n\n')
+    _, act = upsert('__guide__', gtitle, gbanner + gtext)
+    print(f'  {act}: docs/README.md -> "{gtitle}" (top level)')
 
 if not DRY:
     json.dump(dict(sorted(amap.items())), open(MAP_PATH, 'w'), indent=2)

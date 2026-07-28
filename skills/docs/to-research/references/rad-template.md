@@ -30,5 +30,5 @@
 * [Date] [Validation point 2]
 
 ## Connections
-- **ADR**: [docs/adr/... - related architecture decision]
+- **ADR**: [docs/development/adr/... - related architecture decision]
 - **Stories**: [Tracker story IDs spawned by or validating this research]

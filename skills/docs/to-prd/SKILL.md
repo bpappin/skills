@@ -5,12 +5,12 @@ license: MIT
 compatibility: Standalone for the PRD document; creating the verification stories uses the to-issues skill and the project's tracker.
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Product Requirements (to-prd)
 
-Synthesize the current context into a **PRD document** in `docs/prd/`. The
+Synthesize the current context into a **PRD document** in `docs/development/prd/`. The
 PRD carries requirements and intent; **verification lives on tracker
 stories** (their `## Acceptance Criteria` checklists), never in a companion
 AC file — the tracker is the source of truth for anything with done-ness.
@@ -25,16 +25,16 @@ project-docs owns the taxonomy, the template, and publishing.
 From the conversation and the codebase: identify the problem, the actors,
 and the major modules — look for opportunities to extract deep modules
 (isolatable, testable logic). Use the project's domain glossary and respect
-existing ADRs. If research fed this (docs/research/), reference it.
+existing ADRs. If research fed this (docs/development/research/), reference it.
 
 ### 2. Write the PRD
 
-Create `docs/prd/<slug>.md` from the project-docs template
+Create `docs/development/prd/<slug>.md` from the project-docs template
 (`assets/templates/prd.md` in that skill). No id/status frontmatter, no
 sync IDs — the filename slug is the identity. Sections:
 
 - **Problem** — from the user's perspective, with the discovery trail
-  (link `docs/research/` records that led here).
+  (link `docs/development/research/` records that led here).
 - **Goals / Non-goals** — non-goals are the requirements-level scope guard.
 - **Requirements** — numbered (R1, R2 …) narrative requirements, backed by
   an extensive list of user stories ("As an <actor>, I want <feature>, so

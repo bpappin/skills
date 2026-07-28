@@ -4,7 +4,7 @@ description: Perform workspace housekeeping, cleanup audits, and prepare handoff
 license: MIT
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Housekeeping
@@ -62,8 +62,8 @@ focused, means the story's AC checklist (story-workflow skill):
 Preserve key discussions, setup steps, and architectural choices before
 the conversation is lost. File per the project-docs taxonomy:
 
-- [ ] Design decisions → `docs/adr/`; investigations that led to them →
-      `docs/research/` (the to-research skill for audit-grade RAD records).
+- [ ] Design decisions → `docs/development/adr/`; investigations that led to them →
+      `docs/development/research/` (the to-research skill for audit-grade RAD records).
 - [ ] Update `AGENTS.md` if project setup steps changed.
 - [ ] If transitioning to another agent/session, use the `handoff` skill
       (it posts to the focused story when one exists).

@@ -11,8 +11,8 @@ every human editing a story description relies on it.
 - [x] Verifiable outcome two (done)
 
 ## References
-- docs/prd/some-feature.md
-- docs/adr/0007-conflict-strategy.md
+- docs/development/prd/some-feature.md
+- docs/development/adr/0007-conflict-strategy.md
 
 ## QA
 Feature: <name>

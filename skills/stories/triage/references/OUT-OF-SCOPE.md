@@ -1,6 +1,6 @@
 # Out-of-Scope Knowledge Base
 
-`docs/reference/out-of-scope/` stores persistent records of rejected
+`docs/development/reference/out-of-scope/` stores persistent records of rejected
 feature requests — one file per **concept**, not per issue. It lives under
 `reference/` because a rejection with its reasoning is *knowledge* (per the
 project-docs taxonomy), and being in `docs/` means it publishes to the
@@ -16,7 +16,7 @@ Two purposes:
 ## Structure and format
 
 ```
-docs/reference/out-of-scope/
+docs/development/reference/out-of-scope/
 ├── dark-mode.md
 ├── plugin-system.md
 └── graphql-api.md

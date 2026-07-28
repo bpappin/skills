@@ -3,7 +3,7 @@
 #
 # Usage: yt-pull.sh [PROJECT_KEY] [OUT_DIR]
 #   PROJECT_KEY  defaults to $YOUTRACK_PROJECT from the selected profile
-#   OUT_DIR      defaults to ./docs/youtrack
+#   OUT_DIR      defaults to ./docs/stories
 #
 # Connection selection: $YOUTRACK_CONNECTION, else the machine's only one,
 # else the legacy env file. The snapshot is one .md per issue plus an
@@ -34,7 +34,7 @@ YOUTRACK_TOKEN="${YOUTRACK_TOKEN:-${YOUTRACK_API_TOKEN:-}}"
 
 PROJECT="${1:-${YOUTRACK_PROJECT:-}}"
 [[ -z "$PROJECT" ]] && { echo "usage: yt-pull.sh <PROJECT_KEY> [OUT_DIR]" >&2; exit 1; }
-OUT="${2:-./docs/youtrack}"
+OUT="${2:-./docs/stories}"
 mkdir -p "$OUT"
 
 FIELDS="idReadable,summary,description,resolved,tags(name),customFields(name,value(name)),links(direction,linkType(name),issues(idReadable))"

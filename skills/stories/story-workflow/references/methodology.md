@@ -9,8 +9,8 @@ retired — see ADR-0001.
 
 | Artifact | Lives | Contains |
 |---|---|---|
-| ADR | repo `docs/adr/` | One decision, its context and consequences |
-| PRD | repo `docs/prd/` | Requirements narrative + links to story IDs (no AC) |
+| ADR | repo `docs/development/adr/` | One decision, its context and consequences |
+| PRD | repo `docs/development/prd/` | Requirements narrative + links to story IDs (no AC) |
 | Story | YouTrack issue | Narrative, `## Acceptance Criteria`, optional `## References`, optional `## QA` |
 | Discovered work | YouTrack issue, linked `discovered from` | Anything that surfaced mid-story |
 

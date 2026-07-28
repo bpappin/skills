@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Story Workflow

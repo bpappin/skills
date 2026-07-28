@@ -22,7 +22,7 @@ scripts/yt-publish.sh [--dirs adr,prd,...] [--project KEY] [--dry-run] [DOCS_DIR
   installer connections (`~/.agents/story-tools/connections/`).
 - Idempotency map: `DOCS_DIR/.yt-articles.json` (commit it). Articles carry
   a generated-do-not-edit banner; the repo is canonical, one-way only.
-- Always skipped: `docs/youtrack/` (the snapshot - never mirror the tracker
+- Always skipped: `docs/stories/` (the snapshot - never mirror the tracker
   into itself), non-`.md`, and globs in `DOCS_DIR/.yt-publish-ignore`.
   `README.md` files publish as their directory's article, never as leaves.
 - YouTrack renders the same markdown the repo holds, task lists included.

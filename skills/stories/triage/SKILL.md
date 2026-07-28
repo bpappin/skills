@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.6"
+  version: "1.7"
 ---
 
 # Triage
@@ -77,7 +77,7 @@ issue; let the maintainer pick.
 1. **Gather context.** Read the full issue (body, comments, roles,
    reporter, dates). Parse prior triage notes so you don't re-ask resolved
    questions. Explore the codebase using the project's domain glossary,
-   respecting ADRs in the area. Read `docs/reference/out-of-scope/*.md`
+   respecting ADRs in the area. Read `docs/development/reference/out-of-scope/*.md`
    and surface any prior rejection resembling this issue.
 
 2. **Recommend.** State your category and state recommendation with
@@ -134,7 +134,7 @@ issue; let the maintainer pick.
    - `needs-info` — post triage notes (template below).
    - `wontfix` (bug) — polite explanation, then close.
    - `wontfix` (enhancement) — record the concept in
-     `docs/reference/out-of-scope/`, link it from a comment, then close
+     `docs/development/reference/out-of-scope/`, link it from a comment, then close
      ([references/OUT-OF-SCOPE.md](references/OUT-OF-SCOPE.md)).
    - `needs-triage` — apply the role; optional comment for partial progress.
 

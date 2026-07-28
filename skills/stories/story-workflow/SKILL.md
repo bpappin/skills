@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "0.5"
+  version: "0.6"
 ---
 
 # Story Workflow
@@ -26,6 +26,12 @@ binding and use ONLY its tools:
 
 A developer may have several trackers/instances configured — always use the
 one this project's config names, never another.
+
+If the binding's tools are unavailable (no MCP connection on this machine,
+server unreachable) or the user asks to work disconnected, fall back to
+**offline mode** — [references/offline.md](references/offline.md): the same
+operations, recorded in a local worklog and replayed later via
+story-reconcile. Point the user at the installer once, confirm, then work.
 
 ## The operations
 
@@ -116,7 +122,8 @@ write operation is refused server-side. In that mode: never call write
 operations; track AC progress and discovered work in session notes; at
 checkpoints hand the user a concise change list (AC items to check,
 discovered issues to file in canonical format). Reads — and focus, where
-the binding marks it safe — remain allowed.
+the binding marks it safe — remain allowed. (No connection at all is the
+related case — see [references/offline.md](references/offline.md).)
 
 ## Guardrails
 

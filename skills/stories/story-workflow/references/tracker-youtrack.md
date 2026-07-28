@@ -26,8 +26,11 @@ Focus is safe in read-only mode (it writes only your own app-scoped marker).
 ## Detecting what's available
 
 Check your tool list. No YouTrack tools at all → the MCP connection isn't
-set up: tell the user to run the story-tools installer (`scripts/install.sh`
-in the story-tools repo); never collect credentials yourself. Built-in tools
+set up: tell the user ONCE to run the story-tools installer
+(`scripts/install.sh` in the story-tools repo) — never collect credentials
+yourself — then offer offline mode (the skill's
+[references/offline.md](../references/offline.md) fallback binding) so work
+can continue and be reconciled later. Built-in tools
 but no `story_*` → the app isn't installed or the MCP URL lacks
 `?customToolPackages=story-tools`: say so once, then work in fallback mode
 (right column above) with extra write care.

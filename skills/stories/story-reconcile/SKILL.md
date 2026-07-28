@@ -1,11 +1,11 @@
 ---
 name: story-reconcile
-description: Adopt the story workflow in an existing project - reconcile local documentation (GAP files, AC embedded in PRDs, TODO lists) with the issue tracker, and pull existing tracker stories into a local snapshot. Tracker-agnostic via bindings (YouTrack today). Use when a team starts using story-tools mid-project, or when local docs and the tracker have drifted. Triggers - "reconcile", "adopt the story workflow", "migrate gaps", "import our docs into the tracker", "import into youtrack", "pull stories local", "sync up with youtrack".
+description: Adopt the story workflow in an existing project - reconcile local documentation (GAP files, AC embedded in PRDs, TODO lists) and offline-session worklogs with the issue tracker, and pull existing tracker stories into a local snapshot. Tracker-agnostic via bindings (YouTrack today). Use when a team starts using story-tools mid-project, or when local docs and the tracker have drifted. Triggers - "reconcile", "replay the worklog", "we worked offline", "adopt the story workflow", "migrate gaps", "import our docs into the tracker", "import into youtrack", "pull stories local", "sync up with youtrack".
 license: MIT
 compatibility: Requires a connection to the project's issue tracker (read access minimum; see the tracker binding). Writes optional - produces a report instead when read-only.
 metadata:
   author: bpappin
-  version: "0.3"
+  version: "0.4"
 ---
 
 # Story Reconcile
@@ -33,8 +33,11 @@ Bundled resources:
 
 1. **Inventory local.** Find task-shaped local docs: GAP files,
    `## Acceptance Criteria` (or AC/checklist sections) inside PRDs,
-   TODO/backlog files. Extract each discrete item: text, source file,
-   apparent status. ADRs are not tasks - leave them alone.
+   TODO/backlog files, and the **offline worklog**
+   (`.agents/offline/worklog.md` - sessions recorded by story-workflow's
+   offline mode: AC toggles, discovered work, time entries). Extract each
+   discrete item: text, source file, apparent status. Skip worklog sessions
+   already marked `Reconciled:`. ADRs are not tasks - leave them alone.
 
 2. **Inventory server.** Run the binding's snapshot command to mirror
    existing stories into `docs/<tracker>/`. Read the snapshot INDEX.
@@ -53,6 +56,11 @@ Bundled resources:
      binding's sanctioned add-AC path).
    - Rewrite each PRD's task content into a `## Stories` table of IDs;
      remove embedded AC.
+   - Replay approved worklog entries: toggle the AC items on their
+     stories, create the discovered-work issues, log the time entries
+     (`work.logTime` - the numbers were already user-approved when
+     recorded). Mark each applied session block `Reconciled: <date>`;
+     when every session is applied, offer to delete the worklog.
    - Move GAP-style files into `docs/_archive/` (do not delete).
    - **Read-only mode** (config `readOnly: true` or writes refused): skip
      all writes; emit `docs/reconcile-report.md` with ready-to-paste story

@@ -8,7 +8,8 @@ exports.aiTool = {
     'Full briefing for the story you are working on: summary, state, acceptance criteria (AC) checklist, references to ADR/PRD docs, linked discovered work, and whether a QA/Gherkin section is required. ' +
     'Call this at the start of a work session and re-read it before making scope decisions. ' +
     'THE AC LIST DEFINES THE SCOPE: work that does not serve an AC item belongs in a new issue via story_add_discovered_work, never in silent expansion of this story. ' +
-    'If issueId is omitted, uses your focused story (story_set_focus).',
+    'If issueId is omitted, uses your focused story (story_set_focus). ' +
+    '[story-tools v' + lib.VERSION + ']',
   inputSchema: {
     type: 'object',
     properties: {

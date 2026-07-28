@@ -3,7 +3,7 @@
   "name": "story-tools",
   "title": "Story Tools",
   "description": "Story + Acceptance Criteria workflow tools with a scope-guard for AI agents. Canonical AC lives as a markdown task list in the issue description.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "vendor": {
     "name": "Brill Pappin",
     "email": "johnpappin@gmail.com"

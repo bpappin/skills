@@ -3,6 +3,7 @@
 const entities = require('@jetbrains/youtrack-scripting-api/entities');
 const parser = require('./ac-parser');
 
+const VERSION = '0.3.1';  // keep in sync with manifest.json (tests/version.test.js enforces)
 const DISCOVERED_LINK = 'discovered from';
 const NEEDS_GHERKIN_TAG = 'needs-gherkin';
 
@@ -114,6 +115,7 @@ function readOnlyRefusal(ctx, proposed) {
   };
 }
 
+exports.VERSION = VERSION;
 exports.readOnlyRefusal = readOnlyRefusal;
 exports.RESERVED_TAGS = RESERVED_TAGS;
 exports.topicalTags = topicalTags;

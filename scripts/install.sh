@@ -87,7 +87,10 @@ check_app() {  # sets APP_CHECK = installed | missing | unauthorized | unreachab
     -H "Authorization: Bearer $YOUTRACK_TOKEN" -H "Content-Type: application/json" \
     -H "Accept: application/json, text/event-stream" \
     -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' 2>/dev/null) || code="000"
-  if grep -q '"story_' "$body"; then APP_CHECK="installed"
+  APP_VERSION=""
+  if grep -q '"story_' "$body"; then
+    APP_CHECK="installed"
+    APP_VERSION=$(grep -o 'story-tools v[0-9][0-9.]*' "$body" | head -1 | sed 's/story-tools v//')
   elif [[ "$code" == "401" || "$code" == "403" ]]; then APP_CHECK="unauthorized"
   elif [[ "$code" == "200" ]]; then APP_CHECK="missing"
   else APP_CHECK="unreachable"
@@ -193,10 +196,38 @@ setup_connection() {  # $1 = optional preselected name; sets PROFILE + creds var
 
 # ---------- step: server setup (app + link type + tag) ----------
 
+offer_deploy() {  # $1 = reason line already printed by caller
+  [[ -f "$REPO_DIR/trackers/youtrack/app/manifest.json" ]] || return 0
+  local yn; yn="$(ask "Deploy the app now with this token? (needs admin permission) y/N" "n")"
+  if [[ "$yn" =~ ^[Yy]$ ]]; then
+    if YOUTRACK_HOST="${YOUTRACK_URL%/}" YOUTRACK_API_TOKEN="$YOUTRACK_TOKEN" "$REPO_DIR/trackers/youtrack/deploy.sh"; then
+      ok "app deployed"
+    else
+      warn "deploy failed - see the output above for the actual cause"
+      say "  If it mentions 403/permissions: the token lacks global Update Project /"
+      say "  Low-level Admin Write - ask a YouTrack admin to run trackers/youtrack/deploy.sh."
+    fi
+  else
+    say "  An admin can deploy later: cd $REPO_DIR && ./trackers/youtrack/deploy.sh"
+  fi
+}
+
 setup_server() {
+  local repo_ver=""
+  [[ -f "$REPO_DIR/trackers/youtrack/app/manifest.json" ]] && \
+    repo_ver=$(sed -nE 's/.*"version": *"([^"]+)".*/\1/p' "$REPO_DIR/trackers/youtrack/app/manifest.json" | head -1)
   check_app
   case "$APP_CHECK" in
-    installed) ok "story-tools app installed - story_* tools are live";;
+    installed)
+      if [[ -n "$APP_VERSION" && "$APP_VERSION" == "$repo_ver" ]]; then
+        ok "story-tools app v$APP_VERSION installed - up to date with this repo"
+      elif [[ -n "$APP_VERSION" ]]; then
+        warn "story-tools app v$APP_VERSION installed; this repo has v$repo_ver"
+        offer_deploy
+      else
+        warn "story-tools app installed, version unknown (predates v0.3.1); repo has v$repo_ver"
+        offer_deploy
+      fi;;
     unauthorized)
       warn "the token authenticates but cannot reach the MCP endpoint (HTTP 401/403)"
       say "  Check the token scope is \"YouTrack\" - then re-run this setup.";;
@@ -206,20 +237,7 @@ setup_server() {
     missing)
       warn "MCP endpoint reachable, but the story-tools app is not installed"
       say "  The skills still work (fallback mode, built-in tools only)."
-      if [[ -f "$REPO_DIR/trackers/youtrack/app/manifest.json" ]]; then
-        local yn; yn="$(ask "Deploy the app now with this token? (needs admin permission) y/N" "n")"
-        if [[ "$yn" =~ ^[Yy]$ ]]; then
-          if YOUTRACK_HOST="${YOUTRACK_URL%/}" YOUTRACK_API_TOKEN="$YOUTRACK_TOKEN" "$REPO_DIR/trackers/youtrack/deploy.sh"; then
-            ok "app deployed"
-          else
-            warn "deploy failed - see the output above for the actual cause"
-            say "  If it mentions 403/permissions: the token lacks global Update Project /"
-            say "  Low-level Admin Write - ask a YouTrack admin to run trackers/youtrack/deploy.sh."
-          fi
-        else
-          say "  An admin can deploy later: cd $REPO_DIR && ./trackers/youtrack/deploy.sh"
-        fi
-      fi;;
+      offer_deploy;;
   esac
 
   # 'discovered from' link type - create if missing (status-aware)

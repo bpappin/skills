@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.5"
+  version: "1.6"
 ---
 
 # To Issues
@@ -85,7 +85,7 @@ decision-rich parts.>
 - [ ] Verifiable outcome 2
 
 ## References
-- docs/development/prd/<source>.md
+- <KB article ID + title of the source PRD, e.g. EVO-A-41 Some Feature>
 - <parent issue ID, if the source was an issue>
 ```
 

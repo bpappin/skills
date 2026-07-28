@@ -1,10 +1,10 @@
 ---
 name: to-wiring
-description: Audit, check, and maintain the application's internal feature wiring rules in docs/development/spec/WIRING.md. Use when starting a project, proposing a new feature plan, or auditing feature-to-feature integration hooks.
+description: Audit, check, and maintain the application's internal feature wiring rules in WIRING.md at the repo root. Use when starting a project, proposing a new feature plan, or auditing feature-to-feature integration hooks.
 license: MIT
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Application Wiring (to-wiring)
@@ -18,22 +18,23 @@ as the app grows.
 
 ## Core hierarchy
 
-1. **Project Wiring Rulebook (`docs/development/spec/WIRING.md`)** — a spec document
-   (project-docs taxonomy) defining:
+1. **Project Wiring Rulebook (`WIRING.md`, repo root)** — pure agent
+   machinery beside `AGENTS.md`: git-native, never synced, deliberately
+   NOT in the knowledge base. It defines:
    - The project's specific connection mechanisms (direct imports,
      dependency injection, callbacks, ...).
    - Global services and features that other modules must integrate with.
    - Explicit feature-to-feature connection rules.
 2. **AI instructions (`AGENTS.md`)** — rules in the project's root agent
    instructions mandating that agents read and respect
-   `docs/development/spec/WIRING.md` when planning new code.
+   `WIRING.md` when planning new code.
 
 ## Workflows
 
 ### 1. Bootstrapping & configuration
 
 Triggered by "setup wiring", "initialize wiring rules", or when a wiring
-command runs and `docs/development/spec/WIRING.md` does not exist.
+command runs and `WIRING.md` does not exist at the repo root.
 
 1. **Q&A interview** — ask the user, one at a time:
    - *Wiring mechanisms*: "How do different features/components typically
@@ -47,8 +48,7 @@ command runs and `docs/development/spec/WIRING.md` does not exist.
      structure (core/, shared/, utils/)?"
 2. **Generate WIRING.md** — load this skill's
    [assets/WIRING_TEMPLATE.md](assets/WIRING_TEMPLATE.md), substitute the
-   user's answers, and write the result to `docs/development/spec/WIRING.md`
-   (create `docs/development/spec/` if needed).
+   user's answers, and write the result to `WIRING.md` at the repo root.
 3. **Inject mandates** — run the AGENTS.md update from the audit workflow
    below.
 
@@ -56,7 +56,8 @@ command runs and `docs/development/spec/WIRING.md` does not exist.
 
 Triggered by "audit wiring", "update WIRING.md", or after bootstrapping.
 
-1. **Code/docs scan** — scan the source tree, `docs/development/prd/`, and the
+1. **Code/docs scan** — scan the source tree, the Product Requirements section of
+   `docs/knowledge/`, and the
    tracker's stories (story-workflow / search via the project's tracker
    binding) to detect wiring candidates:
    - Files or classes in common/shared directories.
@@ -77,11 +78,11 @@ Triggered by "audit wiring", "update WIRING.md", or after bootstrapping.
    ```markdown
    - **Wiring & Integration Checks**:
      - Before proposing any implementation plan, you MUST read
-       `docs/development/spec/WIRING.md`.
+       `WIRING.md` at the repo root.
      - Check the proposed feature against all wiring and connection rules.
      - Include an "Integration Hooks" section in the plan showing how the
        feature hooks up to the systems listed.
-     - Suggest adding the new feature to `docs/development/spec/WIRING.md` if it
+     - Suggest adding the new feature to `WIRING.md` if it
        qualifies as a global service.
    ```
 
@@ -90,7 +91,7 @@ Triggered by "audit wiring", "update WIRING.md", or after bootstrapping.
 Triggered during implementation planning of a new feature, or on "check
 wiring".
 
-1. **Read rules** — read `docs/development/spec/WIRING.md`.
+1. **Read rules** — read `WIRING.md` at the repo root.
 2. **Cross-reference** — compare the proposed feature's PRD and tracker
    story against the integration triggers of all listed global services
    and features.

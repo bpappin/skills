@@ -30,5 +30,5 @@
 * [Date] [Validation point 2]
 
 ## Connections
-- **ADR**: [docs/development/adr/... - related architecture decision]
+- **ADR**: [KB article ID (EVO-A-nn) - related architecture decision]
 - **Stories**: [Tracker story IDs spawned by or validating this research]

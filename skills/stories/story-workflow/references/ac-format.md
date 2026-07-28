@@ -11,8 +11,8 @@ every human editing a story description relies on it.
 - [x] Verifiable outcome two (done)
 
 ## References
-- docs/development/prd/some-feature.md
-- docs/development/adr/0007-conflict-strategy.md
+- EVO-A-41 Some Feature (KB article; mirror file docs/knowledge/**/EVO-A-41_*.md)
+- EVO-A-17 ADR-0007 Conflict Strategy
 
 ## QA
 Feature: <name>

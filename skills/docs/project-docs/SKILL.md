@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone for filing/creating docs. Publishing to YouTrack articles requires an MCP or REST connection (story-tools profile or YOUTRACK_URL/TOKEN env).
 metadata:
   author: bpappin
-  version: "0.9"
+  version: "0.11"
 ---
 
 # Project Docs
@@ -70,7 +70,10 @@ does the same for the root. Create one whenever you create a directory.
 
 ## Publishing to the tracker's knowledge base
 
-The whole docs tree mirrors into the tracker's knowledge area as a matching
+The publisher handles the exclusions itself - `product/`, `stories/`,
+`outbox/`, `_archive/` are ALWAYS skipped; do not hand-manage ignore
+entries for them (`.yt-publish-ignore` is for project-specific extras
+only). The whole docs tree mirrors into the tracker's knowledge area as a matching
 hierarchy (root "Project Docs" → one node per directory → one per document),
 so stories can link readable docs and non-repo people can search them. Run
 the publish command from the tracker binding
@@ -135,13 +138,22 @@ Ownership fixes where a document LIVES, not who may create one. Both
 flows are one-time hand-offs at birth - never a second writable copy:
 
 - **Repo → Product Management** ("a developer adds a HIPAA doc for the
-  PM side"): author the markdown locally, then create it as an article
-  in the right Product Management section (REST/article tools - same
-  credentials as the publisher). Do NOT also file it under
-  `docs/development/` - the article is canonical from birth; it reaches
-  the repo via the `docs/product/` pull. While no PM zone exists yet
-  (solo mode), skip all this: just file it in `development/` normally
-  and it can graduate later.
+  PM side"): author the markdown locally, then push it with
+  `scripts/yt-pm-push.sh FILE --section "Mandates & Compliance"` -
+  it creates the zone root and section if missing, refuses duplicates
+  (after the hand-off, edits belong in YouTrack), and supports
+  `--dry-run`. Do NOT also file it under `docs/development/` - the
+  article is canonical from birth; it reaches the repo via the
+  `docs/product/` pull (below). If the project has no PM zone and none
+  is wanted yet (solo mode), just file it in `development/` normally
+  and graduate later.
+- **Refreshing `docs/product/`**: `scripts/yt-pull-kb.sh` regenerates
+  the snapshot from the KB's Product Management zone (banner-stamped,
+  per-article YouTrack links, `.yt-kb-pull.json` stamp). Run it after
+  PM-side changes, or whenever fresh PM context matters for the work.
+  It refuses to overwrite an unstamped non-empty directory - the first
+  pull over interim hand-pushed copies needs `--force`. Supports
+  `--dry-run`.
 - **Product Management → repo** ("the architect drafts definitions that
   need to live in the repo"): KB-side authors put repo-destined drafts
   in a **For Development** section under Product Management. An agent

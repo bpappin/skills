@@ -65,6 +65,18 @@ if [[ -z "${YOUTRACK_URL:-}" ]]; then
 fi
 YOUTRACK_URL="${YOUTRACK_URL:-${YOUTRACK_HOST:-}}"
 YOUTRACK_TOKEN="${YOUTRACK_TOKEN:-${YOUTRACK_API_TOKEN:-}}"
+# guard: generated/excluded zones are NEVER publish roots. Publishing
+# docs/product would stamp Product Management content as generated-from-repo
+# and re-assert positions - inverting the ownership model. Seed PM content
+# with yt-pm-push.sh instead.
+case "$(basename "${DOCS_DIR%/}")" in
+  product|product-management|stories|youtrack|outbox|_archive)
+    echo "error: '$DOCS_DIR' is a generated or excluded zone - it is never a publish root." >&2
+    echo "To move locally-drafted content INTO Product Management, push each file with:" >&2
+    echo "  scripts/yt-pm-push.sh FILE --section \"Section Name\"   (hand-off at birth)" >&2
+    exit 1;;
+esac
+
 [[ "$DRY" != 1 && ( -z "$YOUTRACK_URL" || -z "$YOUTRACK_TOKEN" ) ]] && { echo "error: no YouTrack credentials found" >&2; exit 1; }
 
 if [[ -z "$PROJECT" ]]; then

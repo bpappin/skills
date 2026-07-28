@@ -90,7 +90,7 @@ check_app() {  # sets APP_CHECK = installed | missing | unauthorized | unreachab
   APP_VERSION=""
   if grep -q '"story_' "$body"; then
     APP_CHECK="installed"
-    APP_VERSION=$(grep -o 'story-tools v[0-9][0-9.]*' "$body" | head -1 | sed 's/story-tools v//')
+    APP_VERSION=$(grep -o 'story-tools v[0-9][0-9.]*' "$body" | head -1 | sed 's/story-tools v//' || true)
   elif [[ "$code" == "401" || "$code" == "403" ]]; then APP_CHECK="unauthorized"
   elif [[ "$code" == "200" ]]; then APP_CHECK="missing"
   else APP_CHECK="unreachable"
@@ -546,6 +546,9 @@ project_mode() {
   load_connection "$profile" || { say "error: connection '$profile' not found - run ./scripts/install.sh" >&2; exit 1; }
   PROFILE="$profile"
   resolve_server
+  # keep the server in step with the workflow on every project refresh:
+  # app version check/deploy offer, link type, workflow tags
+  setup_server
   local prev; prev="$(read_pointer "$dir" connection)"; [[ -z "$prev" ]] && prev="$(read_pointer "$dir" profile)"
   [[ -n "$prev" && "$prev" != "$PROFILE" ]] && warn "rebinding: this project was bound to connection '$prev', now '$PROFILE'"
   [[ -z "$yt_project" ]] && yt_project="$(read_pointer "$dir" project)"
@@ -567,7 +570,12 @@ EOF
 }
 
 case "${1:-}" in
-  "") if [[ -t 0 ]]; then wizard; else sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; fi;;
+  "") if [[ -f "./.agents/config/story-tools.json" ]]; then
+        # run from inside a bound project: refresh it, no flags needed
+        say "Bound project detected here - refreshing it (connection and"
+        say "project key come from .agents/config/story-tools.json)."
+        project_mode "$PWD"
+      elif [[ -t 0 ]]; then wizard; else sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; fi;;
   --setup) wizard;;
   --user) shift; profile=""; [[ "${1:-}" == "--connection" || "${1:-}" == "--profile" ]] && profile="$2"; user_mode "$profile";;
   --project) shift; [[ $# -ge 1 ]] || { say "usage: install.sh --project <dir> [--connection <name>] [--yt-project <KEY>] [--readonly] [--copy]" >&2; exit 1; }; project_mode "$@";;

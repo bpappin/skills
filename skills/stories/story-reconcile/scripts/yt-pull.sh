@@ -7,7 +7,7 @@
 #
 # Connection selection: $YOUTRACK_CONNECTION, else the machine's only one,
 # else the legacy env file. The snapshot is one .md per issue plus an
-# INDEX.md; a DIMENSIONS.md (the project's field values - Subsystem,
+# INDEX.md; a dimensions.md (the project's field values - Subsystem,
 # Type, Priority, Stage, Fix versions - plus existing topical tags, so
 # offline/fallback agents can pick from real values instead of guessing)
 # is written to the docs root, beside OUT_DIR;
@@ -127,7 +127,7 @@ with open(os.path.join(out, 'INDEX.md'), 'w') as f:
 print(f"Wrote {len(issues)} issues + INDEX.md to {out}")
 EOF
 
-# DIMENSIONS.md - project field values + existing tags for offline picking.
+# dimensions.md - project field values + existing tags for offline picking.
 # Lives at the docs ROOT (parent of the stories dir), with the agent's
 # other indexes - part of the git-native stash, never synced to the KB.
 DIM_DIR="$(dirname "$OUT")"
@@ -166,6 +166,6 @@ topical = sorted({t['name'] for t in tags if t.get('name') and t['name'] not in 
 if topical:
     lines.append('## Existing topical tags (reuse before inventing)')
     lines += [f'- {t}' for t in topical] + ['']
-open(os.path.join(out, 'DIMENSIONS.md'), 'w').write('\n'.join(lines))
-print(f'Wrote DIMENSIONS.md ({len(topical)} topical tags)')
+open(os.path.join(out, 'dimensions.md'), 'w').write('\n'.join(lines))
+print(f'Wrote dimensions.md ({len(topical)} topical tags)')
 EOF

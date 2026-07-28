@@ -12,8 +12,30 @@ docs/
 ├── reference/      External facts: vendors/, prospects/, regulations/, domain
 ├── guides/         How-to - onboarding, environment, CI, developer guides
 ├── qa/             Durable test plans, protocols, test-user rosters
+├── outbox/         Outbound artifacts - never published to the KB
 └── youtrack/       GENERATED snapshot from yt-pull - never hand-edited, never published
 ```
+
+**`outbox/`** holds things written FOR someone else: a bug report filed
+against a third-party library, correspondence, a proposal draft sent out.
+It exists so those artifacts have a home in the repo, but it is not
+project knowledge - the publisher always skips it.
+
+## Subsystems (monorepos)
+
+When one repo holds several systems, split WITHIN each home by subsystem
+subdirectory - `docs/adr/cms-server/`, `docs/guides/android-client/` - so
+the knowledge base reads "Architecture Decision Records → CMS Server"
+instead of jumbling every system together. Rules:
+
+- Create subsystem folders lazily, only in homes where a system actually
+  has documents; cross-cutting docs stay at the home's root.
+- Name folders after the project's Subsystem field values ("CMS Server" →
+  `cms-server/`), and give each a README.md whose H1 matches the field
+  value exactly - the KB section and the board field then use the same
+  vocabulary.
+- Cross-cutting concerns that are Subsystem values (Transport,
+  Offline-first) get folders the same way when they accumulate docs.
 
 ## The filing rule
 

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.3"
+  version: "1.6"
 ---
 
 # Triage
@@ -96,10 +96,25 @@ issue; let the maintainer pick.
    Critical/Major/Normal/Minor via the binding) - set it deliberately on
    every issue that leaves triage; discovered-work issues arrive at the
    default priority precisely so this step decides their real urgency.
-   Curate topical tags: Title Case, human-readable ("Trust Insights"),
+   Set the Subsystem when the project has that field - which component
+   owns this work (CMS Server, Android Client, or a cross-cutting concern
+   like Transport). **Always list the available values first** (the
+   binding's dimensions tool) - people stuff everything into one value
+   when they can't see the menu. Propose the value you infer from the
+   issue and the code it touches; the human confirms, picks another, or
+   deliberately adds a new one. Check for near-duplicates before proposing
+   a new value ("CMS-Server" when "CMS Server" exists); adding one is a
+   project-settings change and may need an admin. Curate topical tags:
+   Title Case, human-readable ("Trust Insights"),
    reusing existing tags over inventing near-duplicates. Reserved workflow
    tags (the role tags, `needs-gherkin`, `discovered`) are machinery, not
-   topics. Release membership lives in the **Fix versions** field, not tags
+   topics. **Human-added tags are data**: users tag stories to group things
+   their own way - never remove or rename a tag on your own initiative,
+   even one that looks redundant. Tidying is fine when the user directs
+   it ("remove the X tag", "merge these two"), and you may PROPOSE a
+   cleanup you've noticed ("'Maps' and 'Map Layer' look like the same
+   group - merge them?") - but you execute only what they approve.
+   Release membership lives in the **Fix versions** field, not tags
    - set it when the target release is known. Link relationships you
    noticed while grilling, using the most
    specific link type the binding offers: a duplicate gets linked

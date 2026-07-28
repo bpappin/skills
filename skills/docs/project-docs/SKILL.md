@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone for filing/creating docs. Publishing to YouTrack articles requires an MCP or REST connection (story-tools profile or YOUTRACK_URL/TOKEN env).
 metadata:
   author: bpappin
-  version: "0.2"
+  version: "0.3"
 ---
 
 # Project Docs
@@ -35,7 +35,11 @@ Two questions, in order:
    `prd/` · standing spec → `spec/` · picture/mockup → `design/` ·
    investigation → `research/` · external fact (vendors, prospects,
    regulations, domain) → `reference/` · how-to → `guides/` · test
-   protocol → `qa/`. Details and edge cases:
+   protocol → `qa/` · written FOR an outside party (third-party bug
+   report, correspondence) → `outbox/` (stored, never published). In a
+   monorepo, split within a home by subsystem subdirectory
+   (`adr/cms-server/`), named after the Subsystem field values. Details
+   and edge cases:
    [references/taxonomy.md](references/taxonomy.md).
 
 When the user hands you a doc that mixes both (e.g. a spec with a task
@@ -80,8 +84,9 @@ YouTrack).
   ("Architecture Decision Records", "Product Requirements", ...), then to a
   title-cased dir name. Document articles are titled from each file's H1.
   Nothing in the knowledge base should show a bare slug like "adr".
-- The tracker snapshot dir (e.g. `docs/youtrack/`) is never published —
-  that would mirror the tracker back into itself. Non-markdown files are skipped; add
+- The tracker snapshot dir (e.g. `docs/youtrack/`) and `docs/outbox/`
+  are never published — the first would mirror the tracker into itself,
+  the second is outbound material, not knowledge. Non-markdown files are skipped; add
   glob lines to `docs/.yt-publish-ignore` to exclude anything else.
 - Preview first: `--dry-run` prints the exact article tree (titles,
   hierarchy, create/update actions) offline, no credentials needed.

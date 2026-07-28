@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.2"
+  version: "1.4"
 ---
 
 # To Issues
@@ -55,7 +55,11 @@ human interaction). Prefer AFK where possible.
 Present the breakdown as a numbered list. For each slice: **Title**,
 **Type** (HITL/AFK), **Blocked by** (which slices must complete first),
 **Requirements covered** (R-numbers / user stories from the source PRD),
-**Priority** (proposed - default Normal; the user owns the final call), and
+**Priority** (proposed - default Normal; the user owns the final call),
+**Subsystem** (which component of the monorepo the slice lands in - a
+vertical slice may touch several; name the one that owns it; fetch the
+project's available values via the binding's dimensions tool and show
+them - propose your inference, never invent near-duplicates), and
 **Estimate** (a rough one: 1h / 4h / 1d - calibration data, not a promise).
 If the work targets a release, confirm it once for the batch - release
 membership is the **Fix versions** field, never a tag.
@@ -86,7 +90,7 @@ decision-rich parts.>
 ```
 
 Then, via the binding: link blockers (depends-on), set each story's
-Priority and Estimation as approved, tag AFK slices `ready-for-agent`, tag
+Priority, Subsystem, and Estimation as approved, tag AFK slices `ready-for-agent`, tag
 `needs-gherkin` where a slice has strict rules or planned test automation,
 and apply one shared **topical tag** to the whole batch - Title Case,
 human-readable, usually the feature or PRD name ("Trust Insights") - so the

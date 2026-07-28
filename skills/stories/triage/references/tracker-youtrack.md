@@ -9,6 +9,8 @@ the story-tools installer - never collected in chat.
 | Read an issue fully | `get_issue` (+ comments) |
 | Apply category roles | Prefer the project's `Type` field when it has one: `update_issue` → Type = Bug / Feature (boards color and swimlane by Type). Fallback where there is no Type field: `manage_issue_tags` → `bug` / `enhancement` |
 | Apply state roles | `manage_issue_tags` - the role names ARE the tag names (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`) |
+| List dimension values | `story_project_dimensions` - available Subsystem/Type/Priority/Fix versions/Stage values; show them before asking a human to pick. Fallback without the app: sample recent issues via `search_issues` and collect distinct values |
+| Set Subsystem | `update_issue` → Subsystem (component ownership; list values first, confirm before setting) |
 | Set release | `update_issue` → Fix versions (query later with `Fix versions: 1.2`); the field and its version values are project settings - if absent, note it for the maintainer, don't approximate with a tag |
 | Link related issues | `link_issues` - always the most specific type: `duplicates` (then close the duplicate), `depends on` (ordering), `subtask of` (parent epic/feature), `discovered from` (provenance), `relates to` only when nothing sharper fits |
 | Post triage notes / briefs | `add_issue_comment` |

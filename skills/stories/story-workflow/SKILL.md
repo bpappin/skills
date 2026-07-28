@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "0.8"
+  version: "1.1"
 ---
 
 # Story Workflow
@@ -97,7 +97,14 @@ coarse split only when it was genuinely even. Rules:
 - Priority is read from context, set by triage/planning. Never change a
   story's priority on your own; suggest a change to the user instead.
 - Topical tags are Title Case, human-readable ("Trust Insights", not
-  "trust-insights") and mark what groups together - features, subsystems.
+  "trust-insights") and mark feature-level grouping. Component ownership
+  belongs in the Subsystem field (shown in context) - never duplicate
+  subsystem names as tags.
+- **Human-added tags are data.** A tag you don't recognize is someone's
+  grouping, not clutter - never remove or rename tags on your own
+  initiative. Adding, removing, or merging tags at the user's direction
+  is fine, and you may propose a tidy-up you've noticed; execute only
+  what they approve.
   Release membership is the Fix versions field (shown in context), never a
   tag. Reserved workflow tags (`ready-for-agent`, `needs-gherkin`,
   `discovered`, triage roles) are machinery - never repurpose them.

@@ -47,6 +47,7 @@ exports.aiTool = {
       ac: parsed.ac,
       references: parsed.references,
       priority: lib.fieldString(issue, 'Priority'),
+      subsystem: lib.fieldString(issue, 'Subsystem'),
       fixVersions: lib.fieldNames(issue, 'Fix versions'),
       tags: lib.allTags(issue),
       estimation: lib.fieldString(issue, 'Estimation'),

@@ -14,6 +14,12 @@ if [[ -z "${YOUTRACK_URL:-}" ]]; then
   candidates=( )
   [[ -n "${YOUTRACK_ENV_FILE:-}" ]] && candidates+=("$YOUTRACK_ENV_FILE")
   conn="${YOUTRACK_CONNECTION:-${YOUTRACK_PROFILE:-}}"
+  # no explicit connection: the project pointer names it
+  if [[ -z "$conn" ]]; then
+    for pf in "./.agents/config/story-tools.json" "./.agents/youtrack.json"; do
+      [[ -f "$pf" ]] && { conn=$(sed -nE 's/.*"connection": *"([^"]+)".*/\1/p' "$pf" | head -1); break; }
+    done
+  fi
   [[ -n "$conn" ]] && candidates+=("$HOME/.agents/story-tools/connections/$conn.env")
   conns=( "$HOME"/.agents/story-tools/connections/*.env )
   [[ ${#conns[@]} -eq 1 && -f "${conns[0]}" ]] && candidates+=("${conns[0]}")
@@ -67,21 +73,33 @@ def field(it, name):
             return v
     return None
 
+def slug(text, maxlen=60):
+    t = re.sub(r'[^A-Za-z0-9]+', '-', text or '').strip('-').lower()
+    return t[:maxlen].rstrip('-') or 'untitled'
+
 index = []
 for it in issues:
     iid = it['idReadable']
-    state = field(it, 'State') or ''
+    state = next((v for v in (field(it, n) for n in ('Stage', 'Kanban State', 'Status', 'State')) if v), '')
+    subsystem = field(it, 'Subsystem') or ''
     tags = ', '.join(t['name'] for t in it.get('tags') or [])
     links = []
     for l in it.get('links') or []:
         for li in l.get('issues') or []:
             links.append(f"{l.get('linkType',{}).get('name','link')} {li['idReadable']}")
     body = it.get('description') or '_(no description)_'
-    with open(os.path.join(out, iid + '.md'), 'w') as f:
+    # human-findable filename: EVO-2_title-of-the-story.md; drop stale
+    # copies of this issue from earlier pulls (old name or changed title)
+    fname = f"{iid}_{slug(it.get('summary'))}.md"
+    for stale in os.listdir(out):
+        if (stale == iid + '.md' or stale.startswith(iid + '_')) and stale != fname:
+            os.remove(os.path.join(out, stale))
+    with open(os.path.join(out, fname), 'w') as f:
         f.write(f"""---
 id: {iid}
 summary: "{(it.get('summary') or '').replace('"', "'")}"
 state: "{state}"
+subsystem: "{subsystem}"
 resolved: {str(bool(it.get('resolved'))).lower()}
 tags: "{tags}"
 links: "{'; '.join(links)}"
@@ -93,14 +111,14 @@ url: {url}/issue/{iid}
 
 {body}
 """)
-    index.append((iid, it.get('summary',''), state, bool(it.get('resolved'))))
+    index.append((iid, fname, it.get('summary',''), state, subsystem, bool(it.get('resolved'))))
 
 with open(os.path.join(out, 'INDEX.md'), 'w') as f:
     f.write(f"# YouTrack snapshot: project {project} ({datetime.date.today()})\n\n")
     f.write("GENERATED - do not edit. Re-run scripts/yt-pull.sh to refresh.\n\n")
-    f.write("| ID | Summary | State | Resolved |\n|---|---|---|---|\n")
-    for iid, s, st, r in index:
-        f.write(f"| [{iid}]({iid}.md) | {s} | {st} | {'yes' if r else ''} |\n")
+    f.write("| ID | Summary | Subsystem | State | Resolved |\n|---|---|---|---|---|\n")
+    for iid, fn, s, st, sub, r in index:
+        f.write(f"| [{iid}]({fn}) | {s} | {sub} | {st} | {'yes' if r else ''} |\n")
 
 print(f"Wrote {len(issues)} issues + INDEX.md to {out}")
 EOF

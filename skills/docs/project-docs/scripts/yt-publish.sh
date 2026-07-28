@@ -22,7 +22,8 @@
 # dir name is title-cased. docs/README.md does the same for the root.
 #
 # Always skipped: docs/youtrack/ (the yt-pull snapshot - publishing it
-# would mirror YouTrack into YouTrack), non-.md files, and any path
+# would mirror YouTrack into YouTrack), docs/outbox/ (outbound artifacts,
+# never knowledge-base content), non-.md files, and any path
 # matching a glob line in DOCS_DIR/.yt-publish-ignore. README.md files
 # are consumed as directory articles, never published as leaves.
 #
@@ -44,6 +45,12 @@ if [[ -z "${YOUTRACK_URL:-}" ]]; then
   candidates=( )
   [[ -n "${YOUTRACK_ENV_FILE:-}" ]] && candidates+=("$YOUTRACK_ENV_FILE")
   conn="${YOUTRACK_CONNECTION:-${YOUTRACK_PROFILE:-}}"
+  # no explicit connection: the project pointer names it
+  if [[ -z "$conn" ]]; then
+    for pf in "$DOCS_DIR/../.agents/config/story-tools.json" "$DOCS_DIR/../.agents/youtrack.json"; do
+      [[ -f "$pf" ]] && { conn=$(sed -nE 's/.*"connection": *"([^"]+)".*/\1/p' "$pf" | head -1); break; }
+    done
+  fi
   [[ -n "$conn" ]] && candidates+=("$HOME/.agents/story-tools/connections/$conn.env")
   conns=( "$HOME"/.agents/story-tools/connections/*.env )
   [[ ${#conns[@]} -eq 1 && -f "${conns[0]}" ]] && candidates+=("${conns[0]}")
@@ -74,7 +81,7 @@ ONLY = [d.strip() for d in os.environ['DIRS'].split(',') if d.strip()]
 DOCS = os.environ['DOCS_DIR'].rstrip('/')
 DRY = os.environ.get('DRY') == '1'
 MAP_PATH = os.path.join(DOCS, '.yt-articles.json')
-ALWAYS_SKIP = {'youtrack'}
+ALWAYS_SKIP = {'youtrack', 'outbox'}
 
 # Human-readable fallback titles for directories without a README.md index.
 DEFAULT_TITLES = {

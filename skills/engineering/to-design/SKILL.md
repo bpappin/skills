@@ -1,6 +1,10 @@
 ---
 name: to-design
 description: Formalizes the design-capturing process as a structured agent capability. Use when the user wants to design a new UI component, feature, or screen to ensure visual samples are generated and properly registered.
+license: MIT
+metadata:
+  author: bpappin
+  version: "1.0"
 ---
 
 # Design Process (to-design)

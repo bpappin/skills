@@ -1,6 +1,10 @@
 ---
 name: git-guardrails-gemini
 description: Codifies the strict Git safety rules for Gemini CLI. Use this to remind the agent of its limitations regarding destructive Git operations.
+license: MIT
+metadata:
+  author: bpappin
+  version: "1.0"
 ---
 
 # Gemini Git Guardrails

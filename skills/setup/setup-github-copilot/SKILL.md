@@ -1,6 +1,10 @@
 ---
 name: setup-github-copilot
 description: Configure GitHub Copilot custom instructions at the repository level. Use when setting up or customizing Copilot instructions, creating .github/copilot-instructions.md, or setting up project-specific Copilot guidelines.
+license: MIT
+metadata:
+  author: bpappin
+  version: "1.0"
 ---
 
 # Setup GitHub Copilot Instructions

@@ -1,6 +1,10 @@
 ---
 name: setup-gitlab-duo
 description: Configure GitLab Duo custom merge request review instructions at the project level. Use when setting up or customizing GitLab Duo instructions, mr-review-instructions.yaml, or configuring project-specific AI code review standards.
+license: MIT
+metadata:
+  author: bpappin
+  version: "1.0"
 ---
 
 # Setup GitLab Duo

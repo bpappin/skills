@@ -1,6 +1,10 @@
 ---
 name: to-ai-skill
 description: Generates and updates a machine-readable AI skill document bundled within this published library. Trigger this skill WHENEVER you make changes to core APIs, types, or architectural patterns that an external AI consuming this library would need to know about.
+license: MIT
+metadata:
+  author: bpappin
+  version: "1.0"
 ---
 
 # Generate AI Skill (to-ai-skill)

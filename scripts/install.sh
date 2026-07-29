@@ -4,6 +4,9 @@
 #   ./install.sh              guided setup / settings review (start here)
 #   ./install.sh --user [--connection <name>]
 #   ./install.sh --project <dir> [--connection <name>] [--yt-project <KEY>] [--readonly] [--copy]
+#   ./install.sh --register [--connection <name>]   re-push the connection's
+#                             token into every agent's MCP config (run after
+#                             rotating a token - registrations embed it)
 #   ./install.sh --list | --show | --help
 #
 # Everything lives under one well-known root:
@@ -281,13 +284,39 @@ setup_server() {
       fi
     done
     if [[ "$created" -gt 0 ]]; then
-      if [[ "$shared" -gt 0 ]]; then
-        ok "workflow tags created ($created) and shared with All Users"
+      if [[ "$shared" -eq "$created" ]]; then
+        ok "workflow tags created ($created), all shared with All Users"
       else
-        ok "workflow tags created ($created) - owned by your account; share them if teammates will use them"
+        warn "workflow tags created ($created) but only $shared shared - re-run, or share the rest in YouTrack"
       fi
     else
       ok "workflow tags all present"
+    fi
+    # ensure EXISTING workflow tags are shared too (read + update -> All
+    # Users) - covers tags created before this installer or by hand.
+    # Best-effort: only a tag's owner (or admin) may change its sharing.
+    if [[ -n "$all_users_id" ]]; then
+      ALL_USERS_ID="$all_users_id" YOUTRACK_URL="$YOUTRACK_URL" YOUTRACK_TOKEN="$YOUTRACK_TOKEN" python3 <<'PYEOF' || warn "could not verify sharing on existing workflow tags"
+import json, os, urllib.request, urllib.error
+URL = os.environ['YOUTRACK_URL'].rstrip('/'); TOK = os.environ['YOUTRACK_TOKEN']
+GID = os.environ['ALL_USERS_ID']
+def api(p, payload=None):
+    req = urllib.request.Request(URL + p,
+        data=json.dumps(payload).encode() if payload else None,
+        headers={'Authorization': 'Bearer ' + TOK, 'Content-Type': 'application/json'})
+    b = urllib.request.urlopen(req).read()
+    return json.loads(b) if b else None
+want = {'needs-triage','needs-info','ready-for-agent','ready-for-human',
+        'wontfix','triaged','discovered','needs-gherkin'}
+share = {'permittedGroups': [{'id': GID}]}
+for t in api('/api/tags?fields=id,name&$top=500'):
+    if t['name'].lower() not in want: continue
+    try:
+        api(f"/api/tags/{t['id']}?fields=id",
+            {'readSharingSettings': share, 'updateSharingSettings': share})
+    except urllib.error.HTTPError:
+        print(f"  ! tag '{t['name']}' sharing not updatable by this token - set 'Updatable by: All Users' in the UI")
+PYEOF
     fi
   else
     warn "could not read tags (check token scope) - skipped tag setup"
@@ -512,6 +541,25 @@ wizard() {
   show
 }
 
+check_registration_drift() {  # warn when an agent's MCP config holds a different token
+  local stale="" vsc=""
+  if [[ -f "$HOME/.gemini/settings.json" ]] && grep -q "\"$MCP_SERVER\"" "$HOME/.gemini/settings.json" \
+     && ! grep -qF "$YOUTRACK_TOKEN" "$HOME/.gemini/settings.json"; then stale="$stale Gemini"; fi
+  case "$(uname -s)" in
+    Darwin) vsc="$HOME/Library/Application Support/Code/User/mcp.json";;
+    Linux)  vsc="$HOME/.config/Code/User/mcp.json";;
+  esac
+  if [[ -n "$vsc" && -f "$vsc" ]] && grep -q "\"$MCP_SERVER\"" "$vsc" \
+     && ! grep -qF "$YOUTRACK_TOKEN" "$vsc"; then stale="$stale VS-Code"; fi
+  if [[ -f "$HOME/.claude.json" ]] && grep -q "\"$MCP_SERVER\"" "$HOME/.claude.json" \
+     && ! grep -qF "$YOUTRACK_TOKEN" "$HOME/.claude.json"; then stale="$stale Claude-Code"; fi
+  if [[ -n "$stale" ]]; then
+    warn "STALE TOKEN in agent MCP registration for '$MCP_SERVER':$stale"
+    say  "  Those agents act as the OLD token's user (permission errors, wrong audit"
+    say  "  trail). Fix: ./install.sh --register --connection $PROFILE  then restart them."
+  fi
+}
+
 user_mode() {
   local profile="${1:-}"
   if [[ -n "$profile" ]] && load_connection "$profile"; then
@@ -549,6 +597,7 @@ project_mode() {
   # keep the server in step with the workflow on every project refresh:
   # app version check/deploy offer, link type, workflow tags
   setup_server
+  check_registration_drift
   local prev; prev="$(read_pointer "$dir" connection)"; [[ -z "$prev" ]] && prev="$(read_pointer "$dir" profile)"
   [[ -n "$prev" && "$prev" != "$PROFILE" ]] && warn "rebinding: this project was bound to connection '$prev', now '$PROFILE'"
   [[ -z "$yt_project" ]] && yt_project="$(read_pointer "$dir" project)"
@@ -575,11 +624,28 @@ case "${1:-}" in
         say "Bound project detected here - refreshing it (connection and"
         say "project key come from .agents/config/story-tools.json)."
         project_mode "$PWD"
-      elif [[ -t 0 ]]; then wizard; else sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; fi;;
+      elif [[ -t 0 ]]; then wizard; else sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; fi;;
   --setup) wizard;;
   --user) shift; profile=""; [[ "${1:-}" == "--connection" || "${1:-}" == "--profile" ]] && profile="$2"; user_mode "$profile";;
+  --register) shift; profile=""
+    [[ "${1:-}" == "--connection" || "${1:-}" == "--profile" ]] && profile="${2:-}"
+    if [[ -z "$profile" && -f "./.agents/config/story-tools.json" ]]; then
+      profile="$(read_pointer "$PWD" connection)"
+      [[ -z "$profile" ]] && profile="$(read_pointer "$PWD" profile)"
+    fi
+    if [[ -z "$profile" ]]; then
+      profiles="$(list_connections)"
+      [[ "$(grep -c . <<<"$profiles")" == "1" ]] && profile="$profiles"
+    fi
+    [[ -z "$profile" ]] && { say "usage: install.sh --register [--connection <name>]  (several connections exist - name one)" >&2; exit 1; }
+    load_connection "$profile" || { say "error: connection '$profile' not found" >&2; exit 1; }
+    PROFILE="$profile"
+    register_agents
+    say ""
+    say "Registrations updated. Restart your agent sessions so they reconnect"
+    say "with the new token.";;
   --project) shift; [[ $# -ge 1 ]] || { say "usage: install.sh --project <dir> [--connection <name>] [--yt-project <KEY>] [--readonly] [--copy]" >&2; exit 1; }; project_mode "$@";;
   --list) list_connections;;
   --show) show;;
-  --help|-h|*) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//';;
+  --help|-h|*) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//';;
 esac

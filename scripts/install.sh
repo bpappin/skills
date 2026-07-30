@@ -269,8 +269,10 @@ setup_connection() {  # $1 = optional preselected name; sets PROFILE + creds var
     PROFILE="$(ask "Use which connection? (name, or 'new' for another server)" "$PROFILE")"
   elif [[ -n "$existing" ]]; then
     say "  Existing connections: $(echo "$existing" | tr '\n' ' ')"
-    local n; n="$(echo "$existing" | head -1)"
-    PROFILE="$(ask "Use which connection? (name, or 'new' to add another server)" "$n")"
+    say "  Type one of those names to REUSE it (same server, maybe a different"
+    say "  project key). A fresh project deliberately defaults to 'new' -"
+    say "  binding to an existing server is always an explicit choice."
+    PROFILE="$(ask "Use which connection? ('new' = add a server)" "new")"
   fi
   [[ "$PROFILE" == "new" ]] && PROFILE=""
 
@@ -745,9 +747,13 @@ bind_project_interactive() {  # uses PROJECT_DIR/PROJECT_NAME from pick_project
     [[ "$yn" =~ ^[Yy]$ ]] || { say "  binding left unchanged - re-run and pick connection '$bound_conn' to update it"; return; }
   fi
   local cur_key cur_ro yt_project ro
-  cur_key="$(read_pointer "$PROJECT_DIR" project)"; cur_key="${cur_key:-${YOUTRACK_PROJECT:-}}"
-  cur_ro="$(read_pointer "$PROJECT_DIR" readOnly)"
+  # default ONLY from this project's own pointer - never from the
+  # connection's stored key (that is how a fresh repo lands on another
+  # project's board). Reused connections state their server explicitly.
+  cur_key="$(read_pointer "$PROJECT_DIR" project)"
+  say "  Binding '$PROJECT_NAME' to ${YOUTRACK_URL%/} (connection '$PROFILE')"
   yt_project="$(ask "Project ID in YouTrack for '$PROJECT_NAME' (short key, e.g. EVO)" "$cur_key")"
+  [[ -z "$yt_project" ]] && { say "  error: a project key is required (create the project in YouTrack first)" >&2; exit 1; }
   BOUND_KEY="$yt_project"
   ro="$(ask "Read-only? Agents propose changes but never write (y/N)" "${cur_ro:+y}")"
   [[ "$ro" =~ ^[Yy] ]] && ro="true" || ro=""
@@ -805,8 +811,9 @@ none_wizard() {
 }
 
 wizard() {
-  local ttype
-  ttype="$(ask "Which tracker does this project use? (youtrack / github / none)" "youtrack")"
+  local ttype cur_type
+  cur_type="$(read_pointer "$PWD" type)"
+  ttype="$(ask "Which tracker does this project use? (youtrack / github / none)" "${cur_type:-youtrack}")"
   case "$ttype" in
     github|gh) github_wizard; return;;
     none|no|skills) none_wizard; return;;
@@ -989,10 +996,17 @@ EOF
 
 case "${1:-}" in
   "") if [[ -f "./.agents/config/story-tools.json" ]]; then
-        # run from inside a bound project: refresh it, no flags needed
-        say "Bound project detected here - refreshing it (connection and"
-        say "project key come from .agents/config/story-tools.json)."
-        project_mode "$PWD"
+        say "Bound project detected here (.agents/config/story-tools.json)."
+        refresh="y"
+        if [[ -t 0 ]]; then
+          read -rp "  Refresh with current settings? [Y/n] " refresh
+          refresh="${refresh:-y}"
+        fi
+        if [[ "$refresh" =~ ^[Nn] ]]; then
+          wizard
+        else
+          project_mode "$PWD"
+        fi
       elif [[ -t 0 ]]; then wizard; else sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; fi;;
   --setup) wizard;;
   --user) shift; profile=""; [[ "${1:-}" == "--connection" || "${1:-}" == "--profile" ]] && profile="$2"; user_mode "$profile";;

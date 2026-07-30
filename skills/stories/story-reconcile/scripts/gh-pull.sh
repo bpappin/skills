@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # Pull GitHub issues into a local markdown snapshot.
 #
-# Usage: gh-pull.sh [owner/repo] [OUT_DIR]
+# Usage: gh-pull.sh [owner/repo] [OUT_DIR] [--dimensions-only]
 #   owner/repo  defaults to tracker.repo from .agents/config/story-tools.json
 #   OUT_DIR     defaults to ./docs/stories
+#   --dimensions-only   refresh docs/dimensions.md only (no issue snapshot)
 #
-# Output: one .md per issue (<repo>-123_title-slug.md) + INDEX.md; a
+# Output: one .md per issue (OC-0123_title-slug.md; prefix from
+# tracker.prefix, blocks OC-A-0001 past 9999) + INDEX.md; a
 # dimensions.md (Project v2 single-select fields, repo labels, milestones)
 # is written to the docs root beside OUT_DIR so offline/fallback agents
 # pick from real values. Files are GENERATED - GitHub stays the source of
@@ -16,6 +18,9 @@
 # github.env connection.
 set -euo pipefail
 
+DIMONLY=0; ARGS=()
+for a in "$@"; do [[ "$a" == "--dimensions-only" ]] && DIMONLY=1 || ARGS+=("$a"); done
+set -- "${ARGS[@]:-}"
 REPO="${1:-}"; OUT="${2:-./docs/stories}"
 read_pointer() {
   local f="./.agents/config/story-tools.json"
@@ -25,6 +30,7 @@ read_pointer() {
 [[ -z "$REPO" ]] && REPO="$(read_pointer repo)"
 [[ -z "$REPO" ]] && { echo "usage: gh-pull.sh <owner/repo> [OUT_DIR]" >&2; exit 1; }
 PROJ="$(read_pointer project)"; PROJ="${PROJ:-}"
+PREFIX="$(read_pointer prefix)"; PREFIX="${PREFIX:-}"
 
 CONN="$(read_pointer connection)"
 if [[ -z "${GITHUB_TOKEN:-}" && -n "$CONN" && -f "$HOME/.agents/story-tools/connections/$CONN.env" ]]; then
@@ -40,14 +46,23 @@ if [[ -z "${GITHUB_TOKEN:-}" ]] && command -v gh >/dev/null 2>&1; then
 fi
 [[ -z "${GITHUB_TOKEN:-}" ]] && { echo "error: no GitHub token (GITHUB_TOKEN, gh auth, or the story-tools installer's github connection)" >&2; exit 1; }
 
-mkdir -p "$OUT"
-export GITHUB_TOKEN REPO OUT PROJ
+[[ "$DIMONLY" == 1 ]] || mkdir -p "$OUT"
+export GITHUB_TOKEN REPO OUT PROJ DIMONLY PREFIX
 python3 <<'EOF'
 import datetime, json, os, re, urllib.request, urllib.parse
 
 TOKEN = os.environ['GITHUB_TOKEN']; REPO = os.environ['REPO']
 OUT = os.environ['OUT'].rstrip('/'); PROJ = os.environ.get('PROJ') or ''
+DIMONLY = os.environ.get('DIMONLY') == '1'
 OWNER, NAME = REPO.split('/', 1)
+# short file prefix: pointer tracker.prefix, else first two letters of the
+# repo name. OC-0001; past 9999 lexical sort survives via letter blocks:
+# OC-9999 < OC-A-0000 < OC-B-0000 ...
+PREFIX = (os.environ.get('PREFIX') or re.sub(r'[^A-Za-z]', '', NAME)[:2]).upper() or 'GH'
+
+def fid(num):
+    block, rem = divmod(num, 10000)
+    return f"{PREFIX}-{rem:04d}" if block == 0 else f"{PREFIX}-{chr(64 + block)}-{rem:04d}"
 DIM_DIR = os.path.dirname(OUT) or '.'
 HDRS = {'Authorization': 'Bearer ' + TOKEN, 'Accept': 'application/vnd.github+json'}
 
@@ -77,7 +92,7 @@ def slug(text, maxlen=60):
 
 # ---- issues (REST, paged; PRs filtered out) --------------------------------
 issues, page = [], 1
-while True:
+while not DIMONLY:
     batch = rest(f'/repos/{REPO}/issues?state=all&per_page=100&page={page}&sort=created&direction=asc')
     if not batch: break
     issues += [i for i in batch if 'pull_request' not in i]
@@ -104,7 +119,7 @@ query($owner: String!, $num: Int!) {
     if proj:
         proj_fields = [f for f in proj['fields']['nodes'] if f]
         cursor = None
-        while True:
+        while not DIMONLY:
             items = gql("""
 query($owner: String!, $num: Int!, $after: String) {
   repositoryOwner(login: $owner) {
@@ -134,17 +149,20 @@ query($owner: String!, $num: Int!, $after: String) {
 
 # ---- write snapshot --------------------------------------------------------
 index = []
-for it in issues:
+for it in [] if DIMONLY else issues:
     num = it['number']
     state = status_by_number.get(num) or ('closed' if it['state'] == 'closed' else 'open')
     labels = ', '.join(l['name'] for l in it.get('labels') or [])
     milestone = (it.get('milestone') or {}).get('title', '') or ''
     assignee = ', '.join(a['login'] for a in it.get('assignees') or [])
     body = it.get('body') or '_(no description)_'
-    iid = f"{NAME}-{num}"
+    iid = fid(num)
     fname = f"{iid}_{slug(it.get('title'))}.md"
     for stale in os.listdir(OUT):
-        if (stale == iid + '.md' or stale.startswith(iid + '_')) and stale != fname:
+        if stale == fname: continue
+        # prune this issue's file under any earlier naming scheme
+        if (stale.startswith(f"{iid}_") or stale.startswith(f"{num:04d}_")
+                or stale.startswith(f"{NAME}-{num}_") or stale == f"{NAME}-{num}.md"):
             os.remove(os.path.join(OUT, stale))
     with open(os.path.join(OUT, fname), 'w', encoding='utf-8') as f:
         f.write(f"""---
@@ -165,12 +183,13 @@ url: {it['html_url']}
 """)
     index.append((num, fname, it.get('title',''), state, labels, it['state'] == 'closed'))
 
-with open(os.path.join(OUT, 'INDEX.md'), 'w', encoding='utf-8') as f:
+if not DIMONLY:
+  with open(os.path.join(OUT, 'INDEX.md'), 'w', encoding='utf-8') as f:
     f.write(f"# GitHub snapshot: {REPO} ({datetime.date.today()})\n\n")
     f.write("GENERATED - do not edit. Re-run scripts/gh-pull.sh to refresh.\n\n")
     f.write("| # | Summary | State | Labels | Closed |\n|---|---|---|---|---|\n")
     for num, fn, s, st, lb, closed in index:
-        f.write(f"| [#{num}]({fn}) | {s} | {st} | {lb} | {'yes' if closed else ''} |\n")
+      f.write(f"| [#{num}]({fn}) | {s} | {st} | {lb} | {'yes' if closed else ''} |\n")
 
 # ---- dimensions.md ---------------------------------------------------------
 lines = [f'# Project dimensions: {REPO} ({datetime.date.today()})', '',
@@ -193,6 +212,9 @@ if miles:
     lines += [f"- {m['title']}" for m in miles] + ['']
 open(os.path.join(DIM_DIR, 'dimensions.md'), 'w', encoding='utf-8').write('\n'.join(lines))
 
-mode = f'Projects mode (project {PROJ})' if status_by_number or PROJ else 'issues-only mode'
-print(f'Wrote {len(issues)} issues + INDEX.md to {OUT}; dimensions.md at {DIM_DIR}/ ({mode})')
+mode = f'Projects mode (project {PROJ})' if PROJ else 'issues-only mode'
+if DIMONLY:
+    print(f'Wrote dimensions.md at {DIM_DIR}/ ({mode})')
+else:
+    print(f'Wrote {len(issues)} issues + INDEX.md to {OUT}; dimensions.md at {DIM_DIR}/ ({mode})')
 EOF

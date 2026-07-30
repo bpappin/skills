@@ -1,11 +1,11 @@
 ---
 name: triage
-description: Triage tracker issues through a state machine driven by triage roles. Use when the user wants to create an issue, capture an idea/bug/question to the backlog for later ("record this for later"), triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow.
+description: Triage tracker issues through a state machine driven by triage roles. Use when the user wants to create an issue, capture an idea/bug/question/task to the backlog for later, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow. Capture triggers - "record this for later", "that's a gap", "found a bug", "open an issue", "add a task", "log this", "add it to the backlog", "capture that", "we should ..." said in passing.
 license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.13"
+  version: "1.17"
 ---
 
 # Triage
@@ -64,8 +64,21 @@ ready-for-agent", "what's ready for agents to pick up?"
 
 ## Quick capture
 
-"Record this for later", a half-formed idea, a bug noticed in passing, a
-design question — capture it as an issue IMMEDIATELY and cheaply: a clear
+"Record this for later", "that's a gap", "found a bug", "open an issue
+for that", "add a task", "log this", a half-formed idea, a design
+question — ANY phrasing that flags work worth remembering triggers
+capture. The test is INTENT, not keywords: the user described work that
+is not happening right now. That includes tracker-speak ("cut a ticket",
+"raise an issue", "add a todo"), meeting-speak ("action item", "park
+that", "put a pin in it", "let's punt on that" - punt means defer,
+which means capture), casual bug reports ("X is broken", "regression",
+"known issue" - a complaint is a capture), deferrals ("someday", "nice
+to have", "don't let me forget", "remind me to"), and engineering
+nouns ("tech debt", "spike", "chore"). A "gap" (or "todo") is the
+gap between what we have and what we want - something to come back to
+later. Every gap is a CAPTURE: it goes to the backlog as an issue, never
+into a GAP document, a TODO.md entry, or a code comment. When unsure,
+offer: "want me to record that?" Capture it as an issue IMMEDIATELY and cheaply: a clear
 summary, a narrative description of what's known, an `## Open Questions`
 section for what isn't, and the `needs-triage` state. **No acceptance
 criteria at capture time** — a captured issue is a problem statement, not

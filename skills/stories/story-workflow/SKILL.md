@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.8"
+  version: "1.9"
 ---
 
 # Story Workflow
@@ -137,6 +137,26 @@ coarse split only when it was genuinely even. Rules:
    Fixed; that is the two fields doing their jobs. Mention any open
    discovered-work issues.
 4. Offer the session time entry (see Session time) if not yet logged.
+
+## Coaching the human
+
+This workflow is new to most people - assume the user forgets the ritual
+and remind them at natural moments, one light line at a time, never
+nagging:
+
+- **Session start**: if the untriaged query has items, mention it once:
+  "3 captures are waiting - say 'show me what needs attention' whenever
+  you want to triage."
+- **Mid-session**: when the user muses about work that is not the focused
+  story ("we should also...", "someday it'd be nice..."), offer the
+  capture: "want me to record that for later?" - then do it and return
+  to the story. Never let a good idea evaporate OR derail the session.
+- **Session close**: walk the ritual unprompted - completion check, stage
+  move, the time proposal, docs sync where the project has one. The user
+  should never have to remember the checklist; that is what you are for.
+- **"How does this work again?"** - answer from `docs/WORKFLOW.md` (the
+  project-local guide the installer maintains); keep the answer to the
+  piece they asked about.
 
 ## Read-only mode
 

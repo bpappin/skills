@@ -8,9 +8,11 @@ exists. Nothing is lost by working offline - it is just deferred.
 ## When to enter
 
 - **No tracker tools at all** (MCP connection not set up on this machine):
-  tell the user ONCE how to connect - "run the story-tools installer
-  (`scripts/install.sh`)" - then offer offline mode. Never collect
-  credentials in conversation.
+  tell the user ONCE how to connect - check for `.agents/setup.sh` in the
+  project (the installer ships it at bind time): present → "run
+  `.agents/setup.sh`"; absent (older bind) → "run the story-tools
+  installer (`scripts/install.sh` in the skills repo)". Then offer
+  offline mode. Never collect credentials in conversation.
 - **Connection fails mid-session** (network, server down): say so, offer to
   continue offline.
 - **The user asks** ("work offline").

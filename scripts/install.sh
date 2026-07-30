@@ -17,9 +17,18 @@
 #   ~/.agents/skills/                              user-level skills
 #   <project>/.agents/                             per-project: skills + pointer (commit it)
 # Re-running shows every stored value and lets you change any of them.
+#
+# Teammates onboarding from a clone don't need this repo: every bound
+# project ships a copy as <project>/.agents/setup.sh - run that. It
+# detects it is the shipped copy and only sets up YOUR credential and
+# agent registrations (skills already travel with the repo).
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+# Shipped copy? (<project>/.agents/setup.sh, written at bind time.) No
+# skills tree beside it -> developer onboarding only, never skill copying.
+SHIPPED=0
+[[ -d "$REPO_DIR/skills/stories/story-workflow" ]] || SHIPPED=1
 SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/story-reconcile"
         "$REPO_DIR/skills/stories/to-issues" "$REPO_DIR/skills/stories/triage"
         "$REPO_DIR/skills/docs/project-docs" "$REPO_DIR/skills/docs/to-prd" "$REPO_DIR/skills/docs/to-research"
@@ -547,22 +556,25 @@ copy_skills() {  # $1 dir, $2 mode
 write_workflow_doc() {  # $1 dir, $2 tracker (youtrack|github|none), $3 detail (project key or owner/repo)
   local dir="$1" tracker="$2" detail="$3"
   mkdir -p "$dir/docs"
-  local stage_note capture_note tracker_line
+  local stage_note capture_note tracker_line docs_row
   case "$tracker" in
     github)
       tracker_line="GitHub Issues + Project board ($detail)"
       stage_note="Picking up a story moves it to the board's in-progress column; completing moves it to the review column when the board has one, else Done (and closes the issue)."
       capture_note="Issues carry everything: the story narrative, the \`## Acceptance Criteria\` task list, and labels."
+      docs_row='| "sync docs" | Two-way sync `docs/knowledge/` with the repo wiki (when the wiki is enabled) |'
       ;;
     youtrack)
       tracker_line="YouTrack ($detail)"
       stage_note="Picking up a story moves Stage to the in-progress column; completing moves Stage to the testing/review column (a human promotes to Done) and sets State to the resolution."
       capture_note="Issues carry everything: the story narrative, the \`## Acceptance Criteria\` task list, and tags."
+      docs_row='| "sync docs" | Two-way sync `docs/knowledge/` with the YouTrack knowledge base |'
       ;;
     *)
       tracker_line="none yet - agents work offline and reconcile later"
       stage_note="Without a tracker, agents keep a local worklog and replay it when one is adopted."
       capture_note="Captured items live in the worklog until a tracker exists."
+      docs_row=""
       ;;
   esac
   cat > "$dir/docs/WORKFLOW.md" <<WFEOF
@@ -588,6 +600,7 @@ steer it with plain language.
 | "that's done, check it off" | One AC item checked - only when verifiably complete |
 | "is this done?" | Completion check: all AC? QA if required? open discovered work? |
 | "we worked offline, reconcile" | Replay a local worklog into the tracker |
+$docs_row
 
 ## The rules that keep scope honest
 
@@ -620,9 +633,10 @@ completion requires a QA section. Everything else is topical grouping
 
 ## New developer?
 
-Clone, then run the story-tools installer once on your machine (it sets up
-your own credential and registers the tracker in your agents), restart
-your agent, and say "what am I working on?". Details:
+Clone, then run \`.agents/setup.sh\` once - it sets up your own tracker
+credential (or lets you opt out and work offline) and registers the
+tracker in your agents. Nothing else to download. Restart your agent and
+say "what am I working on?". Details:
 .agents/skills/story-workflow/references/.
 WFEOF
   ok "docs/WORKFLOW.md written (human-facing guide, regenerated on refresh)"
@@ -645,6 +659,7 @@ attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 rea
   }'
   ok "pointer: .agents/config/story-tools.json (github: $gh_repo${gh_proj:+, project $gh_proj}) - commit .agents/ .claude/ .github/ with the repo"
   write_workflow_doc "$dir" github "$gh_repo"
+  ship_setup "$dir"
   # seed docs/dimensions.md right away so triage can prompt real values
   # before any snapshot pull has ever run (best-effort, needs the token)
   local ghpull="$REPO_DIR/skills/stories/story-reconcile/scripts/gh-pull.sh"
@@ -654,6 +669,24 @@ attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 rea
       ok "docs/dimensions.md seeded (board columns, fields, labels)"
     else
       warn "could not seed docs/dimensions.md - run the story-reconcile pull later"
+    fi
+  fi
+  # wiki capability check - docs two-way sync (project-docs skill)
+  if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+    local has_wiki
+    has_wiki="$(curl -sfS -m 10 -H "Authorization: Bearer $GITHUB_TOKEN" \
+      -H "Accept: application/vnd.github+json" \
+      "https://api.github.com/repos/$gh_repo" 2>/dev/null \
+      | grep -oE '"has_wiki": *(true|false)' | grep -oE 'true|false' || true)"
+    if [[ "$has_wiki" == "true" ]]; then
+      if command -v git >/dev/null 2>&1 \
+         && git ls-remote "https://x-access-token:${GITHUB_TOKEN}@github.com/${gh_repo}.wiki.git" >/dev/null 2>&1; then
+        ok "wiki detected - docs two-way sync available (project-docs skill, 'sync docs')"
+      else
+        warn "wiki enabled but uninitialized - create the Home page once in the web UI to enable docs sync"
+      fi
+    elif [[ "$has_wiki" == "false" ]]; then
+      say "  wiki disabled on $gh_repo - docs/knowledge stays git-native (enable the wiki to sync docs)"
     fi
   fi
 }
@@ -673,6 +706,7 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
   }'
   ok "pointer: .agents/config/story-tools.json - commit .agents/ .claude/ .github/ with the repo"
   write_workflow_doc "$dir" youtrack "${yt_project:-$YOUTRACK_URL}"
+  ship_setup "$dir"
 }
 
 pick_project() {  # sets PROJECT_DIR/PROJECT_NAME (may be empty = user-level only)
@@ -808,6 +842,7 @@ none_wizard() {
   merge_json "$PROJECT_DIR/.agents/config/story-tools.json" "tracker" '{"type":"none"}'
   ok "pointer: tracker type 'none' - skills run tracker-less (offline mode); re-run this"
   say "  wizard when the project adopts YouTrack or GitHub."
+  ship_setup "$PROJECT_DIR"
 }
 
 wizard() {
@@ -904,6 +939,61 @@ check_registration_drift() {  # warn when an agent's MCP config holds a differen
   fi
 }
 
+ship_setup() {  # copy this installer into the project as .agents/setup.sh
+  local dir="$1"
+  mkdir -p "$dir/.agents"
+  if [[ ! "$0" -ef "$dir/.agents/setup.sh" ]]; then
+    cp "$0" "$dir/.agents/setup.sh"
+  fi
+  chmod +x "$dir/.agents/setup.sh"
+  ok ".agents/setup.sh shipped (teammates onboard from the clone - no skills repo needed)"
+}
+
+offline_note() {
+  say "  Offline it is - the workflow still runs in full: agents keep a"
+  say "  worklog at .agents/offline/worklog.md and a connected teammate"
+  say "  reconciles it into the tracker. Re-run .agents/setup.sh any time"
+  say "  to connect."
+}
+
+developer_setup() {  # shipped-copy flow: credential + agent registration only
+  local dir; dir="$(cd "$(dirname "$0")/.." && pwd)"
+  local ptype conn
+  ptype="$(read_pointer "$dir" type)"; conn="$(read_pointer "$dir" connection)"
+  step "story-tools developer setup: $(basename "$dir")"
+  say "  Skills and workflow docs already travel with this repo. This sets up"
+  say "  YOUR tracker credential and registers it in YOUR agents - secrets"
+  say "  live in ~/.agents/story-tools/, never in the repo."
+  local go="y"
+  case "$ptype" in
+    github)
+      local repo; repo="$(read_pointer "$dir" repo)"
+      say "  Tracker: GitHub (${repo:-unknown repo})"
+      [[ -t 0 ]] || { say "  run interactively to connect"; return 0; }
+      read -rp "  Connect to the tracker now? (n = work offline, reconcile later) [Y/n] " go
+      [[ "${go:-y}" =~ ^[Nn] ]] && { offline_note; return 0; }
+      setup_github "${conn:-github}"
+      check_github_drift "${conn:-github}"
+      ok "done - restart your agent, then say: \"what am I working on?\""
+      ;;
+    youtrack)
+      local url; url="$(read_pointer "$dir" url)"
+      say "  Tracker: YouTrack (${url:-server URL not in pointer - ask a teammate})"
+      [[ -t 0 ]] || { say "  run interactively to connect"; return 0; }
+      read -rp "  Connect to the tracker now? (n = work offline, reconcile later) [Y/n] " go
+      [[ "${go:-y}" =~ ^[Nn] ]] && { offline_note; return 0; }
+      PRE_URL="$url" setup_connection "$conn"
+      register_agents
+      check_registration_drift
+      ok "done - restart your agent, then say: \"what am I working on?\""
+      ;;
+    none|"")
+      say "  Tracker: none - nothing to connect. Agents work tracker-less"
+      say "  (offline worklog) out of the box."
+      ;;
+  esac
+}
+
 user_mode() {
   local profile="${1:-}"
   if [[ -n "$profile" ]] && load_connection "$profile"; then
@@ -994,6 +1084,32 @@ Where everything lives:
 EOF
 }
 
+if [[ $SHIPPED -eq 1 ]]; then
+  # project-shipped copy: developer onboarding only
+  case "${1:-}" in
+    ""|--setup) developer_setup;;
+    --github) shift
+      if [[ -n "${1:-}" && "${1:-}" != -* ]]; then
+        say "error: --github takes no repo here - per-developer credential setup only." >&2; exit 1
+      fi
+      setup_github;;
+    --register) shift; profile=""
+      [[ "${1:-}" == "--connection" || "${1:-}" == "--profile" ]] && profile="${2:-}"
+      [[ -z "$profile" ]] && profile="$(read_pointer "$(cd "$(dirname "$0")/.." && pwd)" connection)"
+      [[ -z "$profile" ]] && { say "usage: setup.sh --register [--connection <name>]" >&2; exit 1; }
+      if load_connection "$profile"; then PROFILE="$profile"; register_agents
+      elif load_github "$profile"; then register_agents_github "$profile"
+      else say "error: connection '$profile' not found - run setup.sh first" >&2; exit 1; fi;;
+    --list) list_connections;;
+    --show) show;;
+    --help|-h) sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//';;
+    *) say "This is the project-shipped setup (developer onboarding)." >&2
+       say "Binding, refreshing, and skill updates run from the story-tools repo's scripts/install.sh." >&2
+       exit 1;;
+  esac
+  exit 0
+fi
+
 case "${1:-}" in
   "") if [[ -f "./.agents/config/story-tools.json" ]]; then
         say "Bound project detected here (.agents/config/story-tools.json)."
@@ -1007,7 +1123,7 @@ case "${1:-}" in
         else
           project_mode "$PWD"
         fi
-      elif [[ -t 0 ]]; then wizard; else sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; fi;;
+      elif [[ -t 0 ]]; then wizard; else sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'; fi;;
   --setup) wizard;;
   --user) shift; profile=""; [[ "${1:-}" == "--connection" || "${1:-}" == "--profile" ]] && profile="$2"; user_mode "$profile";;
   --github) shift
@@ -1037,5 +1153,5 @@ case "${1:-}" in
   --project) shift; [[ $# -ge 1 ]] || { say "usage: install.sh --project <dir> [--connection <name>] [--yt-project <KEY>] [--readonly] [--copy]" >&2; exit 1; }; project_mode "$@";;
   --list) list_connections;;
   --show) show;;
-  --help|-h|*) sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//';;
+  --help|-h|*) sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//';;
 esac

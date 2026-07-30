@@ -27,8 +27,9 @@ Focus is safe in read-only mode (it writes only your own app-scoped marker).
 ## Detecting what's available
 
 Check your tool list. No YouTrack tools at all → the MCP connection isn't
-set up: tell the user ONCE to run the story-tools installer
-(`scripts/install.sh` in the story-tools repo) — never collect credentials
+set up: tell the user ONCE how to connect — `.agents/setup.sh` when the
+project has it (shipped at bind time), else the story-tools installer
+(`scripts/install.sh` in the skills repo) — never collect credentials
 yourself — then offer offline mode (the skill's
 [references/offline.md](../references/offline.md) fallback binding) so work
 can continue and be reconciled later. Built-in tools

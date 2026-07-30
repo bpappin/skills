@@ -37,9 +37,11 @@ pointer's connection env → legacy `github.env` → `gh auth token`.
 
 `.agents/config/story-tools.json` → `tracker.type: "github"`, `tracker.repo`
 (owner/name), optional `tracker.project` (number). No `github` MCP tools
-and no `gh` CLI → tell the user ONCE to run the story-tools installer,
-then offer offline mode ([references/offline.md](offline.md)) - never
-collect a token in conversation.
+and no `gh` CLI → tell the user ONCE how to connect: `.agents/setup.sh`
+when the project has it (shipped at bind time), else the story-tools
+installer from the skills repo. Then offer offline mode
+([references/offline.md](offline.md)) - never collect a token in
+conversation.
 
 ## Fallback cautions
 
@@ -66,17 +68,18 @@ COMMITTED with the repo - a new developer inherits the whole workflow from
    still need a classic token (`repo` + `project` scopes). Classic +
    org SSO: **Configure SSO → Authorize** the token, or every org call
    404s and looks like a permissions bug.
-2. **Run the story-tools installer once**:
-   `<skills-repo>/scripts/install.sh --github` creates their
-   `github.env` connection (token prompt is hidden; `gh auth` works as a
-   no-storage alternative) and registers the GitHub MCP server in every
-   agent config present on the machine - Claude Code, **Gemini CLI**
-   (`~/.gemini/settings.json`), VS Code/Copilot.
+2. **Run setup once**: `.agents/setup.sh` in the project clone (shipped
+   there at bind time - no extra repo to fetch; older binds without it:
+   `<skills-repo>/scripts/install.sh --github`). It creates their
+   connection (token prompt is hidden; `gh auth` works as a no-storage
+   alternative) and registers the GitHub MCP server in every agent
+   config present on the machine - Claude Code, **Gemini CLI**
+   (`~/.gemini/settings.json`), Antigravity, VS Code/Copilot.
 3. **Restart their agent sessions** so they fetch the MCP tool list.
 
-Rotating a token later: `install.sh --register` re-pushes it into the
-agent configs (registrations embed the token; the installer warns when
-one goes stale).
+Rotating a token later: `--register` (on `.agents/setup.sh` or the
+installer) re-pushes it into the agent configs (registrations embed the
+token; the installer warns when one goes stale).
 
 ## Server setup (once per repo, any maintainer)
 

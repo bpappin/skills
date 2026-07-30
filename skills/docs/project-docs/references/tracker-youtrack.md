@@ -33,6 +33,7 @@ scripts/yt-sync.sh [KB_DIR] [--project KEY] [--root "Title"]
   `.agents/config/story-tools.json`; credentials from the story-tools
   installer connections (`~/.agents/story-tools/connections/`). Never
   ask for or accept tokens in conversation - if authentication fails,
-  tell the user to run `install.sh`.
+  point the user at `.agents/setup.sh` (or the installer, on older
+  binds).
 - Requires `git` on PATH (three-way merges use `git merge-file`).
 - YouTrack renders the same markdown the repo holds, task lists included.

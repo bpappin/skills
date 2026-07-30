@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.9"
+  version: "1.10"
 ---
 
 # Story Workflow
@@ -179,7 +179,8 @@ related case — see [references/offline.md](references/offline.md).)
 - **Never ask for or accept tokens, credentials, or connection secrets in
   conversation** — many organizations rightly prohibit it. All
   configuration, especially secrets, is entered only through the
-  story-tools installer. Missing/invalid credentials → "run `install.sh`",
-  never "paste your token here".
+  story-tools installer. Missing/invalid credentials → "run
+  `.agents/setup.sh`" when the project ships it, else "run `install.sh`"
+  from the skills repo - never "paste your token here".
 - Background reading: [references/methodology.md](references/methodology.md)
   — the lifecycle, why the off-ramp matters, where BDD fits, writing good AC.

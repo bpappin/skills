@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (read access minimum; see the tracker binding). Writes optional - produces a report instead when read-only.
 metadata:
   author: bpappin
-  version: "0.15"
+  version: "0.16"
 ---
 
 # Story Reconcile
@@ -92,7 +92,8 @@ Bundled resources:
 
 - Never ask for or accept tokens/credentials in conversation. If the
   snapshot script or tracker tools can't authenticate, direct the user to
-  the story-tools installer (`install.sh`) - secrets are entered only there.
+  `.agents/setup.sh` when the project has it, else the story-tools
+  installer (`install.sh`) - secrets are entered only there.
 - This skill migrates *documents*; it never changes issue states.
 - If an item is ambiguous, put it in the mapping table as a question - do
   not guess silently.

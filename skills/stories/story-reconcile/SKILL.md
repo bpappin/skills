@@ -1,11 +1,11 @@
 ---
 name: story-reconcile
-description: Adopt the story workflow in an existing project - reconcile local documentation (GAP files, AC embedded in PRDs, TODO lists) and offline-session worklogs with the issue tracker, and pull existing tracker stories into a local snapshot. Tracker-agnostic via bindings (YouTrack today). Use when a team starts using story-tools mid-project, or when local docs and the tracker have drifted. Triggers - "reconcile", "replay the worklog", "we worked offline", "adopt the story workflow", "migrate gaps", "import our docs into the tracker", "import into youtrack", "pull stories local", "sync up with youtrack".
+description: Adopt the story workflow in an existing project - reconcile local documentation (GAP files, AC embedded in PRDs, TODO lists) and offline-session worklogs with the issue tracker, and pull existing tracker stories into a local snapshot. Tracker-agnostic via bindings (YouTrack and GitHub today). Use when a team starts using story-tools mid-project, or when local docs and the tracker have drifted. Triggers - "reconcile", "replay the worklog", "we worked offline", "adopt the story workflow", "migrate gaps", "import our docs into the tracker", "import into youtrack", "pull stories local", "sync up with youtrack".
 license: MIT
 compatibility: Requires a connection to the project's issue tracker (read access minimum; see the tracker binding). Writes optional - produces a report instead when read-only.
 metadata:
   author: bpappin
-  version: "0.11"
+  version: "0.12"
 ---
 
 # Story Reconcile
@@ -19,6 +19,7 @@ a local read-only snapshot of the server exists for offline reference.
 `tracker.type` (absent → `youtrack`) and use that binding's commands:
 
 - `youtrack` → [references/tracker-youtrack.md](references/tracker-youtrack.md)
+- `github` → [references/tracker-github.md](references/tracker-github.md)
 
 Never write to the tracker before the user approves the mapping (Phase 3).
 

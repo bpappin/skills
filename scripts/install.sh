@@ -4,6 +4,9 @@
 #   ./install.sh              guided setup / settings review (start here)
 #   ./install.sh --user [--connection <name>]
 #   ./install.sh --project <dir> [--connection <name>] [--yt-project <KEY>] [--readonly] [--copy]
+#   ./install.sh --project <dir> --github owner/repo [--gh-project N]   bind to GitHub
+#   ./install.sh --github     per-developer GitHub setup: PAT -> connection,
+#                             register the 'github' MCP server in agent configs
 #   ./install.sh --register [--connection <name>]   re-push the connection's
 #                             token into every agent's MCP config (run after
 #                             rotating a token - registrations embed it)
@@ -40,7 +43,8 @@ for old in "$HOME/.config/story-tools" "$CONF_DIR/profiles"; do
 done
 
 name_from_url() { echo "$1" | sed -E 's#https?://##; s#[/:.].*##'; }
-list_connections() { ls "$CONN_DIR"/*.env 2>/dev/null | sed -E 's#.*/(.*)\.env#\1#' || true; }
+# only YouTrack connection files (GitHub credentials share the dir but carry GITHUB_TOKEN)
+list_connections() { grep -l '^YOUTRACK_URL=' "$CONN_DIR"/*.env 2>/dev/null | sed -E 's#.*/(.*)\.env#\1#' || true; }
 
 load_connection() {  # $1 = name; sets YOUTRACK_URL/TOKEN/PROJECT
   local f="$CONN_DIR/$1.env"
@@ -80,6 +84,136 @@ yt() {  # yt METHOD PATH [JSON] -> body on stdout; fails on HTTP error
   curl -sfS -m 15 -X "$method" "${YOUTRACK_URL%/}$path" \
     -H "Authorization: Bearer $YOUTRACK_TOKEN" -H "Content-Type: application/json" \
     ${data:+-d "$data"}
+}
+
+# ---------- GitHub tracker support ----------
+
+gh_rest() {  # gh_rest METHOD PATH [JSON]
+  local method="$1" path="$2" data="${3:-}"
+  curl -sfS -m 15 -X "$method" "https://api.github.com$path" \
+    -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" \
+    ${data:+-d "$data"}
+}
+
+load_github() {  # $1 = connection name (optional); sets GITHUB_TOKEN + GH_LOGIN
+  GH_LOGIN=""; local name="${1:-}"
+  if [[ -z "${GITHUB_TOKEN:-}" && -n "$name" && -f "$CONN_DIR/$name.env" ]]; then
+    # shellcheck disable=SC1090
+    source "$CONN_DIR/$name.env"
+  fi
+  if [[ -z "${GITHUB_TOKEN:-}" && -f "$CONN_DIR/github.env" ]]; then   # legacy shared credential
+    # shellcheck disable=SC1091
+    source "$CONN_DIR/github.env"
+  fi
+  if [[ -z "${GITHUB_TOKEN:-}" ]] && command -v gh >/dev/null 2>&1; then
+    GITHUB_TOKEN="$(gh auth token 2>/dev/null || true)"
+  fi
+  [[ -n "${GITHUB_TOKEN:-}" ]] || return 1
+  GH_LOGIN="$(gh_rest GET /user 2>/dev/null | sed -nE 's/.*"login": *"([^"]*)".*/\1/p' | head -1)"
+  [[ -n "$GH_LOGIN" ]]
+}
+
+setup_github() {  # $1 = connection name (default github): token -> <name>.env, verify, register
+  GH_CONN="${1:-github}"
+  step "GitHub connection '$GH_CONN' (your own PAT - one per developer, never shared)"
+  say "  Preferred: a FINE-GRAINED token (org-policy friendly)."
+  say "    GitHub > Settings > Developer settings > Personal access tokens >"
+  say "    Fine-grained tokens > Generate new token."
+  say "    Resource owner: the ORG that owns the repo (not your user);"
+  say "    Repository access: the project repo(s);"
+  say "    Repository permissions: Issues RW, Contents RW, Pull requests R,"
+  say "    Metadata R; Organization permissions: Projects RW."
+  say "    (Org-owned Projects v2 work with fine-grained tokens; USER-owned"
+  say "    project boards still need a classic token with repo + project.)"
+  say "  Classic fallback: Tokens (classic), scopes 'repo' + 'project';"
+  say "  org SSO: Configure SSO > Authorize the token after creating it."
+  local t
+  read -rsp "  Token [Enter = use 'gh auth' / keep current] (input hidden): " t; echo
+  if [[ -n "$t" ]]; then
+    GITHUB_TOKEN="$t"
+    umask 077; mkdir -p "$CONN_DIR"
+    echo "GITHUB_TOKEN=$GITHUB_TOKEN" > "$CONN_DIR/$GH_CONN.env"; chmod 600 "$CONN_DIR/$GH_CONN.env"
+  fi
+  if load_github "$GH_CONN"; then
+    ok "GitHub token verified - authenticated as '$GH_LOGIN'"
+  else
+    say "  error: no working GitHub credential (paste a PAT, or 'gh auth login' first)" >&2
+    exit 1
+  fi
+  register_agents_github "$GH_CONN"
+  say ""
+  say "Done. Restart your agent sessions (Claude Code, Gemini CLI, VS Code)"
+  say "so they pick up the 'github-$GH_CONN' MCP server."
+}
+
+register_agents_github() {  # $1 = connection name; GitHub hosted MCP server, PAT header, per agent
+  local conn="${1:-github}"
+  if [[ ! -f "$CONN_DIR/$conn.env" && ! -f "$CONN_DIR/github.env" ]]; then
+    say "  (no stored PAT - skipping MCP registration; scripts will use gh auth)"; return 0
+  fi
+  local server="github-$conn" mcp_url="https://api.githubcopilot.com/mcp/"
+  [[ "$conn" == "github" ]] && server="github"   # legacy shared credential keeps the old name
+  local auth="Bearer $GITHUB_TOKEN"
+  if command -v claude >/dev/null; then
+    claude mcp remove --scope user "$server" >/dev/null 2>&1 || true
+    claude mcp add --scope user --transport http "$server" "$mcp_url" \
+      --header "Authorization: $auth" >/dev/null \
+      && ok "Claude Code: '$server' (user scope)" \
+      || warn "Claude Code registration failed - run 'claude mcp add' manually"
+  fi
+  if [[ -d "$HOME/.gemini" ]] || command -v gemini >/dev/null; then
+    merge_json "$HOME/.gemini/settings.json" "mcpServers.$server" \
+      '{"httpUrl":"'"$mcp_url"'","headers":{"Authorization":"'"$auth"'"}}'
+    ok "Gemini CLI: ~/.gemini/settings.json"
+  fi
+  if [[ -d "$HOME/.gemini/antigravity" || -d "$HOME/.antigravity" ]]; then
+    # Antigravity is NOT Gemini CLI: own file, and 'serverUrl' not 'httpUrl'
+    merge_json "$HOME/.gemini/antigravity/mcp_config.json" "mcpServers.$server" \
+      '{"serverUrl":"'"$mcp_url"'","headers":{"Authorization":"'"$auth"'"}}'
+    ok "Antigravity: ~/.gemini/antigravity/mcp_config.json"
+  fi
+  local vsc=""
+  case "$(uname -s)" in
+    Darwin) vsc="$HOME/Library/Application Support/Code/User";;
+    Linux)  vsc="$HOME/.config/Code/User";;
+  esac
+  if [[ -n "$vsc" && -d "$vsc" ]]; then
+    merge_json "$vsc/mcp.json" "servers.$server" \
+      '{"type":"http","url":"'"$mcp_url"'","headers":{"Authorization":"'"$auth"'"}}'
+    ok "VS Code / Copilot: user mcp.json"
+  fi
+}
+
+ensure_labels() {  # $1 = owner/repo: reserved workflow labels, case-insensitive
+  local repo="$1" existing created=0
+  if ! existing="$(gh_rest GET "/repos/$repo/labels?per_page=100" 2>/dev/null)"; then
+    warn "could not read labels for $repo (check PAT repo scope) - skipped label setup"
+    return 0
+  fi
+  local lower; lower="$(printf '%s' "$existing" | tr '[:upper:]' '[:lower:]')"
+  local name color desc
+  while IFS='|' read -r name color desc; do
+    if grep -qE "\"name\": *\"$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')\"" <<<"$lower"; then
+      continue
+    fi
+    if gh_rest POST "/repos/$repo/labels" \
+        "{\"name\":\"$name\",\"color\":\"$color\",\"description\":\"$desc\"}" >/dev/null 2>&1; then
+      created=$((created+1))
+    else
+      warn "could not create label '$name' - create it in GitHub before the workflow needs it"
+    fi
+  done <<'LABELS'
+needs-triage|d93f0b|Awaiting triage (story-tools)
+needs-info|fbca04|Waiting on reporter (story-tools)
+ready-for-agent|0e8a16|Triaged; an agent can pick this up (story-tools)
+ready-for-human|1d76db|Triaged; needs a human (story-tools)
+wontfix|ffffff|Closed as not planned (story-tools)
+triaged|c2e0c6|Has been triaged - never comes off (story-tools)
+discovered|5319e7|Born from work on another issue (story-tools)
+needs-gherkin|f9d0c4|Completion requires a QA Gherkin section (story-tools)
+LABELS
+  if [[ "$created" -gt 0 ]]; then ok "workflow labels created ($created) in $repo"
+  else ok "workflow labels all present in $repo"; fi
 }
 
 check_app() {  # sets APP_CHECK = installed | missing | unauthorized | unreachable
@@ -344,6 +478,11 @@ register_agents() {
       '{"httpUrl":"'"$mcp_url"'","headers":{"Authorization":"'"$auth"'"}}'
     ok "Gemini CLI: ~/.gemini/settings.json"; found=1
   fi
+  if [[ -d "$HOME/.gemini/antigravity" || -d "$HOME/.antigravity" ]]; then
+    merge_json "$HOME/.gemini/antigravity/mcp_config.json" "mcpServers.$server" \
+      '{"serverUrl":"'"$mcp_url"'","headers":{"Authorization":"'"$auth"'"}}'
+    ok "Antigravity: ~/.gemini/antigravity/mcp_config.json"; found=1
+  fi
 
   local vsc=""
   case "$(uname -s)" in
@@ -386,8 +525,8 @@ register_agents() {
 
 # ---------- step: project binding (project-attached mode) ----------
 
-attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
-  local dir="$1" yt_project="$2" readonly_flag="$3" mode="${4:-link}"
+copy_skills() {  # $1 dir, $2 mode
+  local dir="$1" mode="${2:-link}"
   mkdir -p "$dir/.agents/skills"
   for s in "${SKILLS[@]}"; do
     local name; name="$(basename "$s")"
@@ -401,6 +540,28 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
     done
   done
   ok "skills attached: .agents/skills (+ .claude/.github symlinks)"
+}
+
+attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 readonly, $5 mode
+  local dir="$1" gh_repo="$2" gh_proj="$3" readonly_flag="$4" mode="${5:-link}"
+  local conn="${GH_CONN:-github}" srv
+  srv="github-$conn"; [[ "$conn" == "github" ]] && srv="github"
+  copy_skills "$dir" "$mode"
+  rm -f "$dir/.agents/youtrack.json" "$dir/.agents/config/story-tools.json"
+  merge_json "$dir/.agents/config/story-tools.json" "tracker" '{
+    "type": "github",
+    "connection": "'"$conn"'",
+    "mcpServer": "'"$srv"'",
+    "repo": "'"$gh_repo"'"'"${gh_proj:+,
+    \"project\": \"$gh_proj\"}${readonly_flag:+,
+    \"readOnly\": true}"'
+  }'
+  ok "pointer: .agents/config/story-tools.json (github: $gh_repo${gh_proj:+, project $gh_proj}) - commit .agents/ .claude/ .github/ with the repo"
+}
+
+attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
+  local dir="$1" yt_project="$2" readonly_flag="$3" mode="${4:-link}"
+  copy_skills "$dir" "$mode"
 
   rm -f "$dir/.agents/youtrack.json" "$dir/.agents/config/story-tools.json"   # regenerate cleanly
   merge_json "$dir/.agents/config/story-tools.json" "tracker" '{
@@ -416,8 +577,11 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
 
 pick_project() {  # sets PROJECT_DIR/PROJECT_NAME (may be empty = user-level only)
   PROJECT_DIR=""; PROJECT_NAME=""
-  local recent=""; [[ -f "$CONF_DIR/recent-projects" ]] && recent="$(head -1 "$CONF_DIR/recent-projects")"
-  local dir; dir="$(ask "Project repo to set up (path; Enter for user-level setup only)" "$recent")"
+  # default to the directory we're standing in when it looks like a project;
+  # never prefill some OTHER project from history
+  local here=""
+  if [[ -d .git || -d .agents || -f AGENTS.md ]]; then here="$PWD"; fi
+  local dir; dir="$(ask "Project repo to set up (path; Enter for user-level setup only)" "$here")"
   [[ -z "$dir" ]] && { say "  user-level setup only - bind a project later with --project <dir>"; return; }
   dir="${dir/#\~/$HOME}"
   [[ -d "$dir" ]] || { warn "$dir is not a directory - continuing with user-level setup only"; return; }
@@ -499,7 +663,54 @@ bind_project_interactive() {  # uses PROJECT_DIR/PROJECT_NAME from pick_project
 
 # ---------- flows ----------
 
+github_wizard() {
+  step "1/3 Project"
+  pick_project
+  local conn="github"
+  [[ -n "$PROJECT_DIR" ]] && conn="$(basename "$PROJECT_DIR" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-\n' '-')"
+  step "2/3 GitHub credential"
+  conn="$(ask "Connection name for this token" "$conn")"
+  if [[ -f "$CONN_DIR/$conn.env" ]] && load_github "$conn"; then
+    ok "using existing '$conn' credential - authenticated as '$GH_LOGIN'"
+    register_agents_github "$conn"
+  else
+    setup_github "$conn"
+  fi
+  step "3/3 Bind"
+  [[ -z "$PROJECT_DIR" ]] && { say "  no project chosen - bind later: ./install.sh --project <dir> --github owner/repo [--gh-project N]"; return; }
+  local guess="" remote=""
+  remote="$(git -C "$PROJECT_DIR" config --get remote.origin.url 2>/dev/null || true)"
+  [[ "$remote" == *github.com* ]] && guess="$(printf '%s' "$remote" | sed -E 's#.*github\.com[:/]##; s#\.git$##')"
+  local gh_repo gh_proj
+  gh_repo="$(ask "GitHub repo (owner/name)" "$guess")"
+  [[ -z "$gh_repo" ]] && { say "error: a repo is required" >&2; exit 1; }
+  gh_proj="$(ask "Project (board) number - Enter for issues-only" "")"
+  [[ -n "${GITHUB_TOKEN:-}" ]] && ensure_labels "$gh_repo"
+  GH_CONN="$conn" attach_project_github "$PROJECT_DIR" "$gh_repo" "$gh_proj" "" "link"
+  check_github_drift
+  step "Done"
+  say "  Refresh any time by running this installer inside the project (no flags)."
+  say "  Teammates: clone, then run  ./install.sh --github  once on their machine."
+}
+
+none_wizard() {
+  step "1/1 Project (skills only - no tracker)"
+  pick_project
+  [[ -z "$PROJECT_DIR" ]] && { say "  no project chosen - nothing to do"; return; }
+  copy_skills "$PROJECT_DIR" "link"
+  rm -f "$PROJECT_DIR/.agents/youtrack.json" "$PROJECT_DIR/.agents/config/story-tools.json"
+  merge_json "$PROJECT_DIR/.agents/config/story-tools.json" "tracker" '{"type":"none"}'
+  ok "pointer: tracker type 'none' - skills run tracker-less (offline mode); re-run this"
+  say "  wizard when the project adopts YouTrack or GitHub."
+}
+
 wizard() {
+  local ttype
+  ttype="$(ask "Which tracker does this project use? (youtrack / github / none)" "youtrack")"
+  case "$ttype" in
+    github|gh) github_wizard; return;;
+    none|no|skills) none_wizard; return;;
+  esac
   say "story-tools setup - credentials, server, agents, project. Re-run any time:"
   say "current values are shown in [brackets]; Enter keeps them. No secrets ever"
   say "land in a repo."
@@ -541,10 +752,36 @@ wizard() {
   show
 }
 
+check_github_drift() {  # $1 = connection; stale PAT in agent configs
+  local conn="${1:-github}" srv
+  srv="github-$conn"; [[ "$conn" == "github" ]] && srv="github"
+  [[ -n "${GITHUB_TOKEN:-}" ]] || return 0
+  [[ -f "$CONN_DIR/$conn.env" || -f "$CONN_DIR/github.env" ]] || return 0
+  local stale="" vsc=""
+  if [[ -f "$HOME/.gemini/settings.json" ]] && grep -q "\"$srv\"" "$HOME/.gemini/settings.json" \
+     && ! grep -qF "$GITHUB_TOKEN" "$HOME/.gemini/settings.json"; then stale="$stale Gemini"; fi
+  if [[ -f "$HOME/.gemini/antigravity/mcp_config.json" ]] && grep -q "\"$srv\"" "$HOME/.gemini/antigravity/mcp_config.json" \
+     && ! grep -qF "$GITHUB_TOKEN" "$HOME/.gemini/antigravity/mcp_config.json"; then stale="$stale Antigravity"; fi
+  case "$(uname -s)" in
+    Darwin) vsc="$HOME/Library/Application Support/Code/User/mcp.json";;
+    Linux)  vsc="$HOME/.config/Code/User/mcp.json";;
+  esac
+  if [[ -n "$vsc" && -f "$vsc" ]] && grep -q "\"$srv\"" "$vsc" \
+     && ! grep -qF "$GITHUB_TOKEN" "$vsc"; then stale="$stale VS-Code"; fi
+  if [[ -f "$HOME/.claude.json" ]] && grep -q "\"$srv\"" "$HOME/.claude.json" \
+     && ! grep -qF "$GITHUB_TOKEN" "$HOME/.claude.json"; then stale="$stale Claude-Code"; fi
+  if [[ -n "$stale" ]]; then
+    warn "STALE TOKEN in agent MCP registration for '$srv':$stale"
+    say  "  Fix: re-run the installer's github setup for connection '$conn', then restart agents."
+  fi
+}
+
 check_registration_drift() {  # warn when an agent's MCP config holds a different token
   local stale="" vsc=""
   if [[ -f "$HOME/.gemini/settings.json" ]] && grep -q "\"$MCP_SERVER\"" "$HOME/.gemini/settings.json" \
      && ! grep -qF "$YOUTRACK_TOKEN" "$HOME/.gemini/settings.json"; then stale="$stale Gemini"; fi
+  if [[ -f "$HOME/.gemini/antigravity/mcp_config.json" ]] && grep -q "\"$MCP_SERVER\"" "$HOME/.gemini/antigravity/mcp_config.json" \
+     && ! grep -qF "$YOUTRACK_TOKEN" "$HOME/.gemini/antigravity/mcp_config.json"; then stale="$stale Antigravity"; fi
   case "$(uname -s)" in
     Darwin) vsc="$HOME/Library/Application Support/Code/User/mcp.json";;
     Linux)  vsc="$HOME/.config/Code/User/mcp.json";;
@@ -571,17 +808,39 @@ user_mode() {
 }
 
 project_mode() {
-  local dir="" profile="" mode="link" yt_project="" readonly_flag=""
+  local dir="" profile="" mode="link" yt_project="" readonly_flag="" gh_repo="" gh_proj=""
   dir="$(cd "$1" && pwd)"; shift
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --connection|--profile) profile="$2"; shift 2;;
       --yt-project) yt_project="$2"; shift 2;;
+      --github) gh_repo="$2"; shift 2;;
+      --gh-project) gh_proj="$2"; shift 2;;
       --readonly) readonly_flag="true"; shift;;
       --copy) mode="copy"; shift;;
       *) say "unknown option: $1" >&2; exit 1;;
     esac
   done
+
+  # GitHub-tracked project? (explicit flag, or the pointer says so)
+  local ptype; ptype="$(read_pointer "$dir" type)"
+  if [[ -n "$gh_repo" || "$ptype" == "github" ]]; then
+    [[ -z "$gh_repo" ]] && gh_repo="$(read_pointer "$dir" repo)"
+    [[ -z "$gh_proj" ]] && gh_proj="$(read_pointer "$dir" project)"
+    [[ -z "$gh_repo" ]] && { say "error: no GitHub repo - use --github owner/repo" >&2; exit 1; }
+    GH_CONN="$(read_pointer "$dir" connection)"
+    [[ -z "$GH_CONN" ]] && GH_CONN="$(basename "$dir" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-\n' '-')"
+    if load_github "$GH_CONN"; then
+      ok "GitHub: authenticated as '$GH_LOGIN'"
+      ensure_labels "$gh_repo"
+    else
+      warn "no GitHub credential yet - run ./install.sh --github (skills/pointer installed anyway)"
+    fi
+    attach_project_github "$dir" "$gh_repo" "$gh_proj" "$readonly_flag" "$mode"
+    check_github_drift "$GH_CONN"
+    return
+  fi
+
   if [[ -z "$profile" ]]; then
     profile="$(read_pointer "$dir" connection)"
     [[ -z "$profile" ]] && profile="$(read_pointer "$dir" profile)"
@@ -624,9 +883,16 @@ case "${1:-}" in
         say "Bound project detected here - refreshing it (connection and"
         say "project key come from .agents/config/story-tools.json)."
         project_mode "$PWD"
-      elif [[ -t 0 ]]; then wizard; else sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; fi;;
+      elif [[ -t 0 ]]; then wizard; else sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; fi;;
   --setup) wizard;;
   --user) shift; profile=""; [[ "${1:-}" == "--connection" || "${1:-}" == "--profile" ]] && profile="$2"; user_mode "$profile";;
+  --github) shift
+    if [[ -n "${1:-}" && "${1:-}" != -* ]]; then
+      say "error: --github at top level takes no repo - per-developer setup only." >&2
+      say "  To bind a project: ./install.sh --project <dir> --github owner/repo [--gh-project N]" >&2
+      exit 1
+    fi
+    setup_github;;
   --register) shift; profile=""
     [[ "${1:-}" == "--connection" || "${1:-}" == "--profile" ]] && profile="${2:-}"
     if [[ -z "$profile" && -f "./.agents/config/story-tools.json" ]]; then
@@ -647,5 +913,5 @@ case "${1:-}" in
   --project) shift; [[ $# -ge 1 ]] || { say "usage: install.sh --project <dir> [--connection <name>] [--yt-project <KEY>] [--readonly] [--copy]" >&2; exit 1; }; project_mode "$@";;
   --list) list_connections;;
   --show) show;;
-  --help|-h|*) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//';;
+  --help|-h|*) sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//';;
 esac

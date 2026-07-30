@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.7"
+  version: "1.8"
 ---
 
 # To Issues
@@ -18,6 +18,7 @@ format so the story-workflow skill can pick each one up directly.
 `tracker.type` (absent → `youtrack`) and use that binding's commands:
 
 - `youtrack` → [references/tracker-youtrack.md](references/tracker-youtrack.md)
+- `github` → [references/tracker-github.md](references/tracker-github.md)
 
 Story bodies follow [references/ac-format.md](references/ac-format.md) —
 the same contract every story-tools skill parses.

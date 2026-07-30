@@ -1,11 +1,11 @@
 ---
 name: story-workflow
-description: Work a tracker story with strict scope discipline - focus one story, treat its acceptance-criteria checklist as the scope, route discovered work to new linked issues, and gate completion. Tracker-agnostic via per-tracker bindings (YouTrack today; GitHub/Jira later). Use whenever starting development work, picking up a ticket, resuming a task, checking off acceptance criteria, completing a story, or when new work is discovered mid-task. Triggers - "work on", "pick up", "resume", "what am I working on", "start the next story", "is this done", issue IDs like PROJ-123 or #123.
+description: Work a tracker story with strict scope discipline - focus one story, treat its acceptance-criteria checklist as the scope, route discovered work to new linked issues, and gate completion. Tracker-agnostic via per-tracker bindings (YouTrack and GitHub today; Jira later). Use whenever starting development work, picking up a ticket, resuming a task, checking off acceptance criteria, completing a story, or when new work is discovered mid-task. Triggers - "work on", "pick up", "resume", "what am I working on", "start the next story", "is this done", issue IDs like PROJ-123 or #123.
 license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.7"
+  version: "1.8"
 ---
 
 # Story Workflow
@@ -23,6 +23,7 @@ carries connection facts (server name, URL, project key). Load the matching
 binding and use ONLY its tools:
 
 - `youtrack` → [references/tracker-youtrack.md](references/tracker-youtrack.md)
+- `github` → [references/tracker-github.md](references/tracker-github.md)
 
 A developer may have several trackers/instances configured — always use the
 one this project's config names, never another.

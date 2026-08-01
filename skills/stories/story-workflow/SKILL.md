@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.10"
+  version: "1.11"
 ---
 
 # Story Workflow
@@ -26,7 +26,14 @@ binding and use ONLY its tools:
 - `github` → [references/tracker-github.md](references/tracker-github.md)
 
 A developer may have several trackers/instances configured — always use the
-one this project's config names, never another.
+one this project's config names, never another. `story-tools.json` is the
+ONLY authoritative pointer: if some other config file names a different
+tracker server (legacy `.agents/youtrack.json`, `.agents/config/youtrack.json`,
+leftovers from earlier tooling), that file is stale — flag the
+disagreement to the user and stop; never pick a server by guessing.
+After a server move, local mirrors (`docs/stories/`, `docs/dimensions.md`,
+docs sync state) reference the OLD server until refreshed — the
+project-docs skill has the recovery ritual.
 
 If the binding's tools are unavailable (no MCP connection on this machine,
 server unreachable) or the user asks to work disconnected, fall back to

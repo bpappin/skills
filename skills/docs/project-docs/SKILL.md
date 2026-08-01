@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone for filing/creating docs. Syncing requires git on PATH plus the binding's connection - YouTrack REST (story-tools connection or YOUTRACK_URL/TOKEN env), or a GitHub token with Contents RW and an initialized wiki.
 metadata:
   author: bpappin
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Project Docs
@@ -108,6 +108,34 @@ state is the tracker's job. PRDs list their stories as tracker IDs
 whole system (template: `assets/templates/docs-guide.md`; create it
 during adoption, keep it current when the model changes). It is NOT
 synced - it describes the system rather than living inside it.
+
+## After a tracker move (server migrated or project rebound)
+
+When a project is rebound to a different server/connection, the sync
+*script* follows the pointer immediately - but the sync *state* does
+not: the recorded base (`.yt-sync/` / `.gh-wiki-sync/`), ID-prefixed
+filenames, and the `docs/stories/` snapshot all still reference the old
+server. Never push blind after a move. The ritual:
+
+1. **Trust exactly one config.** `.agents/config/story-tools.json` is
+   the only pointer. Any other file naming a tracker server (legacy
+   `.agents/youtrack.json`, `.agents/config/youtrack.json`, configs
+   from earlier tooling) is stale - surface it to the user and get it
+   removed before syncing anywhere. Two configs disagreeing is a STOP,
+   not a coin flip.
+2. **Dry-run first.** Run the binding's sync with `--dry-run`. A sane
+   plan (your recent local edits, nothing else) means the article/page
+   identities survived the migration - sync for real, done.
+3. **A wild plan means the identities didn't survive** (mass deletes,
+   moves, or creates you didn't make). Re-bootstrap: move the KB dir
+   aside (keep it - it holds local-only edits), let an empty-dir sync
+   pull the migrated KB fresh from the new server, then port the
+   local-only documents into the pulled tree and sync again.
+4. **Refresh the snapshots.** `docs/stories/` and `docs/dimensions.md`
+   are old-server data until the binding's pull is re-run.
+
+The installer warns about all of this when it detects a rebind; this
+section is what to do about the warnings.
 
 ## Reorganizing
 

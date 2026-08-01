@@ -647,7 +647,7 @@ attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 rea
   local conn="${GH_CONN:-github}" srv
   srv="github-$conn"; [[ "$conn" == "github" ]] && srv="github"
   copy_skills "$dir" "$mode"
-  rm -f "$dir/.agents/youtrack.json" "$dir/.agents/config/story-tools.json"
+  rm -f "$dir/.agents/youtrack.json" "$dir/.agents/config/youtrack.json" "$dir/.agents/config/story-tools.json"
   merge_json "$dir/.agents/config/story-tools.json" "tracker" '{
     "type": "github",
     "connection": "'"$conn"'",
@@ -695,7 +695,7 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
   local dir="$1" yt_project="$2" readonly_flag="$3" mode="${4:-link}"
   copy_skills "$dir" "$mode"
 
-  rm -f "$dir/.agents/youtrack.json" "$dir/.agents/config/story-tools.json"   # regenerate cleanly
+  rm -f "$dir/.agents/youtrack.json" "$dir/.agents/config/youtrack.json" "$dir/.agents/config/story-tools.json"   # regenerate cleanly
   merge_json "$dir/.agents/config/story-tools.json" "tracker" '{
     "type": "youtrack",
     "connection": "'"$PROFILE"'",
@@ -838,7 +838,7 @@ none_wizard() {
   pick_project
   [[ -z "$PROJECT_DIR" ]] && { say "  no project chosen - nothing to do"; return; }
   copy_skills "$PROJECT_DIR" "link"
-  rm -f "$PROJECT_DIR/.agents/youtrack.json" "$PROJECT_DIR/.agents/config/story-tools.json"
+  rm -f "$PROJECT_DIR/.agents/youtrack.json" "$PROJECT_DIR/.agents/config/youtrack.json" "$PROJECT_DIR/.agents/config/story-tools.json"
   merge_json "$PROJECT_DIR/.agents/config/story-tools.json" "tracker" '{"type":"none"}'
   ok "pointer: tracker type 'none' - skills run tracker-less (offline mode); re-run this"
   say "  wizard when the project adopts YouTrack or GitHub."
@@ -1040,6 +1040,7 @@ project_mode() {
     if load_github "$GH_CONN"; then
       ok "GitHub: authenticated as '$GH_LOGIN'"
       ensure_labels "$gh_repo"
+      register_agents_github "$GH_CONN"   # self-heal: cover agents added since setup
     else
       warn "no GitHub credential yet - run ./install.sh --github (skills/pointer installed anyway)"
     fi
@@ -1063,9 +1064,19 @@ project_mode() {
   # keep the server in step with the workflow on every project refresh:
   # app version check/deploy offer, link type, workflow tags
   setup_server
+  # ...and the agent registrations: newly supported agents (or a fresh
+  # agent install on this machine) get the server entry on refresh, not
+  # only at first setup
+  register_agents
   check_registration_drift
   local prev; prev="$(read_pointer "$dir" connection)"; [[ -z "$prev" ]] && prev="$(read_pointer "$dir" profile)"
-  [[ -n "$prev" && "$prev" != "$PROFILE" ]] && warn "rebinding: this project was bound to connection '$prev', now '$PROFILE'"
+  if [[ -n "$prev" && "$prev" != "$PROFILE" ]]; then
+    warn "rebinding: this project was bound to connection '$prev', now '$PROFILE'"
+    [[ -d "$dir/docs/knowledge/.yt-sync" ]] && \
+      warn "docs/knowledge sync state still references the OLD server - run yt-sync.sh --dry-run before any push; if the plan looks wrong, re-bootstrap (see the project-docs binding)"
+    [[ -d "$dir/docs/stories" ]] && \
+      warn "docs/stories snapshot is from the old server - refresh it (yt-pull) once the new server is confirmed"
+  fi
   [[ -z "$yt_project" ]] && yt_project="$(read_pointer "$dir" project)"
   [[ -z "$yt_project" ]] && yt_project="${YOUTRACK_PROJECT:-}"
   attach_project "$dir" "$yt_project" "$readonly_flag" "$mode"

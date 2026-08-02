@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0
 
       - name: Refresh the manifest
-        run: ./scripts/skill-versions.sh skills --publish
+        run: bash ./scripts/skill-versions.sh skills --publish
 
       - name: Has anything moved?
         id: check
@@ -46,10 +46,21 @@ jobs:
           : > /tmp/old.json
           [[ -n "$LAST_TAG" ]] && git show "$LAST_TAG:VERSIONS.json" > /tmp/old.json 2>/dev/null || true
 
-          if ! ./scripts/skill-diff.sh /tmp/old.json VERSIONS.json > /tmp/why; then
+          # exit 1 means "nothing moved". ANY other failure is a broken
+          # check, and must not masquerade as a quiet no-op - that is
+          # exactly how a green tick hid a real error before.
+          set +e
+          bash ./scripts/skill-diff.sh /tmp/old.json VERSIONS.json > /tmp/why
+          rc=$?
+          set -e
+          if [[ $rc -eq 1 ]]; then
             echo "release=no" >> "$GITHUB_OUTPUT"
             echo "No skill versions moved - nothing to release." >> "$GITHUB_STEP_SUMMARY"
             exit 0
+          elif [[ $rc -ne 0 ]]; then
+            echo "::error::skill-diff.sh failed with exit $rc"
+            cat /tmp/why || true
+            exit $rc
           fi
 
           # dated tag, with a counter if today already has one
@@ -69,7 +80,7 @@ jobs:
           V: ${{ steps.check.outputs.version }}
         run: |
           if ! grep -q "^## \[$V\]" CHANGELOG.md \
-             && ./scripts/changelog-section.sh Unreleased >/dev/null 2>&1; then
+             && bash ./scripts/changelog-section.sh Unreleased >/dev/null 2>&1; then
             python3 - "$V" <<'PY'
           import sys
           ver = sys.argv[1]
@@ -99,10 +110,10 @@ jobs:
           TAG: ${{ steps.check.outputs.tag }}
           V: ${{ steps.check.outputs.version }}
         run: |
-          ./scripts/package-skills.sh --clean
+          bash ./scripts/package-skills.sh --clean
 
           # /tmp/why was written by the "Has anything moved?" step
-          ./scripts/changelog-section.sh "$V" > /tmp/notes.md 2>/dev/null || : > /tmp/notes.md
+          bash ./scripts/changelog-section.sh "$V" > /tmp/notes.md 2>/dev/null || : > /tmp/notes.md
           {
             echo
             echo "**What moved**"

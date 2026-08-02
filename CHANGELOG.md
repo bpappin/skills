@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.1.0] - 2026-08-02
+
 ### Added
 
 - **GitHub wiki docs sync** — `docs/knowledge/` now syncs two ways with a

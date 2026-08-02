@@ -1,22 +1,29 @@
-name: Release skill bundles
+name: Release
 
-# Tag a release and every skill is packaged and attached as a .skill
-# asset. dist/ is gitignored on purpose - built artifacts belong on a
-# Release, not in the tree.
+# Fully automatic. Push to master and this decides whether a release is
+# warranted, from how the skills actually moved:
 #
-#   git tag v1.4.0 && git push origin v1.4.0
+#   any skill's major changed  -> repo major
+#   any skill's minor changed  -> repo minor
+#   otherwise                  -> repo patch
+#   nothing moved              -> no release, no noise
+#
+# So a hotfix just rides through, and you never tag, never pick a number,
+# never remember a command. Add lines to CHANGELOG.md [Unreleased] while
+# working and they become the release notes; skip it and the release
+# still happens.
 
 on:
   push:
-    tags: ['v*']
+    branches: [master]
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to release (must already exist)'
-        required: true
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -24,49 +31,94 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          fetch-depth: 0
 
-      - name: Package every skill
-        run: ./scripts/package-skills.sh --clean
+      - name: Refresh the manifest
+        run: ./scripts/skill-versions.sh skills --publish
 
-      - name: Summarise
+      - name: Has anything moved?
+        id: check
         run: |
-          {
-            echo "| Skill | Version |"
-            echo "|---|---|"
-            for f in dist/versioned/*.skill; do
-              b="$(basename "$f" .skill)"
-              echo "| ${b%-*} | ${b##*-} |"
-            done
-          } >> "$GITHUB_STEP_SUMMARY"
+          LAST_TAG="$(git tag --list 'v*' --sort=-v:refname | head -1)"
+          echo "last tag: ${LAST_TAG:-none}"
 
-      - name: Create the release
+          if [[ -n "$LAST_TAG" ]]; then
+            git show "$LAST_TAG:VERSIONS.json" > /tmp/old.json 2>/dev/null || : > /tmp/old.json
+          else
+            : > /tmp/old.json
+          fi
+
+          if NEXT="$(./scripts/next-version.sh /tmp/old.json VERSIONS.json "${LAST_TAG:-0.0.0}" 2>/tmp/why)"; then
+            echo "release=yes"        >> "$GITHUB_OUTPUT"
+            echo "version=$NEXT"      >> "$GITHUB_OUTPUT"
+            echo "tag=v$NEXT"         >> "$GITHUB_OUTPUT"
+            { echo "### Releasing v$NEXT"; echo; echo '```'; cat /tmp/why; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "release=no" >> "$GITHUB_OUTPUT"
+            echo "No skill versions moved - nothing to release." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Roll the changelog
+        if: steps.check.outputs.release == 'yes'
+        env:
+          V: ${{ steps.check.outputs.version }}
+        run: |
+          if ! grep -q "^## \[$V\]" CHANGELOG.md \
+             && ./scripts/changelog-section.sh Unreleased >/dev/null 2>&1; then
+            python3 - "$V" "$(date +%Y-%m-%d)" <<'PY'
+          import sys
+          ver, today = sys.argv[1:3]
+          s = open('CHANGELOG.md', encoding='utf-8').read()
+          s = s.replace('## [Unreleased]',
+                        f'## [Unreleased]\n\nNothing yet.\n\n## [{ver}] - {today}', 1)
+          open('CHANGELOG.md', 'w', encoding='utf-8').write(s)
+          PY
+          fi
+
+      - name: Commit manifest and changelog
+        if: steps.check.outputs.release == 'yes'
+        env:
+          V: ${{ steps.check.outputs.version }}
+        run: |
+          if git diff --quiet -- CHANGELOG.md VERSIONS.json; then exit 0; fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md VERSIONS.json
+          git commit -m "release v$V [skip ci]"
+          git push origin HEAD:master
+
+      - name: Package and publish
+        if: steps.check.outputs.release == 'yes'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+          TAG: ${{ steps.check.outputs.tag }}
+          V: ${{ steps.check.outputs.version }}
         run: |
-          # Prefer the hand-written CHANGELOG section - a generated commit
-          # list is not release notes anybody wants to read.
-          if ./scripts/changelog-section.sh "$TAG" > /tmp/notes.md 2>/dev/null; then
-            echo "using CHANGELOG section for $TAG"
-            GEN=""
-          else
-            echo "::warning::no CHANGELOG section for $TAG - falling back to generated notes"
-            : > /tmp/notes.md
-            GEN="--generate-notes"
-          fi
+          ./scripts/package-skills.sh --clean
+
+          # /tmp/why was written by the "Has anything moved?" step
+          ./scripts/changelog-section.sh "$V" > /tmp/notes.md 2>/dev/null || : > /tmp/notes.md
           {
             echo
-            echo "---"
+            echo "**What moved**"
             echo
-            echo "Each \`.skill\` asset below is one skill, importable on its own."
-            echo "Installing the whole suite does not need them - see the README."
+            echo '```'
+            cat /tmp/why
+            echo '```'
+            echo
+            echo "Each \`.skill\` asset is one skill, importable on its own."
           } >> /tmp/notes.md
 
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/versioned/*.skill VERSIONS.json --clobber
-          else
-            # shellcheck disable=SC2086
-            gh release create "$TAG" dist/versioned/*.skill VERSIONS.json \
-              --title "$TAG" $GEN --notes-file /tmp/notes.md
-          fi
+          git tag "$TAG" && git push origin "$TAG"
+          gh release create "$TAG" dist/versioned/*.skill VERSIONS.json \
+            --title "$TAG" --notes-file /tmp/notes.md
+
+      - name: Manifest-only refresh
+        if: steps.check.outputs.release == 'no'
+        run: |
+          if git diff --quiet -- VERSIONS.json; then exit 0; fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add VERSIONS.json
+          git commit -m "chore: refresh VERSIONS.json [skip ci]"
+          git push origin HEAD:master

@@ -31,7 +31,7 @@ registry:
 One line. Clone the suite, set up your tracker, register every agent you have.
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/bpappin/skills/main/bootstrap.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/bpappin/skills/master/bootstrap.sh)"
 ```
 
 macOS, Linux, WSL, Git Bash. A couple of minutes, mostly answering
@@ -113,9 +113,31 @@ work — it belongs upstream here, never in a project's copy.
 | `bootstrap.sh` | One-line install: clone or update the suite, then run the wizard |
 | `scripts/` | `install.sh` (the wizard), `skill-versions.sh` (version table; `--publish` writes `VERSIONS.json`), `share-workflow-tags.sh` |
 | `docs/` | System docs: ADRs, permissions, system diagram, [skill standards](docs/skill-standards.md), and `outbox/` for proposals headed upstream |
-| `.githooks/` | `pre-commit` — blocks a changed skill whose version did not move, restages `VERSIONS.json`. Enable with `git config core.hooksPath .githooks` |
-| `CHANGELOG.md` | Release notes, written for readers — the release workflow publishes the section matching the tag |
+| `.githooks/` | `pre-commit` — blocks a changed skill whose version did not move, restages `VERSIONS.json`. The installer enables it for you |
+| `CHANGELOG.md` | Optional prose history — becomes the notes if you ever publish a release |
 | `VERSIONS.json` | Published manifest of skill versions — how a project discovers it is behind. Regenerate when versions move |
+
+## Maintaining this repo
+
+Edit a skill, bump its `metadata.version`, commit, push. That is the
+whole routine — there is nothing else to run, ever.
+
+Pushing to master releases by itself, and works out the number from how
+the skills actually moved: any skill's major changed makes it a major
+release, any minor makes it minor, otherwise patch. Nothing moved means
+no release and no noise, so a docs fix or a typo just rides through.
+
+The pre-commit hook (enabled by the installer, not by you) refuses a
+changed skill whose version did not move and restages `VERSIONS.json` —
+that manifest is how a bound project learns it is behind, so it has to
+be right.
+
+Add lines to `CHANGELOG.md` under `[Unreleased]` while working and they
+become the release notes. Skip it and the release still happens.
+
+To push updated skills into a project, run the installer there; it
+copies from your clone. That one stays manual on purpose — it writes
+tracked files into somebody's repo.
 
 ## Library skills
 

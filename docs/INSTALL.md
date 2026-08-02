@@ -6,7 +6,7 @@ else.
 ## The one-liner
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/bpappin/skills/main/bootstrap.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/bpappin/skills/master/bootstrap.sh)"
 ```
 
 Clones the suite to `~/.agents/story-tools/src` and runs the wizard. That

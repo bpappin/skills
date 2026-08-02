@@ -1,12 +1,14 @@
 # Changelog
 
-Notable changes to this repository. Release notes are generated from the
-section matching the tag, so write these for whoever reads the release —
-not as a commit log.
+Notable changes, in prose, for anyone who has not been watching the
+commits — including future you.
+
+**Optional.** Nothing depends on this being current: skills carry their
+own `metadata.version`, and that is what the update check reads. Keep it
+up when a change is worth explaining, skip it when it is not. If you
+ever publish a release, whatever is here becomes its notes.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-Individual skills carry their own `metadata.version`; the tags here
-version the repository as a whole.
 
 ## [Unreleased]
 

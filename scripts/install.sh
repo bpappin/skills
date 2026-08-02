@@ -29,6 +29,16 @@ REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # skills tree beside it -> developer onboarding only, never skill copying.
 SHIPPED=0
 [[ -d "$REPO_DIR/skills/stories/story-workflow" ]] || SHIPPED=1
+
+# Running from the source clone? Wire up the repo's own git hooks. Nobody
+# should have to remember `git config core.hooksPath` - and git will not
+# do it for you, since a repo cannot enable its own hooks.
+if [[ $SHIPPED -eq 0 && -d "$REPO_DIR/.githooks" && -d "$REPO_DIR/.git" ]]; then
+  if [[ "$(git -C "$REPO_DIR" config --get core.hooksPath 2>/dev/null)" != ".githooks" ]]; then
+    git -C "$REPO_DIR" config core.hooksPath .githooks 2>/dev/null \
+      && echo "  (enabled this repo's git hooks)"
+  fi
+fi
 SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/story-reconcile"
         "$REPO_DIR/skills/stories/to-issues" "$REPO_DIR/skills/stories/triage"
         "$REPO_DIR/skills/docs/project-docs" "$REPO_DIR/skills/docs/to-prd" "$REPO_DIR/skills/docs/to-research"
@@ -49,7 +59,7 @@ RETIRED_SKILLS=(grill-me to-ai-skill)
 
 # Where the suite lives, for version checks and teammate updates.
 SKILLS_REPO="${STORY_TOOLS_REPO:-bpappin/skills}"
-SKILLS_BRANCH="${STORY_TOOLS_BRANCH:-main}"
+SKILLS_BRANCH="${STORY_TOOLS_BRANCH:-master}"
 
 AGENTS_HOME="$HOME/.agents"
 CONF_DIR="$AGENTS_HOME/story-tools"

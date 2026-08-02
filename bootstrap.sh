@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # story-tools bootstrap: fetch the suite, then run the installer.
 #
-#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/bpappin/skills/main/bootstrap.sh)"
+#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/bpappin/skills/master/bootstrap.sh)"
 #
 # Use `bash -c "$(curl ...)"`, NOT `curl ... | bash`: the installer is
 # interactive, and piping leaves stdin pointed at the script instead of
@@ -19,7 +19,7 @@
 set -euo pipefail
 
 REPO="${STORY_TOOLS_REPO:-bpappin/skills}"
-BRANCH="${STORY_TOOLS_BRANCH:-main}"
+BRANCH="${STORY_TOOLS_BRANCH:-master}"
 SRC="${STORY_TOOLS_SRC:-$HOME/.agents/story-tools/src}"
 
 # Piped in? Then stdin is this script, and every wizard prompt reads EOF.
@@ -31,7 +31,7 @@ The installer is interactive, so piping makes every prompt read EOF.
 
 Run it this way instead (keeps your terminal on stdin):
 
-  bash -c "$(curl -fsSL https://raw.githubusercontent.com/bpappin/skills/main/bootstrap.sh)"
+  bash -c "$(curl -fsSL https://raw.githubusercontent.com/bpappin/skills/master/bootstrap.sh)"
 
 Or clone first:
 
@@ -57,6 +57,9 @@ else
   mkdir -p "$(dirname "$SRC")"
   git clone --quiet --branch "$BRANCH" "https://github.com/$REPO.git" "$SRC"
 fi
+
+# the clone's own hooks, so a maintainer never has to set this up
+[[ -d "$SRC/.githooks" ]] && git -C "$SRC" config core.hooksPath .githooks 2>/dev/null || true
 
 INSTALL="$SRC/scripts/install.sh"
 [[ -f "$INSTALL" ]] || { echo "error: $INSTALL not found - wrong repo or branch?" >&2; exit 1; }

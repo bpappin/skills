@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.11"
+  version: "1.12"
 ---
 
 # Story Workflow
@@ -189,5 +189,12 @@ related case — see [references/offline.md](references/offline.md).)
   story-tools installer. Missing/invalid credentials → "run
   `.agents/setup.sh`" when the project ships it, else "run `install.sh`"
   from the skills repo - never "paste your token here".
+- **Never edit an installed skill in place.** Skills listed in
+  `.agents/skills/MANAGED.md` are installer-managed copies, overwritten
+  on every refresh - an edit there is lost silently and never reaches
+  other projects. Improving one is discovered work: `work.discovered`
+  (or tell the user) so it lands in the story-tools source repo.
+  Unlisted skill directories are the project's own; leave them alone
+  unless the user asks.
 - Background reading: [references/methodology.md](references/methodology.md)
   — the lifecycle, why the off-ramp matters, where BDD fits, writing good AC.

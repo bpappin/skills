@@ -24,23 +24,41 @@ registry:
 3. **Versioning** — skills evolve with the codebase they support.
 4. **Work lives in the tracker, knowledge lives in the repo** — stories and
    acceptance criteria belong to the issue tracker; PRDs, ADRs, and research
-   stay in `docs/` and publish to the tracker's knowledge base.
+   stay in `docs/` and sync to the tracker's knowledge base.
+
+## Install
+
+One line. Clone the suite, set up your tracker, register every agent you have.
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/bpappin/skills/main/bootstrap.sh)"
+```
+
+macOS, Linux, WSL, Git Bash. A couple of minutes, mostly answering
+questions. Needs `git`, `curl`, `python3`. Skips agents you do not have.
+Safe to re-run — that is how you update.
+
+Then `cd` into a project, run it again to bind that project, restart your
+agent, and say *"what am I working on?"*
+
+**Joining a project that already uses this?** You do not need this repo:
+clone the project and run `.agents/setup.sh`.
+
+[Full install guide](docs/INSTALL.md) — clone-then-run for org policies
+that ban piped installers, requirements per tracker, offline use, and
+troubleshooting.
 
 ## The story-tools suite
 
-Twelve of these skills form a coupled system installed together by the
-wizard:
-
-```
-./scripts/install.sh
-```
+Sixteen of these skills form a coupled system, installed together by the
+wizard.
 
 The wizard is the only place credentials are handled — skills never ask for
 tokens. It stores connections under `~/.agents/story-tools/`, registers the
-MCP server per agent (Claude Code, Gemini CLI, VS Code/Copilot, Codex),
-deploys the YouTrack app when permissions allow, and binds projects via a
-non-secret pointer at `<repo>/.agents/config/story-tools.json`. Re-running
-it reviews every stored value.
+MCP server per agent (Claude Code, Gemini CLI, Antigravity, VS Code/Copilot,
+Codex), deploys the YouTrack app when permissions allow, and binds projects
+via a non-secret pointer at `<repo>/.agents/config/story-tools.json`.
+Re-running it in a bound project offers a refresh, or a full reconfigure.
 
 The pipeline: **triage** (inbound) / **to-prd** → **to-issues** (planning) →
 **grill-with-docs** (domain model) → **story-workflow** (execution, with the
@@ -48,28 +66,75 @@ discovered-work off-ramp) → **housekeeping** + **handoff** (session close) →
 **story-reconcile** (adoption/migration) → **project-docs** + **to-research**
 + **regulatory-compliance** (knowledge & compliance).
 
+### Trackers
+
+Skills are tracker-agnostic: neutral operations dispatched through
+per-tracker binding files. **YouTrack** and **GitHub** (Issues + Projects v2,
+with an issues-only fallback) are both built and live-verified; Jira can
+follow without touching the skills.
+
+Documentation syncs two ways with the tracker's knowledge base — YouTrack
+articles, or the GitHub repo wiki where one is enabled. No wiki, no problem:
+`docs/knowledge/` stays git-native.
+
+### What lands in a bound project
+
+| Path | What it is |
+|---|---|
+| `.agents/skills/` | The suite, copied in (`.claude/` and `.github/` symlink to it) |
+| `.agents/skills/MANAGED.md` | Which skills the installer owns, and their versions — generated |
+| `.agents/config/story-tools.json` | Tracker pointer + settings. Non-secret; commit it |
+| `.agents/setup.sh` | Teammate onboarding: their credential, their agents, nothing else |
+| `docs/WORKFLOW.md` | Human-facing guide to the loop — generated, tracker-flavoured |
+| `docs/stories/`, `docs/dimensions.md` | Generated tracker snapshot and real field values |
+
+A teammate clones and runs `.agents/setup.sh` — this repo is not needed. It
+sets up their own credential (or lets them decline and work offline,
+reconciling later), registers the tracker in their agents, and — when
+`updates.check` is on — tells them if the project's skills are behind what
+this repo publishes, offering to update.
+
+Installed skills are managed copies: the installer overwrites them on
+refresh and prunes ones it has retired. Improving a skill is discovered
+work — it belongs upstream here, never in a project's copy.
+
 ## Repository map
 
 | Directory | Contents |
 |---|---|
 | `skills/stories/` | Tracker discipline: story-workflow, story-reconcile, to-issues, triage |
-| `skills/docs/` | Documentation system: project-docs, to-prd, to-research, grill-with-docs, to-wiring, regulatory-compliance |
-| `skills/sessions/` | Session lifecycle & communication: handoff, housekeeping, grill-me, zoom-out, caveman |
-| `skills/engineering/` | Practice: tdd, prototype, improve-codebase-architecture, to-design |
-| `skills/authoring/` | Making skills: write-a-skill, to-ai-skill |
+| `skills/docs/` | Documentation system: project-docs, to-prd, to-research, grill-with-docs, to-wiring, regulatory-compliance, to-library-skill |
+| `skills/sessions/` | Session lifecycle: handoff, housekeeping, zoom-out |
+| `skills/engineering/` | Practice: tdd, improve-codebase-architecture, prototype, to-design |
+| `skills/authoring/` | Making skills: write-a-skill |
 | `skills/setup/` | Agent/tool configuration: git-guardrails (Claude Code, Gemini), setup-github-copilot, setup-gitlab-duo |
-| `trackers/youtrack/` | YouTrack binding infrastructure: the story-tools MCP app, `deploy.sh`, `smoke.sh`, tests |
-| `scripts/` | `install.sh` — the suite wizard |
-| `docs/` | System docs: architecture ADRs, permissions, system diagram, [skill standards](docs/skill-standards.md) |
+| `trackers/youtrack/` | The story-tools MCP app, `deploy.sh`, `smoke.sh`, tests |
+| `trackers/github/` | `smoke.sh` (tracker binding), `smoke-wiki.sh` (docs sync) — run on a dev machine |
+| `bootstrap.sh` | One-line install: clone or update the suite, then run the wizard |
+| `scripts/` | `install.sh` (the wizard), `skill-versions.sh` (version table; `--publish` writes `VERSIONS.json`), `share-workflow-tags.sh` |
+| `docs/` | System docs: ADRs, permissions, system diagram, [skill standards](docs/skill-standards.md), and `outbox/` for proposals headed upstream |
+| `.githooks/` | `pre-commit` — blocks a changed skill whose version did not move, restages `VERSIONS.json`. Enable with `git config core.hooksPath .githooks` |
+| `CHANGELOG.md` | Release notes, written for readers — the release workflow publishes the section matching the tag |
+| `VERSIONS.json` | Published manifest of skill versions — how a project discovers it is behind. Regenerate when versions move |
 
-`trackers/` is deliberately plural: the suite's skills are tracker-agnostic
-(neutral operations dispatched through per-tracker binding files); YouTrack
-is the first binding, GitHub/Jira can follow without touching the skills.
+## Library skills
+
+`to-library-skill` is the odd one out: it maintains the agent skill a
+**library** ships inside its own artifact, so agents in consuming projects
+stop reinventing code they cannot see. It scaffolds one per module
+(`.agents/skills/<name>/SKILL.md`, `META-INF/agents/skills/` on the JVM),
+indexes every skill in a multi-module repo, and harvests skills out of
+dependencies across npm, SPM, Python, Go, Cargo, NuGet and JVM jars.
+
+It runs standalone — no tracker, no pointer, no knowledge tree — and ships
+with the docs group because that is where it belongs conceptually. See
+[docs/outbox/](docs/outbox/) for the JVM packaging proposal headed to the
+other maintainers.
 
 ## Using independent skills
 
-Skills outside the suite attach à la carte — copy the ones you want into a
-project:
+Seven skills here are not part of the suite and attach à la carte — copy
+the ones you want into a project:
 
 ```bash
 cp -R skills/engineering/tdd /path/to/project/.agents/skills/
@@ -78,11 +143,17 @@ cp -R skills/engineering/tdd /path/to/project/.agents/skills/
 Agents that read `.agents/skills/` (or a `.claude/skills` / `.github/skills`
 symlink, which the wizard creates) pick them up on restart.
 
-## Attributions
+## Attribution
 
-Several skills were seeded by, inspired by, or adapted from the excellent
-work of [Matt Pocock](https://github.com/mattpocock/skills) — his repository
-is worth exploring for foundational agent-skill patterns.
+This suite was set up by borrowing heavily from
+[Matt Pocock's skills](https://github.com/mattpocock/skills) (MIT, © 2026
+Matt Pocock) — his repository is worth exploring for foundational
+agent-skill patterns. Skills that stay close to his originals name him as
+author; ones since rewritten carry `derived-from: ... - heavily modified`.
+
+Per-skill provenance lives in each `SKILL.md` frontmatter, and the full
+picture — including independent skills used but not vendored — is in
+[NOTICE.md](NOTICE.md).
 
 ---
 *Maintained by Brill Pappin.*

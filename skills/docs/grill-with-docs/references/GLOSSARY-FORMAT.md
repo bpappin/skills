@@ -1,9 +1,15 @@
-# CONTEXT.md Format
+# Domain Glossary Format
+
+The glossary is a document in `docs/knowledge/` (Reference section by
+convention), titled "Domain Glossary" - or, in a multi-context repo, one
+per context named for it ("Ordering Glossary"). `AGENTS.md` at the repo
+root points at it. Older repos may still have it as a root `CONTEXT.md`;
+offer to move it (see the skill).
 
 ## Structure
 
 ```md
-# {Context Name}
+# {Context Name} Glossary
 
 {One or two sentence description of what this context is and why it exists.}
 
@@ -48,18 +54,20 @@ _Avoid_: Client, buyer, account
 
 ## Single vs multi-context repos
 
-**Single context (most repos):** One `CONTEXT.md` at the repo root.
+**Single context (most repos):** one "Domain Glossary" document.
 
-**Multiple contexts:** A `CONTEXT-MAP.md` at the repo root lists the contexts, where they live, and how they relate to each other:
+**Multiple contexts:** one glossary per context, plus a "Context Map"
+document alongside them listing the contexts and how they relate. Link
+by document title, not path - the sync renames files by article ID:
 
 ```md
 # Context Map
 
 ## Contexts
 
-- [Ordering](./src/ordering/CONTEXT.md) — receives and tracks customer orders
-- [Billing](./src/billing/CONTEXT.md) — generates invoices and processes payments
-- [Fulfillment](./src/fulfillment/CONTEXT.md) — manages warehouse picking and shipping
+- **Ordering** — receives and tracks customer orders
+- **Billing** — generates invoices and processes payments
+- **Fulfillment** — manages warehouse picking and shipping
 
 ## Relationships
 
@@ -70,8 +78,9 @@ _Avoid_: Client, buyer, account
 
 The skill infers which structure applies:
 
-- If `CONTEXT-MAP.md` exists, read it to find contexts
-- If only a root `CONTEXT.md` exists, single context
-- If neither exists, create a root `CONTEXT.md` lazily when the first term is resolved
+- A Context Map document exists → read it to find the contexts
+- One glossary → single context
+- Neither → create one glossary lazily, when the first term is resolved,
+  and add the `AGENTS.md` pointer at the same time
 
 When multiple contexts exist, infer which one the current topic relates to. If unclear, ask.

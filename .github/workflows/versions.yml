@@ -1,0 +1,35 @@
+name: Publish skill versions
+
+# VERSIONS.json is how a bound project finds out its skills are behind.
+# If it goes stale, the update check quietly lies. So regenerate it here
+# rather than relying on anyone remembering `skill-versions.sh --publish`.
+
+on:
+  push:
+    branches: [main]
+    paths: ['skills/**/SKILL.md', 'scripts/skill-versions.sh']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Regenerate VERSIONS.json
+        run: ./scripts/skill-versions.sh skills --publish
+
+      - name: Commit if it changed
+        run: |
+          if git diff --quiet -- VERSIONS.json; then
+            echo "VERSIONS.json already current"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add VERSIONS.json
+          git commit -m "chore: refresh VERSIONS.json"
+          git push

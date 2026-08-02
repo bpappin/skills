@@ -1,0 +1,87 @@
+# Changelog
+
+Notable changes to this repository. Release notes are generated from the
+section matching the tag, so write these for whoever reads the release —
+not as a commit log.
+
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Individual skills carry their own `metadata.version`; the tags here
+version the repository as a whole.
+
+## [Unreleased]
+
+### Added
+
+- **GitHub wiki docs sync** — `docs/knowledge/` now syncs two ways with a
+  repo wiki, the same three-way merge model as the YouTrack binding.
+  Structure flows *up* on GitHub (the wiki has no hierarchy, so the local
+  tree owns layout, with a generated sidebar). Capability-detected: no
+  wiki, and docs simply stay git-native.
+- **`.agents/setup.sh` ships with every bound project** — teammates
+  onboard from a clone without this repo. Sets up their own credential,
+  registers the tracker in their agents, and lets them decline entirely
+  and work offline. It cannot rebind the project.
+- **`MANAGED.md` in each project** — names the skills the installer owns
+  and their versions, so agents and humans can tell managed copies from
+  the project's own. Skills the suite has retired are pruned on refresh;
+  third-party and project-local skills never are.
+- **Optional update check** — a project can ask whether its skills are
+  behind what this repo publishes (`VERSIONS.json`) and offer to update.
+  Never acts unasked, fails silent offline, honours `updates.check`.
+- **`to-library-skill`** (formerly `to-ai-skill`) — maintains the agent
+  skill a library ships inside its own artifact, so agents stop
+  reinventing code they cannot see. Scaffolds per module, indexes a
+  multi-module repo, and harvests skills from dependencies across npm,
+  SPM, Python, Go, Cargo, NuGet and JVM jars. Runs standalone.
+- **`MANIFEST.MF` `Agent-Skills` attribute** — jars announce their skills
+  instead of being scanned. Proposal, with the write-up in
+  [`docs/outbox/`](docs/outbox/) for the upstream maintainers.
+- **One-line install** — `bootstrap.sh` plus a full
+  [install guide](docs/INSTALL.md) covering manual install, requirements,
+  teammate onboarding, offline use, and troubleshooting.
+- **Release automation** — `VERSIONS.json` refreshes itself on push;
+  tagging packages every skill and attaches it to a Release.
+- **`NOTICE.md`** — upstream sources and per-skill provenance.
+
+### Changed
+
+- **Bundled library skills follow the emerging convention** —
+  `.agents/skills/<name>/SKILL.md` (`META-INF/agents/skills/` on the
+  JVM), a standard Agent Skill any agent can load, rather than a private
+  format. Scanners still read the older layouts.
+- **The domain glossary is knowledge** — it lives in `docs/knowledge/`
+  and syncs like everything else, with `AGENTS.md` pointing at it,
+  instead of a root `CONTEXT.md`.
+- **`grill-with-docs` absorbed `grill-me`** — one skill that adapts to
+  whatever the project has: glossary, knowledge tree, tracker, or none of
+  them, in which case it just grills.
+- **Attribution corrected** — this suite was set up by borrowing heavily
+  from [Matt Pocock's skills](https://github.com/mattpocock/skills) (MIT,
+  © 2026 Matt Pocock). Skills close to his originals name him; rewritten
+  ones carry `derived-from`. MIT was always the right licence; his
+  copyright notice was missing.
+- **Installer refresh reports what moved** — old → new per skill, so a
+  refresh says what it did rather than doing it silently.
+- Agent registrations are refreshed on every install, so a newly
+  installed agent picks up existing connections without `--register`.
+- README rewritten against the current repo.
+
+### Fixed
+
+- A rebind to a different tracker server now warns that the docs sync
+  state and story snapshot still reference the old one, and
+  `project-docs` documents the recovery.
+- Legacy `.agents/config/youtrack.json` pointers are removed on refresh
+  instead of shadowing the real one.
+- `improve-codebase-architecture` no longer points at paths that stopped
+  existing (`docs/adr/`, a root `CONTEXT.md`) and is version-stamped.
+- Version comparison is numeric per component, so `1.10` correctly beats
+  `1.9`.
+
+### Removed
+
+- `grill-me` (superseded by `grill-with-docs`) and `to-ai-skill`
+  (renamed). Both are pruned from projects on refresh.
+- `caveman` is no longer vendored here — it is an independent skill,
+  installed from [upstream](https://github.com/JuliusBrussee/caveman) and
+  never touched by the installer.

@@ -35,7 +35,7 @@ never "QA"; accessibility (AX) belongs with Design.
 | Specifications | How a thing IS - architecture, component specs; update in place |
 | Design & Accessibility | Mockups, feature designs, AX direction |
 | Research | Investigations - question, trail, findings |
-| Reference | External facts: vendors, prospects, regulations, domain material |
+| Reference | External facts: vendors, prospects, regulations, domain material - and the **Domain Glossary** (the project's canonical terms; `AGENTS.md` at the repo root points at it so agents find it without a path) |
 | Developer Guides | How-to - onboarding, environment, CI |
 | Quality Assurance | Durable test plans and protocols (QA *runs* are issues) |
 | Mandates & Compliance | Legal/regulatory rules the work must satisfy |

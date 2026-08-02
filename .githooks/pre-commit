@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# story-tools pre-commit: keep skill versions and the published manifest
+# honest.
+#
+# Enable once per clone (hooks are not versioned by git):
+#   git config core.hooksPath .githooks
+#
+# Bypass when you mean to: git commit --no-verify
+#
+# Does three things, in order of how much it cares:
+#   1. BLOCKS a changed SKILL.md whose version did not move - that is
+#      what makes the update check meaningful, and it is almost always
+#      an oversight.
+#   2. Regenerates VERSIONS.json and stages it, so the commit is
+#      self-consistent.
+#   3. Mentions the changelog. Just mentions it.
+#
+# Works from a GUI client too, with two things to know: output appears in
+# whatever dialog that client shows for hook failures, and the staged
+# VERSIONS.json may not appear in its file list until you refresh - the
+# commit still contains it.
+# GUI clients (SourceTree, Tower, Fork, IDEs) run hooks in a minimal
+# non-interactive shell - Homebrew paths are typically absent, so a bare
+# `python3` or `git` can vanish. Put the usual places back.
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+staged_skills=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^skills/.*/SKILL\.md$' || true)
+[[ -n "$staged_skills" ]] || exit 0
+
+unbumped=""
+while IFS= read -r f; do
+  [[ -n "$f" ]] || continue
+  git cat-file -e "HEAD:$f" 2>/dev/null || continue          # new skill: nothing to compare
+  old=$(git show "HEAD:$f" | sed -nE 's/^ *version: *"?([^"]+)"?$/\1/p' | head -1)
+  new=$(git show ":$f"     | sed -nE 's/^ *version: *"?([^"]+)"?$/\1/p' | head -1)
+  # ignore whitespace-only edits
+  if git diff --cached --quiet -w -- "$f"; then continue; fi
+  if [[ -n "$old" && "$old" == "$new" ]]; then
+    unbumped="$unbumped  $(dirname "${f#skills/}") (still $old)
+"
+  fi
+done <<< "$staged_skills"
+
+if [[ -n "$unbumped" ]]; then
+  cat >&2 <<MSG
+pre-commit: these skills changed but their version did not:
+
+$unbumped
+Bump metadata.version so projects can tell they are behind - the update
+check compares against it. Deliberate? git commit --no-verify
+MSG
+  exit 1
+fi
+
+if [[ -x scripts/skill-versions.sh ]]; then
+  ./scripts/skill-versions.sh skills --publish >/dev/null 2>&1 || true
+  if ! git diff --quiet -- VERSIONS.json 2>/dev/null; then
+    git add VERSIONS.json
+    echo "pre-commit: VERSIONS.json refreshed and staged"
+  fi
+fi
+
+if [[ -f CHANGELOG.md ]] && ! git diff --cached --name-only | grep -qx 'CHANGELOG.md'; then
+  echo "pre-commit: note - skills changed, CHANGELOG.md did not. Worth a line under [Unreleased]?" >&2
+fi
+
+exit 0

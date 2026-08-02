@@ -3,6 +3,7 @@ name: triage
 description: Triage tracker issues through a state machine driven by triage roles. Use when the user wants to create an issue, capture an idea/bug/question/task to the backlog for later, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow. Capture triggers - "record this for later", "that's a gap", "found a bug", "open an issue", "add a task", "log this", "add it to the backlog", "capture that", "we should ..." said in passing.
 license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
+derived-from: https://github.com/mattpocock/skills (MIT, (c) 2026 Matt Pocock) - heavily modified
 metadata:
   author: bpappin
   version: "1.17"

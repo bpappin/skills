@@ -1,0 +1,28 @@
+{
+  "generated": "2026-08-02",
+  "skills": {
+    "write-a-skill": "1.0",
+    "grill-with-docs": "2.0",
+    "project-docs": "1.4",
+    "regulatory-compliance": "1.2",
+    "to-library-skill": "4.2",
+    "to-prd": "1.2",
+    "to-research": "1.2",
+    "to-wiring": "1.2",
+    "improve-codebase-architecture": "1.1",
+    "prototype": "1.0",
+    "tdd": "1.0",
+    "to-design": "1.0",
+    "handoff": "1.0",
+    "housekeeping": "1.2",
+    "zoom-out": "1.0",
+    "git-guardrails-claude-code": "1.0",
+    "git-guardrails-gemini": "1.0",
+    "setup-github-copilot": "1.0",
+    "setup-gitlab-duo": "1.0",
+    "story-reconcile": "0.16",
+    "story-workflow": "1.12",
+    "to-issues": "1.8",
+    "triage": "1.17"
+  }
+}

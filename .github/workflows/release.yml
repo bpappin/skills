@@ -1,0 +1,72 @@
+name: Release skill bundles
+
+# Tag a release and every skill is packaged and attached as a .skill
+# asset. dist/ is gitignored on purpose - built artifacts belong on a
+# Release, not in the tree.
+#
+#   git tag v1.4.0 && git push origin v1.4.0
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (must already exist)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Package every skill
+        run: ./scripts/package-skills.sh --clean
+
+      - name: Summarise
+        run: |
+          {
+            echo "| Skill | Version |"
+            echo "|---|---|"
+            for f in dist/versioned/*.skill; do
+              b="$(basename "$f" .skill)"
+              echo "| ${b%-*} | ${b##*-} |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          # Prefer the hand-written CHANGELOG section - a generated commit
+          # list is not release notes anybody wants to read.
+          if ./scripts/changelog-section.sh "$TAG" > /tmp/notes.md 2>/dev/null; then
+            echo "using CHANGELOG section for $TAG"
+            GEN=""
+          else
+            echo "::warning::no CHANGELOG section for $TAG - falling back to generated notes"
+            : > /tmp/notes.md
+            GEN="--generate-notes"
+          fi
+          {
+            echo
+            echo "---"
+            echo
+            echo "Each \`.skill\` asset below is one skill, importable on its own."
+            echo "Installing the whole suite does not need them - see the README."
+          } >> /tmp/notes.md
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/versioned/*.skill VERSIONS.json --clobber
+          else
+            # shellcheck disable=SC2086
+            gh release create "$TAG" dist/versioned/*.skill VERSIONS.json \
+              --title "$TAG" $GEN --notes-file /tmp/notes.md
+          fi

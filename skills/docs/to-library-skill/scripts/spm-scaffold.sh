@@ -1,12 +1,13 @@
 #!/bin/bash
 set -e
-PACKAGE=$1
-if [ -z "$PACKAGE" ]; then echo "Usage: $0 <package_name>"; exit 1; fi
+FRAMEWORK=$1
+if [ -z "$FRAMEWORK" ]; then echo "Usage: $0 <framework_name>"; exit 1; fi
 
-SKILL_DIR=".ai-skills"
-SKILL_FILE="${SKILL_DIR}/${PACKAGE}.ai-skill.md"
+SAFE="$(printf '%s' "$FRAMEWORK" | tr '/:' '--' | sed 's/^@//')"
+SKILL_DIR=".agents/skills/${SAFE}"
+SKILL_FILE="${SKILL_DIR}/SKILL.md"
 
-echo "Scaffolding AI Skill for NPM package ${PACKAGE}..."
+echo "Scaffolding AI Skill for SPM framework ${FRAMEWORK}..."
 
 mkdir -p "$SKILL_DIR"
 
@@ -17,14 +18,15 @@ fi
 
 cat <<EOF > "$SKILL_FILE"
 ---
-skill-id: ${PACKAGE}
-spec-version: "1.0"
-type: "Library AI-Skill"
-scope: core
+description: <one line - what this library is for, and when a caller should reach for it instead of writing their own>
+name: ${SAFE}
+library: ${FRAMEWORK}
+repository: <https URL of this library's repo - so an agent can offer the current version>
+skill-url: <raw URL of THIS file on the default branch, or leave blank>
 compatibility: ">=1.0.0"
 ---
 
-# AI Skill: ${PACKAGE}
+# AI Skill: ${FRAMEWORK}
 
 This library provides machine-readable instructions for AI coding assistants.
 
@@ -39,5 +41,5 @@ This library provides machine-readable instructions for AI coding assistants.
 
 EOF
 
-echo "Created ${SKILL_FILE} successfully! Remember to add ${SKILL_DIR}/ to your package.json 'files' array."
+echo "Created ${SKILL_FILE} successfully!"
 chmod +x "$SKILL_FILE"

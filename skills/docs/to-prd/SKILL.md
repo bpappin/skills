@@ -3,6 +3,7 @@ name: to-prd
 description: Synthesize conversation context and codebase understanding into a formal PRD, with verification living on tracker stories. Use when the user wants to formalize a plan, feature idea, or requirement discussion into a PRD document.
 license: MIT
 compatibility: Standalone for the PRD document; creating the verification stories uses the to-issues skill and the project's tracker.
+derived-from: https://github.com/mattpocock/skills (MIT, (c) 2026 Matt Pocock) - heavily modified
 metadata:
   author: bpappin
   version: "1.2"

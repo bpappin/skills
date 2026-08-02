@@ -1,10 +1,11 @@
 ---
 name: grill-with-docs
-description: Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. Use when the user wants to stress-test a plan against their project's language and documented decisions.
+description: Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree - and, where the project has a docs system, challenge the plan against the domain glossary and record decisions as they crystallise. Use when the user wants to stress-test a plan, sharpen terminology, or get grilled on their design. Triggers - "grill me", "stress-test this plan", "poke holes in this", "challenge my design", "am I missing anything".
 license: MIT
+derived-from: https://github.com/mattpocock/skills (MIT, (c) 2026 Matt Pocock) - heavily modified
 metadata:
   author: bpappin
-  version: "1.2"
+  version: "2.0"
 ---
 
 <what-to-do>
@@ -24,37 +25,52 @@ codebase instead.
 
 <supporting-info>
 
-## Domain awareness
+## First: what does this project have?
 
-During codebase exploration, also look for existing documentation:
+The interview above is the whole skill. Everything below is what to do
+with what the interview produces, and it scales to the project:
 
-### File structure
+| Present | Then |
+|---|---|
+| A domain glossary (see below) | Challenge terminology against it; update it inline |
+| `docs/knowledge/` (project-docs) | Offer ADRs there; sync after writing |
+| A tracker (`.agents/config/story-tools.json`) | Route surfaced *work* to issues |
+| None of the above | Just grill. Do not create a docs tree, a TODO file, or scratch notes to hold the output - report the conclusions in the conversation and offer to set up the docs system if the user wants decisions to persist |
 
-Most repos have a single context: a root `CONTEXT.md` (the domain glossary
-— the same one to-issues, triage, and zoom-out consume) and the
-Architecture Decision Records section of `docs/knowledge/` (per the
-project-docs skill). If a `CONTEXT-MAP.md` exists at the root,
-the repo has multiple contexts, each with its own `CONTEXT.md` and
-optionally its own subsystem subdirectory under Architecture Decision
-Records; the map points to where each lives.
+Never invent a home for output. A decision with nowhere to go is a
+sentence in the conversation, not a new file convention.
 
-Create files lazily — only when you have something to write. If no
-`CONTEXT.md` exists, create one when the first term is resolved. If no
-Architecture Decision Records section exists, create it when the first
-ADR is needed (project-docs).
+## Finding the glossary
+
+The domain glossary is **knowledge**, so it lives in `docs/knowledge/`
+like every other document - typically a "Domain Glossary" document in
+the Reference section (or, for a multi-context repo, one per context).
+`AGENTS.md` at the repo root carries the pointer: a line naming where
+the glossary lives, so agents find it without guessing at paths (the
+sync gives files ID-prefixed names, so the path is not stable - the
+pointer and the title are).
+
+- No pointer in `AGENTS.md`? Look for a document titled "Domain
+  Glossary" in the knowledge tree before concluding there isn't one.
+- Found a legacy root `CONTEXT.md`? That is the old location. Offer to
+  move it into the knowledge tree and add the `AGENTS.md` pointer -
+  then it syncs to the KB/wiki with everything else.
+- No glossary at all? Create one lazily - only when the first term is
+  actually resolved - and add the `AGENTS.md` pointer at the same time.
+  Format: [references/GLOSSARY-FORMAT.md](references/GLOSSARY-FORMAT.md).
 
 ## During the session
 
 ### Challenge against the glossary
 
-When the user uses a term that conflicts with the existing language in
-`CONTEXT.md`, call it out immediately. "Your glossary defines
-'cancellation' as X, but you seem to mean Y — which is it?"
+When the user uses a term that conflicts with the existing language,
+call it out immediately. "Your glossary defines 'cancellation' as X, but
+you seem to mean Y - which is it?"
 
 ### Sharpen fuzzy language
 
 When the user uses vague or overloaded terms, propose a precise canonical
-term. "You're saying 'account' — do you mean the Customer or the User?"
+term. "You're saying 'account' - do you mean the Customer or the User?"
 
 ### Discuss concrete scenarios
 
@@ -65,14 +81,13 @@ cases and force precision about boundaries between concepts.
 
 When the user states how something works, check whether the code agrees.
 Surface contradictions: "Your code cancels entire Orders, but you just
-said partial cancellation is possible — which is right?"
+said partial cancellation is possible - which is right?"
 
-### Update CONTEXT.md inline
+### Update the glossary inline
 
-When a term is resolved, update `CONTEXT.md` right there — don't batch.
-Use [references/CONTEXT-FORMAT.md](references/CONTEXT-FORMAT.md).
-`CONTEXT.md` is a glossary and nothing else — no implementation details,
-no spec content, no scratch notes.
+When a term is resolved, write it into the glossary right there - don't
+batch. The glossary is a glossary and nothing else: no implementation
+details, no spec content, no scratch notes.
 
 ### Offer ADRs sparingly
 
@@ -80,13 +95,23 @@ Only offer an ADR when all three are true (the triple test in
 [references/ADR-FORMAT.md](references/ADR-FORMAT.md)): hard to reverse,
 surprising without context, the result of a real trade-off. ADRs go in
 the Architecture Decision Records section of `docs/knowledge/` using the
-project-docs template; sync docs after writing.
+project-docs template.
+
+### Sync when the docs change
+
+Doc edits are not done until they reach the KB - run the sync from the
+project-docs skill's tracker binding (`yt-sync.sh` for YouTrack,
+`gh-wiki-sync.sh` for a GitHub repo wiki). A GitHub project with no wiki
+has no mirror to sync: the files in git ARE the record, nothing else to
+do.
 
 ### Route work to the tracker
 
-When grilling surfaces *work* — a missing feature, a bug, a follow-up —
-it becomes a tracker story (the discovered-work off-ramp, or to-issues for
-a batch), never an inline scope expansion or a local TODO. Decisions go to
-docs; work goes to the tracker.
+When grilling surfaces *work* - a missing feature, a bug, a follow-up -
+it becomes a tracker issue (the discovered-work off-ramp, or to-issues
+for a batch), never an inline scope expansion, a GAP document, or a
+local TODO. Decisions go to docs; work goes to the tracker. No tracker
+configured → the offline worklog (story-workflow's offline mode), still
+never a TODO file.
 
 </supporting-info>

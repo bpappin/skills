@@ -3,6 +3,7 @@ name: to-issues
 description: Break a plan, spec, or PRD into independently-grabbable tracker stories using tracer-bullet vertical slices. Use when the user wants to convert a plan into issues, create implementation tickets, or break down work into stories.
 license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
+derived-from: https://github.com/mattpocock/skills (MIT, (c) 2026 Matt Pocock) - heavily modified
 metadata:
   author: bpappin
   version: "1.8"

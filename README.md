@@ -122,10 +122,15 @@ work — it belongs upstream here, never in a project's copy.
 Edit a skill, bump its `metadata.version`, commit, push. That is the
 whole routine — there is nothing else to run, ever.
 
-Pushing to master releases by itself, and works out the number from how
-the skills actually moved: any skill's major changed makes it a major
-release, any minor makes it minor, otherwise patch. Nothing moved means
-no release and no noise, so a docs fix or a typo just rides through.
+Pushing to master releases by itself, if any skill version moved.
+Nothing moved means no release and no noise, so a docs fix or a typo
+just rides through.
+
+Tags are dated — `v2026.08.02`, and `v2026.08.02.1` for a second one the
+same day. This repo has no release planning to describe, so a semver
+number on it would claim more than it knows; the versions that carry
+meaning are the per-skill ones, and those are what the update check
+reads.
 
 The pre-commit hook (enabled by the installer, not by you) refuses a
 changed skill whose version did not move and restages `VERSIONS.json` —

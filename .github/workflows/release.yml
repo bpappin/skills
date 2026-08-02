@@ -1,17 +1,16 @@
 name: Release
 
-# Fully automatic. Push to master and this decides whether a release is
-# warranted, from how the skills actually moved:
+# Fully automatic. Push to master; if any skill version moved, this
+# publishes. If nothing moved, it does nothing.
 #
-#   any skill's major changed  -> repo major
-#   any skill's minor changed  -> repo minor
-#   otherwise                  -> repo patch
-#   nothing moved              -> no release, no noise
+# Tags are dated - v2026.08.02, and v2026.08.02.1 for a second one the
+# same day. The repo has no release planning to describe, so a semver
+# number on it would claim more than it knows; the versions that mean
+# something are the per-skill ones, and those the update check reads.
 #
-# So a hotfix just rides through, and you never tag, never pick a number,
-# never remember a command. Add lines to CHANGELOG.md [Unreleased] while
-# working and they become the release notes; skip it and the release
-# still happens.
+# You never tag, never pick a number, never run anything. Add lines to
+# CHANGELOG.md [Unreleased] while working and they become the notes;
+# skip it and the release still happens.
 
 on:
   push:
@@ -39,24 +38,30 @@ jobs:
       - name: Has anything moved?
         id: check
         run: |
-          LAST_TAG="$(git tag --list 'v*' --sort=-v:refname | head -1)"
+          # newest dated tag. -v:refname orders v2026.08.02.2 above
+          # v2026.08.02, which creatordate cannot when tags share a second.
+          LAST_TAG="$(git tag --list 'v20*' --sort=-v:refname | head -1)"
           echo "last tag: ${LAST_TAG:-none}"
 
-          if [[ -n "$LAST_TAG" ]]; then
-            git show "$LAST_TAG:VERSIONS.json" > /tmp/old.json 2>/dev/null || : > /tmp/old.json
-          else
-            : > /tmp/old.json
-          fi
+          : > /tmp/old.json
+          [[ -n "$LAST_TAG" ]] && git show "$LAST_TAG:VERSIONS.json" > /tmp/old.json 2>/dev/null || true
 
-          if NEXT="$(./scripts/next-version.sh /tmp/old.json VERSIONS.json "${LAST_TAG:-0.0.0}" 2>/tmp/why)"; then
-            echo "release=yes"        >> "$GITHUB_OUTPUT"
-            echo "version=$NEXT"      >> "$GITHUB_OUTPUT"
-            echo "tag=v$NEXT"         >> "$GITHUB_OUTPUT"
-            { echo "### Releasing v$NEXT"; echo; echo '```'; cat /tmp/why; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-          else
+          if ! ./scripts/skill-diff.sh /tmp/old.json VERSIONS.json > /tmp/why; then
             echo "release=no" >> "$GITHUB_OUTPUT"
             echo "No skill versions moved - nothing to release." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
+
+          # dated tag, with a counter if today already has one
+          DAY="$(date +%Y.%m.%d)"; V="$DAY"; n=1
+          while git rev-parse -q --verify "refs/tags/v$V" >/dev/null; do
+            V="$DAY.$n"; n=$((n + 1))
+          done
+
+          echo "release=yes"   >> "$GITHUB_OUTPUT"
+          echo "version=$V"    >> "$GITHUB_OUTPUT"
+          echo "tag=v$V"       >> "$GITHUB_OUTPUT"
+          { echo "### Releasing v$V"; echo; echo '```'; cat /tmp/why; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Roll the changelog
         if: steps.check.outputs.release == 'yes'
@@ -65,12 +70,12 @@ jobs:
         run: |
           if ! grep -q "^## \[$V\]" CHANGELOG.md \
              && ./scripts/changelog-section.sh Unreleased >/dev/null 2>&1; then
-            python3 - "$V" "$(date +%Y-%m-%d)" <<'PY'
+            python3 - "$V" <<'PY'
           import sys
-          ver, today = sys.argv[1:3]
+          ver = sys.argv[1]
           s = open('CHANGELOG.md', encoding='utf-8').read()
           s = s.replace('## [Unreleased]',
-                        f'## [Unreleased]\n\nNothing yet.\n\n## [{ver}] - {today}', 1)
+                        f'## [Unreleased]\n\nNothing yet.\n\n## [{ver}]', 1)
           open('CHANGELOG.md', 'w', encoding='utf-8').write(s)
           PY
           fi

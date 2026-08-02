@@ -6,3 +6,7 @@ node_modules/
 
 # Private notes: who to talk to and what to say. Not for the public repo.
 docs/outbox/where-to-engage.md
+
+# scratch: things retired but not yet deleted
+_to_delete/
+_retired/

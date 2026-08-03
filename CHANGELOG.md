@@ -12,6 +12,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`docs/dimensions.md` now lists every usable tag, not just topical
+  ones.** Workflow tags were filtered out as "machinery", which left an
+  agent reading the file unable to see that `needs-triage` exists — so
+  it invented substitutes. They are now a named section with a one-line
+  meaning each, and any the server is missing are called out so nobody
+  tries to apply a tag that was never created.
+- **Versions are split into current/upcoming and already-shipped.**
+  Released values sat alongside open ones with nothing distinguishing
+  them, which invited targeting new work at a shipped version.
+
 ### Added
 
 - **Leaf → section recovery** in the YouTrack docs binding. A section
@@ -22,10 +34,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   YouTrack, delete the local leaf, sync — was derivable from the
   existing rules but never written down, and the duplicate trap was
   not documented at all.
-
-## [2026.08.02]
-
-### Added
 
 - **GitHub wiki docs sync** — `docs/knowledge/` now syncs two ways with a
   repo wiki, the same three-way merge model as the YouTrack binding.

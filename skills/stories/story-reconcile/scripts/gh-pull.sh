@@ -200,16 +200,54 @@ for fld in proj_fields:
     if opts:
         lines.append(f"## {fld['name']} (Project field)")
         lines += [f'- {o}' for o in opts] + ['']
+# Labels: list EVERY usable label, workflow ones included. Filtering the
+# machinery out left agents unable to see that needs-triage exists, so
+# they invented substitutes.
+WORKFLOW = [
+    ('needs-triage',    'awaiting triage - the inbox'),
+    ('triaged',         'has been dispositioned; never removed once earned'),
+    ('ready-for-agent', 'an agent can pick this up'),
+    ('ready-for-human', 'needs a person - judgment, access, or design'),
+    ('needs-info',      'waiting on the reporter'),
+    ('wontfix',         'closed with the reason recorded'),
+    ('bug',             'category: something is broken'),
+    ('enhancement',     'category: new feature or improvement'),
+    ('discovered',      'born from other work, not yet triaged'),
+    ('needs-gherkin',   'completion requires a QA section'),
+]
 labels_all = rest(f'/repos/{REPO}/labels?per_page=100')
+present = {l['name'].lower() for l in labels_all}
 reserved_lower = {r.lower() for r in RESERVED}
+
+lines.append('## Workflow labels (machinery - apply per the triage state machine)')
+lines.append('')
+missing = []
+for name, meaning in WORKFLOW:
+    if name.lower() in present:
+        lines.append(f'- `{name}` - {meaning}')
+    else:
+        missing.append(name)
+if missing:
+    lines += ['', 'Not on this repo yet (run the installer to create them): '
+                  + ', '.join(f'`{m}`' for m in missing)]
+lines += ['', 'These are never topical and never inherited by discovered work.', '']
+
 topical = sorted({l['name'] for l in labels_all if l['name'].lower() not in reserved_lower})
-if topical:
-    lines.append('## Existing topical labels (reuse before inventing)')
-    lines += [f'- {t}' for t in topical] + ['']
-miles = rest(f'/repos/{REPO}/milestones?state=open&per_page=100')
-if miles:
-    lines.append('## Open milestones (releases)')
-    lines += [f"- {m['title']}" for m in miles] + ['']
+lines.append('## Topical labels (reuse before inventing)')
+lines += ([f'- {t}' for t in topical] or ['_(none yet)_']) + ['']
+
+miles = rest(f'/repos/{REPO}/milestones?state=all&per_page=100')
+openm = [m['title'] for m in miles if m.get('state') == 'open']
+closed = [m['title'] for m in miles if m.get('state') == 'closed']
+if openm or closed:
+    lines.append('## Milestones / versions (current and upcoming)')
+    lines += ([f'- {t}' for t in openm] or
+              ['- _(none open - creating one is a deliberate act)_'])
+    if closed:
+        lines += ['', 'Already shipped - history, do not target new work: '
+                      + ', '.join(closed[-12:])
+                      + ('' if len(closed) <= 12 else f' (+{len(closed) - 12} older)')]
+    lines += ['']
 open(os.path.join(DIM_DIR, 'dimensions.md'), 'w', encoding='utf-8').write('\n'.join(lines))
 
 mode = f'Projects mode (project {PROJ})' if PROJ else 'issues-only mode'

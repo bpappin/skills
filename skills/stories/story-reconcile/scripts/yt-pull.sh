@@ -156,18 +156,65 @@ if pid:
                  '?fields=field(name),bundle(values(name,archived,released))')
     for f in fields:
         name = (f.get('field') or {}).get('name')
-        vals = [v['name'] for v in ((f.get('bundle') or {}).get('values') or [])
+        vals = [v for v in ((f.get('bundle') or {}).get('values') or [])
                 if not v.get('archived')]
-        if name and vals:
+        if not (name and vals):
+            continue
+        # version bundles carry `released`: current/upcoming is what new
+        # work targets, shipped ones are history and should not be picked
+        # by accident.
+        current = [v['name'] for v in vals if not v.get('released')]
+        shipped = [v['name'] for v in vals if v.get('released')]
+        if shipped:
+            lines.append(f'## {name} (current and upcoming)')
+            lines += ([f'- {v}' for v in current] or
+                      ['- _(none open - a new one is a project-settings change)_'])
+            lines += ['', f'Already released - history, do not target new work: '
+                          + ', '.join(shipped[-12:]) + ('' if len(shipped) <= 12
+                          else f' (+{len(shipped) - 12} older)'), '']
+        else:
             lines.append(f'## {name}')
-            lines += [f'- {v}' for v in vals] + ['']
+            lines += [f'- {v["name"]}' for v in vals] + ['']
+# Tags: list EVERY usable tag, workflow ones included. Filtering the
+# machinery out left agents unable to see that needs-triage exists, so
+# they invented substitutes.
+WORKFLOW = [
+    ('needs-triage',    'awaiting triage - the inbox'),
+    ('triaged',         'has been dispositioned; never removed once earned'),
+    ('ready-for-agent', 'an agent can pick this up'),
+    ('ready-for-human', 'needs a person - judgment, access, or design'),
+    ('needs-info',      'waiting on the reporter'),
+    ('wontfix',         'closed with the reason recorded'),
+    ('bug',             'category: something is broken'),
+    ('enhancement',     'category: new feature or improvement'),
+    ('discovered',      'born from other work, not yet triaged'),
+    ('needs-gherkin',   'completion requires a QA section'),
+]
 tags = api('/api/tags?fields=name&$top=500')
+present = {t['name'].lower() for t in tags if t.get('name')}
 reserved_lower = {r.lower() for r in RESERVED}
+
+lines.append('## Workflow tags (machinery - apply per the triage state machine)')
+lines.append('')
+missing = []
+for name, meaning in WORKFLOW:
+    if name.lower() in present:
+        lines.append(f'- `{name}` - {meaning}')
+    else:
+        missing.append(name)
+if missing:
+    lines += ['', 'Not on this server yet (run the installer to create them): '
+                  + ', '.join(f'`{m}`' for m in missing)]
+lines += ['', 'These are never topical and never inherited by discovered work.', '']
+
 topical = sorted({t['name'] for t in tags
                   if t.get('name') and t['name'].lower() not in reserved_lower})
+lines.append('## Topical tags (reuse before inventing)')
 if topical:
-    lines.append('## Existing topical tags (reuse before inventing)')
     lines += [f'- {t}' for t in topical] + ['']
+else:
+    lines += ['_(none yet)_', '']
 open(os.path.join(out, 'dimensions.md'), 'w').write('\n'.join(lines))
-print(f'Wrote dimensions.md ({len(topical)} topical tags)')
+print(f'Wrote dimensions.md ({len(WORKFLOW) - len(missing)} workflow + '
+      f'{len(topical)} topical tags)')
 EOF

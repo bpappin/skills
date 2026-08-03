@@ -23,6 +23,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   existing rules but never written down, and the duplicate trap was
   not documented at all.
 
+## [2026.08.02]
+
+### Added
+
 - **GitHub wiki docs sync** — `docs/knowledge/` now syncs two ways with a
   repo wiki, the same three-way merge model as the YouTrack binding.
   Structure flows *up* on GitHub (the wiki has no hierarchy, so the local

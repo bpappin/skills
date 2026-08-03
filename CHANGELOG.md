@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.08.03]
+
 ### Fixed
 
 - **`docs/dimensions.md` now lists every usable tag, not just topical

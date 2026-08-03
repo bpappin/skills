@@ -12,11 +12,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
-
-## [0.1.0] - 2026-08-02
-
 ### Added
+
+- **Leaf → section recovery** in the YouTrack docs binding. A section
+  created as a bare file is a leaf article, and local layout is derived
+  from the KB rather than chosen — so the intuitive local fix (mkdir +
+  README, delete the flat file) resurrects the file *and* creates a
+  duplicate section article. The working recipe — give it a child in
+  YouTrack, delete the local leaf, sync — was derivable from the
+  existing rules but never written down, and the duplicate trap was
+  not documented at all.
 
 - **GitHub wiki docs sync** — `docs/knowledge/` now syncs two ways with a
   repo wiki, the same three-way merge model as the YouTrack binding.

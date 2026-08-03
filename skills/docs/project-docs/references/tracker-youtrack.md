@@ -29,6 +29,22 @@ scripts/yt-sync.sh [KB_DIR] [--project KEY] [--root "Title"]
 - Bootstrap: empty `KB_DIR` pulls the whole KB. Non-empty without sync
   state refuses unless `--force`, which adopts every file as a new
   article (the legacy-adoption path).
+- **Leaf → section recovery.** A section created as a bare file is a
+  leaf article. Local layout is DERIVED, not chosen: an article with
+  children is a directory, one without is a file, decided from the KB
+  every sync. So promoting it locally is not just ineffective, it
+  duplicates - `mkdir X/` + `X/README.md` + deleting the flat file
+  gives you the flat file back on the next pull (a local delete is
+  report-only, so the article still has no children, so its path is
+  still a file) AND a second section article, because the unrecognised
+  directory births a stub from its README.
+  Fix it from the KB side instead: give the article a child in
+  YouTrack, so it becomes a parent. Then `rm` the local leaf file and
+  sync - the directory and its `README.md` materialize, and any
+  local-only body text you want to keep goes into that `README.md`.
+  To avoid it entirely: create a section as a directory with a
+  `README.md` from the start - the sync births the section article
+  from that README.
 - Project key resolves from `--project`, `$YOUTRACK_PROJECT`, or
   `.agents/config/story-tools.json`; credentials from the story-tools
   installer connections (`~/.agents/story-tools/connections/`). Never

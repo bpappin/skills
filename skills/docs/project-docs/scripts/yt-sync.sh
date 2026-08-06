@@ -353,8 +353,27 @@ dir_article = {os.path.dirname(e['path']): aid for aid, e in smap.items()
 if root_id: dir_article[KB] = root_id
 
 orphan_paths = {e['path'] for e in smap.values() if e.get('orphaned')}
+
+def natkey(text):
+    """Natural sort: 2-plan before 10-plan, which plain lexical gets wrong.
+
+    Creation order decides article IDs, and the ID becomes the filename
+    once the article exists - so the order files are pushed in is the
+    order the KB keeps forever. A numeric prefix on a new doc is how you
+    say 'these belong in this sequence'; honour it."""
+    out = []
+    for tok in re.split(r'(\d+)', text):
+        if not tok:
+            continue
+        out.append((0, int(tok), '') if tok.isdigit() else (1, 0, tok.lower()))
+    return tuple(out)
+
+# shallow before deep (a section article must exist before its children),
+# README first within a directory, then natural order of the path.
 new_files = sorted((u for u in unknown if u not in orphan_paths),
-                   key=lambda p: (p.count(os.sep), os.path.basename(p) != 'README.md', p))
+                   key=lambda p: (p.count(os.sep),
+                                  os.path.basename(p) != 'README.md',
+                                  natkey(p)))
 created_ids = []
 
 for nf in new_files:

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Pull YouTrack stories into a local markdown snapshot.
 #
-# Usage: yt-pull.sh [PROJECT_KEY] [OUT_DIR]
+# Usage: yt-pull.sh [PROJECT_KEY] [OUT_DIR] [--dimensions-only]
+#   --dimensions-only   refresh docs/dimensions.md only (no issue snapshot)
 #   PROJECT_KEY  defaults to $YOUTRACK_PROJECT from the selected profile
 #   OUT_DIR      defaults to ./docs/stories
 #
@@ -36,13 +37,18 @@ YOUTRACK_URL="${YOUTRACK_URL:-${YOUTRACK_HOST:-}}"
 YOUTRACK_TOKEN="${YOUTRACK_TOKEN:-${YOUTRACK_API_TOKEN:-}}"
 [[ -z "$YOUTRACK_URL" || -z "$YOUTRACK_TOKEN" ]] && { echo "error: no YouTrack credentials found" >&2; exit 1; }
 
+DIMONLY=0; ARGS=()
+for a in "$@"; do [[ "$a" == "--dimensions-only" ]] && DIMONLY=1 || ARGS+=("$a"); done
+set -- "${ARGS[@]:-}"
+
 PROJECT="${1:-${YOUTRACK_PROJECT:-}}"
 [[ -z "$PROJECT" ]] && { echo "usage: yt-pull.sh <PROJECT_KEY> [OUT_DIR]" >&2; exit 1; }
 OUT="${2:-./docs/stories}"
-mkdir -p "$OUT"
+[[ "$DIMONLY" == 1 ]] || mkdir -p "$OUT"
 
 FIELDS="idReadable,summary,description,resolved,tags(name),customFields(name,value(name)),links(direction,linkType(name),issues(idReadable))"
 TOP=100; SKIP=0; TOTAL=0
+if [[ "$DIMONLY" != 1 ]]; then
 : > /tmp/yt-pull-issues.jsonl
 
 while :; do
@@ -127,9 +133,12 @@ with open(os.path.join(out, 'INDEX.md'), 'w') as f:
 print(f"Wrote {len(issues)} issues + INDEX.md to {out}")
 EOF
 
-# dimensions.md - project field values + existing tags for offline picking.
-# Lives at the docs ROOT (parent of the stories dir), with the agent's
-# other indexes - part of the git-native stash, never synced to the KB.
+fi
+
+# dimensions.md - project field values + every usable tag, for offline
+# picking. Lives at the docs ROOT (parent of the stories dir), with the
+# agent's other indexes - git-native, never synced to the KB. Written on
+# every run, including --dimensions-only.
 DIM_DIR="$(dirname "$OUT")"
 DIM_DIR="$DIM_DIR" URL="$YOUTRACK_URL" TOKEN="$YOUTRACK_TOKEN" PROJECT="$PROJECT" python3 <<'EOF'
 import json, os, datetime, urllib.request, urllib.parse

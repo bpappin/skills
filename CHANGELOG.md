@@ -18,6 +18,11 @@ Nothing yet.
 
 ### Fixed
 
+- **A YouTrack refresh now rebuilds `docs/dimensions.md`.** The GitHub
+  bind always reseeded it; the YouTrack bind never did, so a project
+  would get an updated `yt-pull.sh` and keep a stale dimensions file
+  until someone ran a full pull. `yt-pull.sh` gained
+  `--dimensions-only` to make that cheap.
 - **`docs/dimensions.md` now lists every usable tag, not just topical
   ones.** Workflow tags were filtered out as "machinery", which left an
   agent reading the file unable to see that `needs-triage` exists — so

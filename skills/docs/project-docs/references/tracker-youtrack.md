@@ -26,6 +26,16 @@ scripts/yt-sync.sh [KB_DIR] [--project KEY] [--root "Title"]
 - Deletes: KB delete prunes an unedited local file, conflicts an edited
   one. Local delete is report-only unless `--allow-delete` (soft-deletes
   the article).
+- **Import order decides article IDs.** New files are pushed shallow
+  first (a section must exist before its children), `README.md` first
+  within a directory, then in natural filename order - `2-scope.md`
+  before `10-rollout.md`, not the lexical opposite. So a numeric prefix
+  on a new doc is how you say "these belong in this sequence": the
+  articles are created in that order, get ascending IDs, and since the
+  sync renames each file to `<ID>_title-slug.md` afterwards, the
+  prefix's job is done and it disappears. Ordering survives in the IDs.
+  (Titles come from the `# Heading`, so the number never leaks into the
+  article name.)
 - Bootstrap: empty `KB_DIR` pulls the whole KB. Non-empty without sync
   state refuses unless `--force`, which adopts every file as a new
   article (the legacy-adoption path).

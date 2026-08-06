@@ -9,6 +9,15 @@ SKILL_FILE="${SKILL_DIR}/SKILL.md"
 
 echo "Scaffolding AI Skill for SPM framework ${FRAMEWORK}..."
 
+LEGACY="$(ls -1 ./.ai-skills/*.ai-skill.md ./ai-skills/*.ai-skill.md 2>/dev/null || true)"
+if [ -n "$LEGACY" ]; then
+  echo "error: this package already has a v1 skill:" >&2
+  printf '  %s\n' $LEGACY >&2
+  echo "  Scaffolding now would leave TWO skills for one module. Migrate it:" >&2
+  echo "    migrate-library-skills.sh . --apply" >&2
+  exit 1
+fi
+
 mkdir -p "$SKILL_DIR"
 
 if [ -f "$SKILL_FILE" ]; then

@@ -53,7 +53,7 @@ export SRC_LIST="${TMPDIR:-/tmp}/.libskill-src.$$"
 trap 'rm -f "$SRC_LIST"' EXIT
 
 python3 <<'EOF'
-import os, re, json, zipfile, datetime
+import os, re, io, json, zipfile, datetime
 
 ROOT = os.environ['ROOT']; OUT = os.environ['OUT']
 ALL = os.environ['ALL'] == '1'; EXTRACT = os.environ['EXTRACT'] == '1'
@@ -170,6 +170,30 @@ def manifest_paths(z):
         return []
     return [p.strip().rstrip('/') + '/' for p in m.group(1).split(',') if p.strip()]
 
+def scan_entries(z):
+    """Every bundled-skill layout we read, inside one archive."""
+    return [n for n in z.namelist()
+            if (n.endswith('/SKILL.md') and n.startswith(
+                ('META-INF/agents/skills/', 'META-INF/skills/',
+                 'META-INF/.agents/skills/')))
+            or (n.startswith('META-INF/ai-skills/')
+                and n.endswith('.ai-skill.md'))]
+
+def open_containers(path):
+    """A jar holds its entries directly. An AAR does not: Android Gradle
+    packages java resources into a NESTED classes.jar, so an AAR is two
+    archives to look in - its own entries (assets/, res/) and that inner
+    jar, which is where a bundled skill actually lands."""
+    z = zipfile.ZipFile(path)
+    out = [(z, '')]
+    if path.endswith('.aar'):
+        try:
+            out.append((zipfile.ZipFile(io.BytesIO(z.read('classes.jar'))),
+                        'classes.jar!/'))
+        except (KeyError, OSError, zipfile.BadZipFile):
+            pass
+    return out
+
 def skill_id(text, filename, fallback=''):
     for key in ('library', 'skill-id', 'name'):
         m = re.search(rf'^{key}: *"?([^"\n]+)"?$', text, re.M)
@@ -180,6 +204,7 @@ def skill_id(text, filename, fallback=''):
     return fallback
 
 found, seen, scanned, opened, manifest_hits = [], set(), 0, 0, 0
+mismatched = []   # jars whose Agent-Skills points somewhere empty
 
 # ---- unpacked dependency trees --------------------------------------------
 for rootdir in unpacked:
@@ -234,7 +259,8 @@ def coords(p):
 for cache in archives:
     for base, dirs, files in os.walk(cache):
         for f in files:
-            if not f.endswith('.jar') or f.endswith(('-sources.jar', '-javadoc.jar')):
+            if not f.endswith(('.jar', '.aar')) or f.endswith(
+                    ('-sources.jar', '-javadoc.jar')):
                 continue
             path = os.path.join(base, f); scanned += 1
             c = coords(path)
@@ -247,20 +273,28 @@ for cache in archives:
                 continue
             opened += 1
             try:
-                with zipfile.ZipFile(path) as z:
+                containers = open_containers(path)
+            except (zipfile.BadZipFile, OSError):
+                continue
+            try:
+                for z, prefix in containers:
                     declared = manifest_paths(z)
+                    entries = []
                     if declared:
-                        manifest_hits += 1
                         entries = [n for n in z.namelist()
                                    if n.endswith('/SKILL.md')
                                    and any(n.startswith(d) for d in declared)]
+                        if entries:
+                            manifest_hits += 1
+                        else:
+                            # A declared path that holds nothing is a build bug,
+                            # not an absence - trusting it would hide the skill.
+                            entries = scan_entries(z)
+                            if entries:
+                                mismatched.append(
+                                    (os.path.basename(path), ','.join(declared)))
                     else:
-                        entries = [n for n in z.namelist()
-                                   if (n.endswith('/SKILL.md') and n.startswith(
-                                       ('META-INF/agents/skills/', 'META-INF/skills/',
-                                        'META-INF/.agents/skills/')))
-                                   or (n.startswith('META-INF/ai-skills/')
-                                       and n.endswith('.ai-skill.md'))]
+                        entries = scan_entries(z)
                     for n in entries:
                         try:
                             text = z.read(n).decode('utf-8', 'replace')
@@ -272,10 +306,14 @@ for cache in archives:
                             continue
                         seen.add(sid)
                         found.append((sid, version, purpose_of(text),
-                                      f'{os.path.basename(path)}!/{n}', text,
+                                      f'{os.path.basename(path)}!/{prefix}{n}', text,
                                       home_of(text)))
-            except (zipfile.BadZipFile, OSError):
-                continue
+            finally:
+                for z, _ in containers:
+                    try:
+                        z.close()
+                    except Exception:
+                        pass
 
 # ---- save copies where agents will find them ------------------------------
 copies = {}
@@ -351,6 +389,11 @@ print(f"Ecosystems: {', '.join(ecos) or 'none detected'}. "
 if manifest_hits:
     print(f"  {manifest_hits} jar(s) DECLARED their skills via the MANIFEST.MF "
           "Agent-Skills attribute (no pattern scan needed)")
+for jar, declared in mismatched:
+    print(f"  WARNING: {jar} declares Agent-Skills: {declared} but nothing is there.")
+    print("    Found its skills by scanning instead. The declared path must match")
+    print("    where the build actually puts them, or agents that trust the")
+    print("    manifest will report this jar as shipping no skill.")
 if archives and not ALL:
     print("  note: JVM transitive dependencies are not matched - re-run with --all to include them")
 EOF

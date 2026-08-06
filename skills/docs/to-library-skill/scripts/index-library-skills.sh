@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Index every library AI-skill bundled in this repo.
 #
-# Scans for *.ai-skill.md at the ecosystem-standard locations
-# (META-INF/ai-skills/ for JVM/KMP, .ai-skills/ for NPM and SPM) and
-# writes a generated map so agents working INSIDE the repo can see which
-# modules ship a skill and what each is for. Consumers discover skills
-# through their dependency folder; this is the same discovery for the
-# monorepo itself.
+# Scans for every bundled skill at the ecosystem-standard locations
+# (META-INF/agents/skills/ for JVM/KMP, .agents/skills/ elsewhere; the v1
+# layouts too, flagged for migration) and writes a generated map so agents
+# working INSIDE the repo can see which modules ship a skill and what each
+# is for. Consumers discover skills through their dependency folder; this
+# is the same discovery for the monorepo itself.
 #
 # Usage: index-library-skills.sh [ROOT] [-o OUT]
 #   ROOT   repo root to scan (default: .)
@@ -36,6 +36,21 @@ ROOT = os.environ['ROOT']; OUT = os.environ['OUT']
 SKIP = {'.git', 'node_modules', 'build', 'out', 'dist', '.gradle', '.idea',
         'DerivedData', 'Pods', '_to_delete', '_archive'}
 
+SUFFIXES = sorted(
+    ('/src/commonMain/resources/META-INF/agents/skills',
+     '/src/commonMain/resources/META-INF/skills',
+     '/src/main/resources/META-INF/agents/skills',
+     '/src/main/resources/META-INF/skills',
+     '/src/jvmMain/resources/META-INF/agents/skills',
+     '/resources/META-INF/agents/skills', '/resources/META-INF/skills',
+     '/META-INF/.agents/skills', '/META-INF/agents/skills', '/META-INF/skills',
+     '/.agents/skills', '/agents/skills', '/skills',
+     '/src/commonMain/resources/META-INF/ai-skills',
+     '/src/main/resources/META-INF/ai-skills',
+     '/resources/META-INF/ai-skills',
+     '/META-INF/ai-skills', '/.ai-skills', '/ai-skills'),
+    key=len, reverse=True)
+
 found = []
 for base, dirs, files in os.walk(ROOT):
     dirs[:] = [d for d in dirs if d not in SKIP]
@@ -49,7 +64,14 @@ for base, dirs, files in os.walk(ROOT):
         # it sits beside a package manifest - otherwise it is just a repo's
         # own skills directory (this repo has one).
         holder_dir = os.path.dirname(os.path.dirname(base))
-        if os.path.basename(holder_dir) not in ('agents', '.agents'):
+        holder_name = os.path.basename(holder_dir)
+        # Pre-canonical JVM paths we shipped before settling. Unambiguous
+        # (nothing else puts skills under META-INF), but they should move.
+        if holder_name == 'META-INF' or (
+                holder_name == '.agents'
+                and os.path.basename(os.path.dirname(holder_dir)) == 'META-INF'):
+            is_legacy = True
+        elif holder_name not in ('agents', '.agents'):
             MANIFESTS = {'package.json', 'build.gradle', 'build.gradle.kts', 'pom.xml',
                          'Cargo.toml', 'go.mod', 'pyproject.toml', 'setup.py',
                          'Package.swift', 'composer.json'}
@@ -78,17 +100,9 @@ for base, dirs, files in os.walk(ROOT):
         # module root: strip the standard suffix from the path
         mod = rel
         holder = os.path.dirname(os.path.dirname(rel)) if is_new else os.path.dirname(rel)
-        for suffix in ('/src/commonMain/resources/META-INF/agents/skills',
-                       '/src/commonMain/resources/META-INF/skills',
-                       '/resources/META-INF/skills', '/META-INF/skills',
-                       '/.agents/skills', '/agents/skills', '/skills',
-                       '/src/main/resources/META-INF/agents/skills',
-                       '/resources/META-INF/agents/skills',
-                       '/META-INF/agents/skills', '/.agents/skills',
-                       '/src/commonMain/resources/META-INF/ai-skills',
-                       '/src/main/resources/META-INF/ai-skills',
-                       '/resources/META-INF/ai-skills',
-                       '/META-INF/ai-skills', '/.ai-skills'):
+        # Longest first: '/skills' would otherwise swallow every longer
+        # path and report the module as '<mod>/src/main/resources/META-INF'.
+        for suffix in SUFFIXES:
             i = holder.find(suffix)
             if i >= 0:
                 mod = holder[:i] or '.'
@@ -97,18 +111,22 @@ for base, dirs, files in os.walk(ROOT):
             mod = holder
         # one-line purpose: description/summary field, else first prose line
         purpose = field('description') or field('summary')
+        if purpose.startswith('<'):     # unfilled scaffold placeholder
+            purpose = ''
         if not purpose:
             body = re.sub(r'^---.*?---', '', text, count=1, flags=re.S)
             for line in body.splitlines():
                 line = line.strip()
-                if line and not line.startswith('#'):
+                if line and not line.startswith('#') and not line.startswith('<'):
                     purpose = line; break
         purpose = re.sub(r'\s+', ' ', purpose)[:140] or '_(no description - add one to this skill)_'
         home = field('skill-url') or field('repository')
         if home.startswith('<'): home = ''
-        found.append((mod, artifact, purpose, rel, home))
+        found.append((mod, artifact, purpose, rel, home, bool(is_legacy)))
 
 found.sort()
+legacy = [r for r in found if r[5]]
+current = [r for r in found if not r[5]]
 os.makedirs(os.path.dirname(OUT) or '.', exist_ok=True)
 with open(OUT, 'w', encoding='utf-8') as f:
     f.write(f"# Library AI-skills in this repo ({datetime.date.today()})\n\n")
@@ -121,12 +139,43 @@ with open(OUT, 'w', encoding='utf-8') as f:
         f.write("Each module below ships an AI-skill inside its published artifact.\n"
                 "Working on code that CONSUMES one of these modules? Read its skill\n"
                 "first - it is the module's own account of how it should be used.\n\n")
-        f.write("| Module | Artifact | Use it when | Skill file |\n|---|---|---|---|\n")
-        for mod, artifact, purpose, rel, home in found:
-            f.write(f"| `{mod}` | {artifact} | {purpose} | `{rel}` |\n")
+        linked = any(h for *_, h, _ in found)
+        cols = "| Module | Artifact | Use it when | Skill file |"
+        rule = "|---|---|---|---|"
+        if linked:
+            cols += " Current |"; rule += "---|"
+        f.write(cols + "\n" + rule + "\n")
+        for mod, artifact, purpose, rel, home, lg in current:
+            row = f"| `{mod}` | {artifact} | {purpose} | `{rel}` |"
+            if linked:
+                row += f" {'[current](' + home + ')' if home else ''} |"
+            f.write(row + "\n")
         f.write("\nConsuming projects discover these through their dependency "
                 "folder (`.agents/skills/` at the package root, `META-INF/agents/"
                 "skills/` inside a jar); this index is the same discovery from "
                 "inside the repo.\n")
-print(f"Wrote {OUT} ({len(found)} bundled skill{'s' if len(found) != 1 else ''})")
+        if linked:
+            f.write("\nA `current` link points at the library's published copy on its "
+                    "default branch. Prefer the bundled copy above - it is "
+                    "version-matched to the dependency you resolved; the linked one "
+                    "describes HEAD and may document APIs your version does not have.\n")
+
+    if legacy:
+        f.write(f"\n## Needs migration ({len(legacy)})\n\n"
+                "These are on the v1 layout. Agents still read them, but they are "
+                "not standard Agent Skills, so an agent that only understands "
+                "`SKILL.md` will not find them - and on the JVM a mismatched "
+                "`Agent-Skills` manifest attribute makes them invisible outright.\n\n")
+        f.write("| Module | Artifact | Skill file |\n|---|---|---|\n")
+        for mod, artifact, purpose, rel, home, lg in legacy:
+            f.write(f"| `{mod}` | {artifact} | `{rel}` |\n")
+        f.write("\nFix them all at once (reports first; writes nothing without "
+                "`--apply`):\n\n"
+                "```\nmigrate-library-skills.sh .\n"
+                "migrate-library-skills.sh . --apply\n```\n")
+
+print(f"Wrote {OUT} ({len(found)} bundled skill{'s' if len(found) != 1 else ''}"
+      + (f", {len(legacy)} on the v1 layout" if legacy else "") + ")")
+if legacy:
+    print(f"  {len(legacy)} still on v1 - run migrate-library-skills.sh")
 EOF

@@ -16,6 +16,22 @@ SKILL_FILE="${SKILL_DIR}/SKILL.md"
 
 echo "Scaffolding AI Skill for ${GROUP}:${ARTIFACT}..."
 
+LEGACY="$(ls -1 "${SOURCE_DIR}"/resources/META-INF/ai-skills/*.ai-skill.md 2>/dev/null || true)"
+if [ -n "$LEGACY" ]; then
+  echo "error: this package already has a v1 skill:" >&2
+  printf '  %s\n' $LEGACY >&2
+  echo "  Scaffolding now would leave TWO skills for one module. Migrate it:" >&2
+  echo "    migrate-library-skills.sh . --apply" >&2
+  exit 1
+fi
+if [ -d "${SOURCE_DIR}/resources/META-INF/skills" ]; then
+  echo "error: this module uses the pre-canonical META-INF/skills/ path." >&2
+  echo "  Mixing it with META-INF/agents/skills/ makes the Agent-Skills" >&2
+  echo "  manifest attribute wrong for one of them. Normalise first:" >&2
+  echo "    migrate-library-skills.sh . --apply" >&2
+  exit 1
+fi
+
 mkdir -p "$SKILL_DIR"
 
 if [ -f "$SKILL_FILE" ]; then
@@ -49,7 +65,6 @@ This library provides machine-readable instructions for AI coding assistants.
 EOF
 
 echo "Created ${SKILL_FILE} successfully!"
-chmod +x "$SKILL_FILE"
 
 cat <<'MFEOF'
 
@@ -75,8 +90,23 @@ archive:
       </manifestEntries></archive></configuration>
     </plugin>
 
-  KMP: the same attributes{} block on the jar task covers the JVM
-  artifact; other targets carry the resource without a manifest.
+  KMP: there is no single `jar` task - name the target's jar:
+    tasks.named<Jar>("jvmJar") { manifest { attributes(...) } }
+  Do NOT use tasks.withType<Jar>: it also matches allMetadataJar, which
+  does NOT carry commonMain resources, so that jar would declare a path
+  it does not hold and a consumer trusting the attribute finds nothing.
+
+  ANDROID: the attribute cannot reach an AAR - Android Gradle strips
+  META-INF/MANIFEST.MF from the nested classes.jar, and an AAR has no
+  manifest of its own. Android consumers scan; that is expected.
+
+  ANDROID, more important: on AGP 8 commonMain resources are DROPPED
+  from the AAR entirely (KT-46493) - your skill ships on JVM and is
+  silently missing on Android. Add:
+    android { sourceSets.getByName("main") {
+        resources.srcDir("src/commonMain/resources") } }
+  AGP 9's com.android.kotlin.multiplatform.library does it for you.
+  Verify either way: unzip -l the AAR and look inside classes.jar.
 
 This attribute is a PROPOSAL under discussion, not a ratified standard -
 see docs/outbox/ in the story-tools repo.

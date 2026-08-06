@@ -41,11 +41,13 @@ if [[ $SHIPPED -eq 0 && -d "$REPO_DIR/.githooks" && -d "$REPO_DIR/.git" ]]; then
 fi
 SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/story-reconcile"
         "$REPO_DIR/skills/stories/to-issues" "$REPO_DIR/skills/stories/triage"
-        "$REPO_DIR/skills/docs/project-docs" "$REPO_DIR/skills/docs/to-prd" "$REPO_DIR/skills/docs/to-research"
+        "$REPO_DIR/skills/docs/project-docs" "$REPO_DIR/skills/docs/to-prd"
+        "$REPO_DIR/skills/docs/to-adr" "$REPO_DIR/skills/docs/to-rad"
         "$REPO_DIR/skills/docs/grill-with-docs" "$REPO_DIR/skills/docs/regulatory-compliance" "$REPO_DIR/skills/docs/to-wiring"
         "$REPO_DIR/skills/sessions/handoff" "$REPO_DIR/skills/sessions/housekeeping"
         "$REPO_DIR/skills/sessions/zoom-out" "$REPO_DIR/skills/engineering/tdd"
         "$REPO_DIR/skills/engineering/improve-codebase-architecture"
+        "$REPO_DIR/skills/engineering/to-ux"
         "$REPO_DIR/skills/docs/to-library-skill")
 # Skills THIS SUITE authored and has since retired. They are pruned from
 # projects on refresh - otherwise a retired skill lingers in every repo
@@ -55,7 +57,7 @@ SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/stor
 # never pruned, even if an older installer once shipped it: the developer
 # may want it, and it is not ours to remove. Same for anything the
 # project added itself.
-RETIRED_SKILLS=(grill-me to-ai-skill)
+RETIRED_SKILLS=(grill-me to-ai-skill to-research to-design)
 
 # Where the suite lives, for version checks and teammate updates.
 SKILLS_REPO="${STORY_TOOLS_REPO:-bpappin/skills}"
@@ -850,6 +852,18 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
   }'
   ok "pointer: .agents/config/story-tools.json - commit .agents/ .claude/ .github/ with the repo"
   write_workflow_doc "$dir" youtrack "${yt_project:-$YOUTRACK_URL}"
+  # refresh docs/dimensions.md so agents see the current fields, versions
+  # and the full tag list - the GitHub path already does this
+  local ytpull="$REPO_DIR/skills/stories/story-reconcile/scripts/yt-pull.sh"
+  [[ -f "$ytpull" ]] || ytpull="$REPO_DIR/skills/story-reconcile/scripts/yt-pull.sh"
+  if [[ -n "${yt_project:-}" && -f "$ytpull" ]]; then
+    if (cd "$dir" && YOUTRACK_URL="$YOUTRACK_URL" YOUTRACK_TOKEN="$YOUTRACK_TOKEN" \
+        bash "$ytpull" "$yt_project" --dimensions-only >/dev/null 2>&1); then
+      ok "docs/dimensions.md refreshed (fields, versions, workflow + topical tags)"
+    else
+      warn "could not refresh docs/dimensions.md - run the story-reconcile pull later"
+    fi
+  fi
   write_updates_config "$dir"
   ship_setup "$dir"
 }
@@ -1030,8 +1044,8 @@ wizard() {
     say "     story-workflow   \"work on ${BOUND_KEY:-ABC}-123\" / \"what am I working on?\""
     say "                      \"that's done, check it off\" / \"is this story done?\""
     say ""
-    say "     Also installed: to-prd, to-issues, to-research, triage, grill-with-docs,"
-    say "     to-wiring, regulatory-compliance, handoff, housekeeping."
+    say "     Also installed: to-adr, to-rad, to-prd, to-issues, triage,"
+    say "     grill-with-docs, to-wiring, regulatory-compliance, handoff, housekeeping."
   else
     say "  1. Restart your agentic coding environment so it loads the '$MCP_SERVER' MCP server."
     say "  2. Bind a repo when ready: ./scripts/install.sh --project <dir>"

@@ -1,0 +1,121 @@
+[
+  {
+    "query": "we've settled on the sidecar artifact instead of bundling in the jar \u2014 capture that",
+    "expect": "to-adr",
+    "note": "the reported failure: agents hand-roll ADRs"
+  },
+  {
+    "query": "record this decision",
+    "expect": "to-adr",
+    "note": "explicit"
+  },
+  {
+    "query": "we're going with Postgres over Dynamo",
+    "expect": "to-adr",
+    "note": "moment, not artifact"
+  },
+  {
+    "query": "that approach didn't work, we're backing it out and using the other one",
+    "expect": "to-adr",
+    "note": "supersede"
+  },
+  {
+    "query": "I'm not sure which approach is right \u2014 can we compare the options first",
+    "expect": "to-rad",
+    "note": "deliberation, undecided"
+  },
+  {
+    "query": "write up a design doc for the ingestion layer",
+    "expect": "to-rad",
+    "note": "project 2's exact case \u2014 no DD type exists"
+  },
+  {
+    "query": "should I write a DD for this before we start?",
+    "expect": "to-rad",
+    "note": "the abbreviation project 2's agent used"
+  },
+  {
+    "query": "put together a detailed design for the MCP work",
+    "expect": "to-rad",
+    "note": "detailed design phrasing"
+  },
+  {
+    "query": "can you do a technical design for this before we commit",
+    "expect": "to-rad",
+    "note": "design-doc language"
+  },
+  {
+    "query": "log what we worked out about the enrichment options",
+    "expect": "to-rad",
+    "note": "explicit"
+  },
+  {
+    "query": "why did we rule out the manifest attribute again?",
+    "expect": "to-rad",
+    "note": "reading the trail"
+  },
+  {
+    "query": "turn this discussion into requirements",
+    "expect": "to-prd",
+    "note": "boundary with to-adr"
+  },
+  {
+    "query": "what do we tell sales about this?",
+    "expect": "to-prd",
+    "note": "the new BD brief step"
+  },
+  {
+    "query": "where should this document go?",
+    "expect": "project-docs",
+    "note": "filing, not authoring"
+  },
+  {
+    "query": "sync the docs",
+    "expect": "project-docs",
+    "note": "explicit"
+  },
+  {
+    "query": "set up the knowledge base sections",
+    "expect": "project-docs",
+    "note": "structure"
+  },
+  {
+    "query": "what's the capital of France?",
+    "expect": null,
+    "note": "negative control"
+  },
+  {
+    "query": "fix the failing test in UserServiceTest",
+    "expect": null,
+    "note": "negative control \u2014 ordinary work"
+  },
+  {
+    "query": "rename this variable to something clearer",
+    "expect": null,
+    "note": "negative control \u2014 trivial edit"
+  },
+  {
+    "query": "design the settings screen",
+    "expect": "to-ux",
+    "forbid": [
+      "to-rad"
+    ],
+    "note": "UX work - to-rad must never take this"
+  },
+  {
+    "query": "can you review this mockup and the accessibility of the flow",
+    "expect": null,
+    "forbid": [
+      "to-rad"
+    ],
+    "note": "UX/AX - to-rad must never take this"
+  },
+  {
+    "query": "I need a design for the onboarding component",
+    "expect": "to-ux",
+    "forbid": [
+      "to-rad"
+    ],
+    "note": "bare 'design' - the exact overreach risk"
+  }
+]

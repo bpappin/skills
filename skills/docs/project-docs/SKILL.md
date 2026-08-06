@@ -1,36 +1,57 @@
 ---
 name: project-docs
-description: File, create, and organize project documentation, and keep the repo's docs/knowledge/ tree in two-way sync with the tracker knowledge base (YouTrack articles or the GitHub repo wiki; tracker-agnostic via bindings). Use when deciding where a document belongs, creating a PRD, ADR, research record, QA plan, or prospect dossier, syncing docs, publishing docs to the wiki, or resolving a docs sync conflict. Triggers - "where should this doc go", "file this", "write a PRD", "record this decision", "new ADR", "update docs", "sync docs", "publish the docs".
+description: Decide where a document belongs, and keep the repo's docs/knowledge/ tree in two-way sync with the tracker knowledge base (YouTrack articles or the GitHub repo wiki; tracker-agnostic via bindings). Owns filing, sections, templates, and the sync - NOT the authoring of specific document types, which have their own skills (to-adr for decisions, to-prd for requirements, to-research for investigations, to-wiring for wiring rules). Use when placing a document, creating a section, syncing or publishing docs, resolving a sync conflict, or adopting the docs system. Triggers - "where should this doc go", "file this", "what section", "update docs", "sync docs", "publish the docs", "docs conflict", "set up the docs".
 license: MIT
 compatibility: Standalone for filing/creating docs. Syncing requires git on PATH plus the binding's connection - YouTrack REST (story-tools connection or YOUTRACK_URL/TOKEN env), or a GitHub token with Contents RW and an initialized wiki.
 metadata:
   author: bpappin
-  version: "1.5"
+  version: "1.9"
 ---
 
 # Project Docs
 
-Everything lives in exactly one of three kinds of place:
+Everything lives in exactly one of four kinds of place:
 
 1. **Work** (status, done-ness, task lists) → tracker issues, never files.
    Use the story-workflow skill.
 2. **Knowledge** (decisions, specs, research, guides, mandates - anything
    a person would look up) → the tracker's knowledge base, mirrored
    two-way into `docs/knowledge/`.
-3. **Machinery** (agent instructions, wiring rules, indexes, tooling
+3. **Visual work** (design records and the samples that go with them) →
+   `docs/design/`, a **companion tree to `docs/knowledge/`**. Git-native
+   and never synced: the sync moves `.md` only, so a design record pushed
+   to the KB would publish its prose and leave every image behind as a
+   dead link. The to-ux skill owns it.
+4. **Machinery** (agent instructions, wiring rules, indexes, tooling
    state) → plain git files. `AGENTS.md` and `WIRING.md` at the repo
    root; doc-system notes and indexes at the `docs/` root. Never synced.
 
 `docs/stories/` is the generated issue snapshot (story-reconcile skill) -
 unchanged by this skill, never edited, never synced as articles.
 
+**Authoring lives elsewhere.** This skill decides *where* a document goes
+and keeps it in sync. Writing one is a different job with its own skill:
+
+| Document | Skill |
+|---|---|
+| A decision, and why the alternatives lost | `to-adr` |
+| Requirements | `to-prd` |
+| An investigation | `to-research` |
+| Feature wiring rules | `to-wiring` |
+
+Reach for those when the task is "record this decision" or "write this up",
+and this one when the task is "where does it go" or "get it synced". If a
+document type has no authoring skill, write it here from its template.
+
 Bundled resources:
 
 - [references/taxonomy.md](references/taxonomy.md) - filing conventions
   and suggested starting sections.
 - `assets/templates/` - starting points: `prd.md`, `adr.md`,
-  `research.md`, `qa-plan.md`, `prospect.md`, plus `readme.md` (section
-  filing guide) and `docs-guide.md` (the `docs/README.md` front door).
+  `research.md`, `qa-plan.md`, `prospect.md`, `pm-brief.md` and
+  `bd-brief.md` (audience renderings derived from a PRD - see to-prd),
+  plus `readme.md` (section filing guide) and `docs-guide.md` (the
+  `docs/README.md` front door).
 - Tracker bindings - `tracker.type` in `.agents/config/story-tools.json`
   selects one (absent → youtrack):
   - [references/tracker-youtrack.md](references/tracker-youtrack.md) -
@@ -90,6 +111,11 @@ next sync pushes the resolution.
    (template: `assets/templates/readme.md`) - the sync births the
    section article too. Suggested starting sections:
    [references/taxonomy.md](references/taxonomy.md).
+3. **Creating several docs at once and the order matters?** Prefix the
+   new filenames with numbers (`1-`, `2-`, ... `10-`) - they are pushed
+   in natural numeric order, so the articles get IDs in that sequence.
+   The prefix is consumed at birth: the sync renames each file to its
+   ID once the article exists.
 
 Either side can author: a human can just as well create the article in
 YouTrack (it appears in the tree on the next sync) or a page in the

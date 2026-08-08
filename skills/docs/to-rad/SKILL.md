@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone for authoring. The project-docs skill owns the KB section layout and the tracker sync; run its sync after writing.
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
   supersedes: to-research
 ---
 
@@ -93,10 +93,18 @@ hour and is reconstruction thereafter.
 1. **Find the section.** Do not assume. R&D Logs may be a top-level section
    or nested inside a Product Development pillar. Locate it by its README
    heading and match whatever numbering already exists.
-2. **Check the prefix convention.** RADs are usually numbered `RAD-00NN` in
-   the `# RAD-0023 - Title` heading. Check the project's existing prefixes
-   first — a repo may already use a similar-looking prefix for something
-   else entirely.
+2. **Number it, but keep the number out of the title.** The heading is the
+   title alone — `# Signal Enrichment`, not `# RAD-0023: Signal
+   Enrichment`. That heading becomes the article title, and a KB index
+   full of prefixed titles is unreadable. The identifier goes on the
+   metadata line beneath it:
+
+       # Signal Enrichment
+
+       RAD-0023 · 2026-08-05
+
+   Check the project's existing prefixes before minting one — a repo may
+   already use a similar-looking prefix for something else entirely.
 3. **Author the file plain-named**, with no ID prefix and no id/status
    frontmatter. The sync assigns the article ID and renames the file.
    Pre-naming collides. See project-docs.

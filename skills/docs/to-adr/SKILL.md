@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone for authoring. The project-docs skill owns where docs live and the tracker KB sync; run its sync after writing if the project has one.
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Architecture Decision Records (to-adr)
@@ -47,8 +47,17 @@ reasoning is available for about an hour and then it is reconstruction.
 
 Start from the project-docs template
 (`assets/templates/adr.md` in that skill) and keep to its four sections.
-Number sequentially, zero-padded, with a slug:
+Number sequentially, zero-padded, with a slug in the filename:
 `0007-postgres-over-dynamo.md`.
+
+**Keep the number out of the heading.** The heading is the title alone —
+`# Postgres over DynamoDB`, not `# ADR-0007: Postgres over DynamoDB`. It
+becomes the article title when synced, and an index of prefixed titles is
+unreadable. The identifier belongs on the metadata line:
+
+    # Postgres over DynamoDB
+
+    ADR-0007 · 2026-08-05 · Status: accepted
 
 **Context** - the forces, honestly. What pressure produced this decision.
 Include the constraints that were not negotiable, because those are what

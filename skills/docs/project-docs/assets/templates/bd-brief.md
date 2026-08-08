@@ -1,6 +1,9 @@
 # <Feature>: commercial brief
 
 Source of record: <link to the PRD> · Related: <link to the other tiers> · As at: YYYY-MM-DD
+Keywords: <terms someone would SEARCH for - the problem in their words, not
+          the solution in yours; include what was rejected, so looking up the
+          option you did not take still finds this>
 
 > Written for this audience, not rendered from the PRD. It may carry things
 > the PRD does not — positioning, for one. Where both state the same fact

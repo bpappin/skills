@@ -1,6 +1,12 @@
-# PRD: <feature name>
+# <feature name>
 
-<!-- Requirements and intent only. AC lives on YouTrack stories. -->
+PRD · YYYY-MM-DD
+Keywords: <terms someone would SEARCH for - the problem in their words, not
+          the solution in yours; include what was rejected, so looking up the
+          option you did not take still finds this>
+
+<!-- Requirements and intent only. AC lives on tracker stories.
+     The heading is the title alone - no "PRD:" prefix. -->
 
 ## Problem
 

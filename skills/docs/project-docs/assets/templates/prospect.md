@@ -1,7 +1,12 @@
-# Prospect: <organization>
+# <organization>
+
+Prospect · YYYY-MM-DD
+Keywords: <terms someone would SEARCH for - the problem in their words, not
+          the solution in yours; include what was rejected, so looking up the
+          option you did not take still finds this>
 
 <!-- A collaboration source worth remembering. Dossier = knowledge (this
-     file). Actually approaching them = work (a YouTrack issue). -->
+     file). Actually approaching them = work (a tracker issue). -->
 
 ## Who they are
 

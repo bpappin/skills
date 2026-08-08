@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-06",
+  "generated": "2026-08-07",
   "skills": {
     "write-a-skill": "1.0",
     "grill-with-docs": "2.0",
-    "project-docs": "1.9",
+    "project-docs": "1.12",
     "regulatory-compliance": "1.2",
-    "to-adr": "1.0",
+    "to-adr": "1.1",
     "to-library-skill": "4.5",
     "to-prd": "1.4",
-    "to-rad": "1.0",
+    "to-rad": "1.1",
     "to-research": "1.2",
     "to-wiring": "1.2",
     "improve-codebase-architecture": "1.1",

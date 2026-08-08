@@ -15,24 +15,36 @@
 # files are GENERATED - YouTrack stays the source of truth.
 set -euo pipefail
 
-if [[ -z "${YOUTRACK_URL:-}" ]]; then
-  candidates=( )
-  [[ -n "${YOUTRACK_ENV_FILE:-}" ]] && candidates+=("$YOUTRACK_ENV_FILE")
-  conn="${YOUTRACK_CONNECTION:-${YOUTRACK_PROFILE:-}}"
-  # no explicit connection: the project pointer names it
-  if [[ -z "$conn" ]]; then
-    for pf in "./.agents/config/story-tools.json" "./.agents/youtrack.json"; do
-      [[ -f "$pf" ]] && { conn=$(sed -nE 's/.*"connection": *"([^"]+)".*/\1/p' "$pf" | head -1); break; }
-    done
-  fi
-  [[ -n "$conn" ]] && candidates+=("$HOME/.agents/story-tools/connections/$conn.env")
-  conns=( "$HOME"/.agents/story-tools/connections/*.env )
-  [[ ${#conns[@]} -eq 1 && -f "${conns[0]}" ]] && candidates+=("${conns[0]}")
-  for f in "${candidates[@]}"; do
-    # shellcheck disable=SC1090
-    [[ -f "$f" ]] && { source "$f"; break; }
+# A named connection - explicit, or the one this project's pointer names - beats
+# whatever is already exported in the shell. The other way round, a stale
+# YOUTRACK_URL left over from another instance silently redirects the project at
+# the wrong server. A connection file only wins as a pair: URL and token, or
+# neither.
+CONN_SOURCE="environment"
+candidates=( )
+[[ -n "${YOUTRACK_ENV_FILE:-}" ]] && candidates+=("$YOUTRACK_ENV_FILE")
+conn="${YOUTRACK_CONNECTION:-${YOUTRACK_PROFILE:-}}"
+if [[ -z "$conn" ]]; then
+  for pf in "./.agents/config/story-tools.json" "./.agents/youtrack.json"; do
+    [[ -f "$pf" ]] && { conn=$(sed -nE 's/.*"connection": *"([^"]+)".*/\1/p' "$pf" | head -1); break; }
   done
 fi
+[[ -n "$conn" ]] && candidates+=("$HOME/.agents/story-tools/connections/$conn.env")
+if [[ -z "${YOUTRACK_URL:-}" ]]; then
+  conns=( "$HOME"/.agents/story-tools/connections/*.env )
+  [[ ${#conns[@]} -eq 1 && -f "${conns[0]}" ]] && candidates+=("${conns[0]}")
+fi
+for f in ${candidates[@]+"${candidates[@]}"}; do
+  [[ -f "$f" ]] || continue
+  prev_url="${YOUTRACK_URL:-}"; prev_token="${YOUTRACK_TOKEN:-}"
+  unset YOUTRACK_URL YOUTRACK_HOST YOUTRACK_TOKEN YOUTRACK_API_TOKEN
+  # shellcheck disable=SC1090
+  source "$f"
+  if [[ -n "${YOUTRACK_URL:-${YOUTRACK_HOST:-}}" && -n "${YOUTRACK_TOKEN:-${YOUTRACK_API_TOKEN:-}}" ]]; then
+    CONN_SOURCE="$f"; break
+  fi
+  YOUTRACK_URL="$prev_url"; YOUTRACK_TOKEN="$prev_token"
+done
 YOUTRACK_URL="${YOUTRACK_URL:-${YOUTRACK_HOST:-}}"
 YOUTRACK_TOKEN="${YOUTRACK_TOKEN:-${YOUTRACK_API_TOKEN:-}}"
 [[ -z "$YOUTRACK_URL" || -z "$YOUTRACK_TOKEN" ]] && { echo "error: no YouTrack credentials found" >&2; exit 1; }

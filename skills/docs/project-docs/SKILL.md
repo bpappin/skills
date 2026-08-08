@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone for filing/creating docs. Syncing requires git on PATH plus the binding's connection - YouTrack REST (story-tools connection or YOUTRACK_URL/TOKEN env), or a GitHub token with Contents RW and an initialized wiki.
 metadata:
   author: bpappin
-  version: "1.9"
+  version: "1.12"
 ---
 
 # Project Docs
@@ -60,6 +60,24 @@ Bundled resources:
     GitHub repo wiki (`scripts/gh-wiki-sync.sh`), capability-detected:
     no wiki → `docs/knowledge/` stays git-native, no mirror.
 
+## Titles
+
+The tracker stores a document's title in its own field and renders it above
+the body. A heading in the body therefore appears **twice**. So:
+
+- The local file opens with `# Title` — a file needs a title, and it is
+  what the sync reads to name the article.
+- The sync **strips that heading when pushing** and **restores it when
+  pulling**. Only the sync knows the difference; you always see the H1.
+- The recorded base keeps the local form, so merges compare like with like.
+
+A rename on the tracker side rewrites the local heading on the next pull —
+titles follow the same ownership rule as structure.
+
+Articles created before this carried the heading into the body and show a
+doubled title. They fix themselves: the next pull collapses it to one, the
+next push removes it from the stored content.
+
 ## The sync model
 
 Per-article three-way merge against a recorded base (the state dir the
@@ -106,7 +124,31 @@ next sync pushes the resolution.
 2. **Otherwise, pick the section.** Each section directory's `README.md`
    IS the section article's body - read it; it says what belongs there.
    Create the file in that directory with a `# Title` heading (that
-   heading becomes the article title), then sync. No matching section?
+   heading becomes the article title), then sync. **The heading is the
+   title alone** - no type prefix, no identifier. `# Signal Enrichment`,
+   never `# RAD-0023: Signal Enrichment`. The section already says what
+   type it is, and a KB or wiki index full of prefixed titles is
+   unreadable.
+
+   **Every synced document opens with the same two lines**, directly under
+   the heading — an identifier line and a keywords line:
+
+       # Signal Enrichment
+
+       RAD-0023 · 2026-08-05 · status: recommended
+       Keywords: geocoding fallback, provider outage, cost per lookup,
+                 why not Mapbox
+
+   They live in the body, not frontmatter: the sync pushes the file
+   verbatim, so YAML would render as literal text in the article. This is
+   also why frontmatter stays minimal (below).
+
+   **Keywords earn their place by being the searcher's words, not the
+   document's.** Write the problem as someone would phrase it before they
+   knew the answer, and include the options that were rejected — the most
+   common search is for the thing you did not choose. A keyword line that
+   restates the title helps nobody.
+ No matching section?
    Create the directory with a `README.md` describing what belongs in it
    (template: `assets/templates/readme.md`) - the sync births the
    section article too. Suggested starting sections:

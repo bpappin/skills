@@ -45,23 +45,36 @@ KB_DIR="${KB_DIR:-./docs/knowledge}"
 
 command -v git >/dev/null 2>&1 || { echo "error: git is required (used for three-way merges)" >&2; exit 1; }
 
-if [[ -z "${YOUTRACK_URL:-}" ]]; then
-  candidates=( )
-  [[ -n "${YOUTRACK_ENV_FILE:-}" ]] && candidates+=("$YOUTRACK_ENV_FILE")
-  conn="${YOUTRACK_CONNECTION:-${YOUTRACK_PROFILE:-}}"
-  if [[ -z "$conn" ]]; then
-    for pf in "./.agents/config/story-tools.json" "./.agents/youtrack.json"; do
-      [[ -f "$pf" ]] && { conn=$(sed -nE 's/.*"connection": *"([^"]+)".*/\1/p' "$pf" | head -1); break; }
-    done
-  fi
-  [[ -n "$conn" ]] && candidates+=("$HOME/.agents/story-tools/connections/$conn.env")
-  conns=( "$HOME"/.agents/story-tools/connections/*.env )
-  [[ ${#conns[@]} -eq 1 && -f "${conns[0]}" ]] && candidates+=("${conns[0]}")
-  for f in "${candidates[@]}"; do
-    # shellcheck disable=SC1090
-    [[ -f "$f" ]] && { source "$f"; break; }
+# Credentials. A named connection - explicit, or the one this project's pointer
+# names - beats whatever is already exported in the shell. The other way round,
+# a stale YOUTRACK_URL left over from another instance silently redirects the
+# project at the wrong server and every lookup fails for the wrong reason.
+# A connection file only wins as a pair: URL and token together, or not at all.
+CONN_SOURCE="environment"
+candidates=( )
+[[ -n "${YOUTRACK_ENV_FILE:-}" ]] && candidates+=("$YOUTRACK_ENV_FILE")
+conn="${YOUTRACK_CONNECTION:-${YOUTRACK_PROFILE:-}}"
+if [[ -z "$conn" ]]; then
+  for pf in "./.agents/config/story-tools.json" "./.agents/youtrack.json"; do
+    [[ -f "$pf" ]] && { conn=$(sed -nE 's/.*"connection": *"([^"]+)".*/\1/p' "$pf" | head -1); break; }
   done
 fi
+[[ -n "$conn" ]] && candidates+=("$HOME/.agents/story-tools/connections/$conn.env")
+if [[ -z "${YOUTRACK_URL:-}" ]]; then
+  conns=( "$HOME"/.agents/story-tools/connections/*.env )
+  [[ ${#conns[@]} -eq 1 && -f "${conns[0]}" ]] && candidates+=("${conns[0]}")
+fi
+for f in ${candidates[@]+"${candidates[@]}"}; do
+  [[ -f "$f" ]] || continue
+  prev_url="${YOUTRACK_URL:-}"; prev_token="${YOUTRACK_TOKEN:-}"
+  unset YOUTRACK_URL YOUTRACK_HOST YOUTRACK_TOKEN YOUTRACK_API_TOKEN
+  # shellcheck disable=SC1090
+  source "$f"
+  if [[ -n "${YOUTRACK_URL:-${YOUTRACK_HOST:-}}" && -n "${YOUTRACK_TOKEN:-${YOUTRACK_API_TOKEN:-}}" ]]; then
+    CONN_SOURCE="$f"; break
+  fi
+  YOUTRACK_URL="$prev_url"; YOUTRACK_TOKEN="$prev_token"
+done
 YOUTRACK_URL="${YOUTRACK_URL:-${YOUTRACK_HOST:-}}"
 YOUTRACK_TOKEN="${YOUTRACK_TOKEN:-${YOUTRACK_API_TOKEN:-}}"
 [[ -z "$YOUTRACK_URL" || -z "$YOUTRACK_TOKEN" ]] && { echo "error: no YouTrack credentials found - run the story-tools installer" >&2; exit 1; }
@@ -72,7 +85,7 @@ if [[ -z "$PROJECT" ]]; then
 fi
 [[ -z "$PROJECT" ]] && { echo "error: no project key (--project or .agents/config/story-tools.json)" >&2; exit 1; }
 
-export YOUTRACK_URL YOUTRACK_TOKEN PROJECT KB_DIR ROOT DRY PULL_ONLY ALLOW_DELETE FORCE
+export YOUTRACK_URL YOUTRACK_TOKEN PROJECT KB_DIR ROOT DRY PULL_ONLY ALLOW_DELETE FORCE CONN_SOURCE
 python3 <<'EOF'
 import json, os, re, shutil, subprocess, sys, tempfile, urllib.request, urllib.parse
 
@@ -102,6 +115,29 @@ def api(path, payload=None, method=None):
 
 def canon(s):
     return (s or '').replace('\r\n', '\n').rstrip()
+
+# YouTrack renders `summary` as the article title. A heading in the body
+# therefore shows up a SECOND time under it. So the H1 lives on disk (where
+# a file needs a title and title_of reads it) and is stripped at the API
+# boundary. The recorded base is kept in LOCAL form, so merges compare like
+# with like and only these two functions know the difference.
+H1_RE = re.compile(r'\A\s*#\s+(.+?)\s*(?:\n+|\Z)')
+
+def to_local(summary, content):
+    """Body as it lives on disk: opens with its title as an H1. YouTrack
+    owns the title, so a rename there rewrites the local heading."""
+    body = canon(content)
+    m = H1_RE.match(body)
+    if m:
+        body = body[m.end():]
+    title = (summary or '').strip() or (m.group(1).strip() if m else 'Untitled')
+    return canon(f'# {title}\n\n{body}') if body else canon(f'# {title}')
+
+def to_remote(content):
+    """Body as YouTrack stores it: no leading H1."""
+    body = canon(content)
+    m = H1_RE.match(body)
+    return canon(body[m.end():]) if m else body
 
 def read_file(p):
     try:
@@ -135,7 +171,13 @@ def merge3(base, local, remote):
 projects = api(f'/api/admin/projects?fields=id,shortName&query={urllib.parse.quote(PROJECT)}')
 pid = next((p['id'] for p in projects if p.get('shortName') == PROJECT), None)
 if not pid:
-    sys.exit(f'error: project {PROJECT} not found or not visible')
+    # Name the server and where it came from. The usual cause is not a missing
+    # project but the wrong host, and neither is visible from the old message.
+    visible = [p.get('shortName') for p in api('/api/admin/projects?fields=shortName&$top=200')]
+    hint = ', '.join(sorted(s for s in visible if s)) or '(none visible to this token)'
+    sys.exit(f'error: project {PROJECT} not found on {URL}\n'
+             f'  credentials from: {os.environ.get("CONN_SOURCE", "environment")}\n'
+             f'  projects visible there: {hint}')
 
 arts, skip = [], 0
 while True:
@@ -249,7 +291,7 @@ for aid, e in sorted(smap.items()):
 for aid in sorted(paths):
     a = by_id[aid]
     desired = paths[aid]
-    remote = canon(a.get('content'))
+    remote = to_local(a.get('summary'), a.get('content'))
     e = smap.get(aid)
 
     if e is None:  # new in the KB
@@ -298,7 +340,7 @@ for aid in sorted(paths):
         if PULL_ONLY:
             report['Notes'].append(f'{desired} has local edits (pending push; run without --pull-only)')
         else:
-            if not DRY: api(f'/api/articles/{aid}?fields=id', {'content': local})
+            if not DRY: api(f'/api/articles/{aid}?fields=id', {'content': to_remote(local)})
             put_base(aid, local)
             report['Pushed'].append(desired)
     elif rc and not lc:
@@ -313,7 +355,7 @@ for aid in sorted(paths):
                 continue
             if not DRY:
                 write_file(desired, merged)
-                api(f'/api/articles/{aid}?fields=id', {'content': merged})
+                api(f'/api/articles/{aid}?fields=id', {'content': to_remote(merged)})
             put_base(aid, merged)
             report['Merged'].append(desired)
         else:
@@ -395,7 +437,7 @@ for nf in new_files:
     for cd in reversed(chain):  # create stub section articles for new dirs
         rp = os.path.join(cd, 'README.md')
         stub_title = title_of(rp, read_file(rp))
-        payload = {'summary': stub_title, 'content': read_file(rp) or '', 'project': {'id': pid}}
+        payload = {'summary': stub_title, 'content': to_remote(read_file(rp) or ''), 'project': {'id': pid}}
         if parent: payload['parentArticle'] = {'id': parent}
         made = api('/api/articles?fields=id,idReadable', payload)
         smap[made['id']] = {'path': rp, 'summary': stub_title, 'idReadable': made.get('idReadable')}
@@ -408,7 +450,7 @@ for nf in new_files:
     if os.path.basename(nf) == 'README.md' and d in dir_article:
         continue  # created above as the section article
     title = title_of(nf, content)
-    payload = {'summary': title, 'content': content, 'project': {'id': pid}}
+    payload = {'summary': title, 'content': to_remote(content), 'project': {'id': pid}}
     if parent: payload['parentArticle'] = {'id': parent}
     made = api('/api/articles?fields=id,idReadable', payload)
     smap[made['id']] = {'path': nf, 'summary': title, 'idReadable': made.get('idReadable')}

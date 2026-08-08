@@ -1,7 +1,12 @@
-# QA Plan: <scope>
+# <scope>
 
-<!-- Durable protocol - spans stories. Execution runs are recorded in
-     YouTrack, not appended here. -->
+QA Plan · YYYY-MM-DD
+Keywords: <terms someone would SEARCH for - the problem in their words, not
+          the solution in yours; include what was rejected, so looking up the
+          option you did not take still finds this>
+
+<!-- Durable protocol - spans stories. Execution runs are recorded on
+     the tracker, not appended here. -->
 
 ## Scope
 

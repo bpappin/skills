@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.12"
+  version: "1.13"
 ---
 
 # Story Workflow
@@ -46,7 +46,7 @@ story-reconcile. Point the user at the installer once, confirm, then work.
 | Operation | Meaning |
 |---|---|
 | `focus.get` / `focus.set` | Which story is this session working on |
-| `story.context` | Full briefing: narrative, AC list + state, links, references |
+| `story.context` | Full briefing: Purpose, Specification, AC list + state, links, references |
 | `ac.toggle` | Check/uncheck one AC item (verifiably complete only) |
 | `ac.add` | Expand scope — explicit user approval only |
 | `work.discovered` | Log out-of-scope work as a NEW linked issue |
@@ -55,9 +55,11 @@ story-reconcile. Point the user at the installer once, confirm, then work.
 | `story.next` | Pick the next story: highest priority, ready first |
 
 The story format is the same everywhere (see
-[references/ac-format.md](references/ac-format.md)): a `## Acceptance
-Criteria` markdown task list in the issue body, optional `## References`
-(ADR/PRD paths) and `## QA` (Gherkin).
+[references/ac-format.md](references/ac-format.md)): `## Purpose` and
+`## Specification` in prose, a `## Acceptance Criteria` markdown task list,
+optional `## References` (ADR/PRD paths) and `## QA` (Gherkin). Purpose and
+Specification are the story's intent - read them before the AC, and never
+toggle or edit them as if they were checklist items.
 
 ## Session start
 
@@ -65,9 +67,12 @@ Criteria` markdown task list in the issue body, optional `## References`
 2. `focus.get` — if a story is focused, confirm it with the user; if not,
    ask which story to work ("start the next story" → `story.next`: the
    highest-priority ready story), then `focus.set`.
-3. `story.context` — read the AC list and open `## References` docs before
-   writing any code. The context includes priority and tags — the tags tell
-   you what this story groups with.
+3. `story.context` — read `## Purpose` and `## Specification`, then the AC
+   list, and open the `## References` docs before writing any code. The AC
+   is the scope; Purpose and Specification are why and what-exactly, and
+   the edge cases live there rather than in the checklist. The context
+   includes priority and tags — the tags tell you what this story groups
+   with.
 4. Restate scope to the user in one line: the unchecked AC items.
 5. Move the story onto the board: set Stage to the project's in-progress
    column (e.g. "Develop") using the binding's state tool — announce it in

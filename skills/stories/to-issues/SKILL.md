@@ -3,10 +3,9 @@ name: to-issues
 description: Break a plan, spec, or PRD into independently-grabbable tracker stories using tracer-bullet vertical slices. Use when the user wants to convert a plan into issues, create implementation tickets, or break down work into stories.
 license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
-derived-from: https://github.com/mattpocock/skills (MIT, (c) 2026 Matt Pocock) - heavily modified
 metadata:
   author: bpappin
-  version: "1.8"
+  version: "1.9"
 ---
 
 # To Issues
@@ -77,10 +76,16 @@ dependency order (blockers first) so you can reference real IDs. Each story
 body, in canonical format:
 
 ```markdown
-<end-to-end behavior of this slice - what, not layer-by-layer how.
-No file paths or code snippets, except a prototype-derived snippet that
+## Purpose
+<why this slice is necessary and what problem it solves - THIS slice's
+why, not the feature's. Link the PRD rather than restating it.>
+
+## Specification
+<required behaviour in detail: the contract, edge cases, error and empty
+states, boundaries. What must be true, not which files to touch. No file
+paths or implementation plans, except a prototype-derived snippet that
 encodes a decision (state machine, schema, type shape) - trimmed to the
-decision-rich parts.>
+decision-rich parts. "None beyond the AC." for a genuinely trivial slice.>
 
 ## Acceptance Criteria
 - [ ] Verifiable outcome 1
@@ -90,6 +95,11 @@ decision-rich parts.>
 - <KB article ID + title of the source PRD, e.g. EVO-A-41 Some Feature>
 - <parent issue ID, if the source was an issue>
 ```
+
+Write both sections as prose, not bullet fragments. The story is read cold
+by whoever picks it up; a checklist alone makes them reconstruct the intent.
+Purpose is required on every story. Specification is required wherever
+anything is non-obvious, which is most of them.
 
 Then, via the binding: link blockers (depends-on), set each story's
 Priority, Subsystem, and Estimation as approved, tag every story `triaged`

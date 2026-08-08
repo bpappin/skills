@@ -3,10 +3,9 @@ name: triage
 description: Triage tracker issues through a state machine driven by triage roles. Use when the user wants to create an issue, capture an idea/bug/question/task to the backlog for later, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow. Capture triggers - "record this for later", "that's a gap", "found a bug", "open an issue", "add a task", "log this", "add it to the backlog", "capture that", "we should ..." said in passing.
 license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
-derived-from: https://github.com/mattpocock/skills (MIT, (c) 2026 Matt Pocock) - heavily modified
 metadata:
   author: bpappin
-  version: "1.17"
+  version: "1.18"
 ---
 
 # Triage
@@ -80,8 +79,8 @@ gap between what we have and what we want - something to come back to
 later. Every gap is a CAPTURE: it goes to the backlog as an issue, never
 into a GAP document, a TODO.md entry, or a code comment. When unsure,
 offer: "want me to record that?" Capture it as an issue IMMEDIATELY and cheaply: a clear
-summary, a narrative description of what's known, an `## Open Questions`
-section for what isn't, and the `needs-triage` state. **No acceptance
+summary, a `## Purpose` paragraph for what's known and why it matters, an
+`## Open Questions` section for what isn't, and the `needs-triage` state. **No acceptance
 criteria at capture time** — a captured issue is a problem statement, not
 a story yet; AC are authored later, during triage, when the issue
 approaches readiness. Never block a capture on answers the maintainer

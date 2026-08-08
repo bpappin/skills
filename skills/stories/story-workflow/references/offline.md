@@ -37,7 +37,8 @@ Story: PROJ-123 - Import pipeline retries        <!-- or a title if no ID -->
 
 ### Discovered work
 #### Retry metrics are not exported
-<canonical story body - narrative + ## Acceptance Criteria if clear>
+<canonical story body - ## Purpose + ## Specification, plus
+## Acceptance Criteria if clear>
 
 ### Time
 90m - approved by user

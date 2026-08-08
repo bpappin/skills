@@ -27,14 +27,15 @@ reference, or gitignore it - team's choice, ask once.
 | # | Local item | Source | Disposition | Target / Draft | Notes |
 |---|---|---|---|---|---|
 | 1 | "Offline queue drains on reconnect" | prd/offline.md | MATCH | EVO-112 | server AC missing the 30s bound - propose add |
-| 2 | "Achievement scoring model" | gap/scoring.md | NEW (narrative-only) | - | source is prose + open questions, no verifiable AC extractable - needs-triage, AC authored at triage |
+| 2 | "Achievement scoring model" | gap/scoring.md | NEW (prose-only) | - | source is prose + open questions, no verifiable AC extractable - needs-triage, AC authored at triage |
 | 2 | "Conflict merge dialog" | gap/GAP-07.md | NEW | draft below | |
 | 3 | "Migrate to SDK 34" | TODO.md | OBSOLETE | - | shipped in v2.1 (git log) |
 | 4 | "Retry semantics unclear" | gap/GAP-09.md | QUESTION | - | is this still wanted? |
 
 Drafts for NEW stories use the canonical format - identical on every
-tracker (bundled: [ac-format.md](ac-format.md)): narrative, `## Acceptance Criteria`
-checklist, `## References` pointing at the source ADR/PRD paths.
+tracker (bundled: [ac-format.md](ac-format.md)): `## Purpose` and
+`## Specification` in prose, `## Acceptance Criteria` checklist,
+`## References` pointing at the source ADR/PRD paths.
 
 Conflict rule: where local and server disagree (item checked locally,
 unchecked AC on the story, or vice versa), the table shows both and

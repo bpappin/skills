@@ -11,7 +11,7 @@ capability-detected modes, NOT a configuration choice:
 
 Connection: agents get GitHub's hosted MCP server (registered by the
 installer with a PAT header; server name = the pointer's `tracker.mcpServer`,
-e.g. `github-occurrence`) when available; bundled scripts and the `gh` CLI
+e.g. `github-acme`) when available; bundled scripts and the `gh` CLI
 cover the rest. Connections are per-project by default (named from the
 project directory - a fine-grained PAT is scoped to one org, so tokens
 don't globally share). Script token resolution: `$GITHUB_TOKEN` → the

@@ -5,8 +5,8 @@
   "description": "Story + Acceptance Criteria workflow tools with a scope-guard for AI agents. Canonical AC lives as a markdown task list in the issue description.",
   "version": "0.4.2",
   "vendor": {
-    "name": "Brill Pappin",
-    "email": "johnpappin@gmail.com"
+    "name": "bpappin",
+    "email": "bpappin@users.noreply.github.com"
   },
   "aiToolPrefix": "story",
   "minYouTrackVersion": "2025.3.0"

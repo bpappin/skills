@@ -2,7 +2,7 @@
 # One-off: assert read+update sharing (All Users) on every workflow tag,
 # reporting each tag's owner and result. Safe to re-run.
 set -euo pipefail
-source "$HOME/.agents/story-tools/connections/${1:-evolyn}.env"
+source "$HOME/.agents/story-tools/connections/${1:?usage: share-workflow-tags.sh <project-name>}.env"
 export YOUTRACK_URL YOUTRACK_TOKEN
 python3 <<'EOF'
 import json, os, urllib.request, urllib.error

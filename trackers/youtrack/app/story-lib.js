@@ -75,7 +75,7 @@ function fieldValue(issue, name) {
 }
 
 /**
- * Two distinct dimensions (Brill's model):
+ * Two distinct dimensions:
  *   stage = where the work is in the flow (Stage/Kanban State/Status)
  *   State = how it concluded (Fixed, Won't fix, Duplicate, ...) - the
  *           resolution, when the project separates the two.

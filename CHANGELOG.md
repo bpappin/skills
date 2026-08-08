@@ -14,6 +14,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Nothing yet.
 
+## [2026.08.08]
+
+Nothing yet.
+
 ## [2026.08.03]
 
 ### Fixed

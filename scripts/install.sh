@@ -26,6 +26,34 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Prerequisites, checked before anything is written. A tool that is missing
+# and only discovered halfway through a bind leaves a project half
+# installed - skills copied, pointer absent - which looks like success and
+# is not. Fail here instead.
+command -v python3 >/dev/null 2>&1 \
+  || { echo "error: python3 is required" >&2; exit 1; }
+
+# `set -e` exits the whole script the moment any command returns non-zero,
+# including a `[[ ... ]] && cmd` whose test simply failed. Without this the
+# installer can stop mid-bind and print nothing at all, leaving a project
+# that looks installed. Make every abort say so.
+on_unexpected_exit() {
+  local rc=$? line="${1:-?}"
+  [[ $rc -eq 0 ]] && return 0
+  echo "" >&2
+  echo "error: the installer stopped unexpectedly (exit $rc, line $line)." >&2
+  echo "  Nothing after that point ran, so this project may be half set up." >&2
+  if [[ -n "${PROJECT_DIR:-}" ]]; then
+    [[ -f "$PROJECT_DIR/.agents/config/story-tools.json" ]] \
+      || echo "  MISSING: .agents/config/story-tools.json (the pointer)" >&2
+    [[ -f "$PROJECT_DIR/.agents/setup.sh" ]] \
+      || echo "  MISSING: .agents/setup.sh" >&2
+    echo "  Re-run once the cause above is fixed." >&2
+  fi
+  return 0
+}
+trap 'on_unexpected_exit $LINENO' ERR
 # Shipped copy? (<project>/.agents/setup.sh, written at bind time.) No
 # skills tree beside it -> developer onboarding only, never skill copying.
 SHIPPED=0
@@ -313,19 +341,29 @@ check_app() {  # sets APP_CHECK = installed | missing | unauthorized | unreachab
 }
 
 merge_json() {  # <file> <dot.path> <json-value>
-  command -v node >/dev/null || { say "error: node is required" >&2; exit 1; }
   mkdir -p "$(dirname "$1")"
-  node -e '
-    const fs = require("fs");
-    const [file, path, value] = process.argv.slice(1);
-    let root = {};
-    if (fs.existsSync(file)) { const raw = fs.readFileSync(file, "utf8").trim(); if (raw) root = JSON.parse(raw); }
-    let n = root;
-    const keys = path.split(".");
-    for (const k of keys.slice(0, -1)) n = n[k] = n[k] || {};
-    n[keys[keys.length - 1]] = JSON.parse(value);
-    fs.writeFileSync(file, JSON.stringify(root, null, 2) + "\n", {mode: 0o600});
-  ' "$1" "$2" "$3"
+  MJ_FILE="$1" MJ_PATH="$2" MJ_VALUE="$3" python3 - <<'MJPY'
+import json, os
+f, path, value = os.environ["MJ_FILE"], os.environ["MJ_PATH"], os.environ["MJ_VALUE"]
+root = {}
+if os.path.exists(f):
+    raw = open(f).read().strip()
+    if raw:
+        root = json.loads(raw)
+node = root
+keys = path.split(".")
+for k in keys[:-1]:
+    if not isinstance(node.get(k), dict):
+        node[k] = {}
+    node = node[k]
+node[keys[-1]] = json.loads(value)
+tmp = f + ".tmp"
+with open(tmp, "w") as fh:
+    json.dump(root, fh, indent=2)
+    fh.write("\n")
+os.chmod(tmp, 0o600)
+os.replace(tmp, f)
+MJPY
 }
 
 read_pointer() {  # $1 dir, $2 key -> value or empty
@@ -832,7 +870,9 @@ MEOF
     base="$(basename "$d")"
     case " $names " in *" $base "*) ;; *) others="$others $base";; esac
   done
-  [[ -n "$others" ]] && say "  project's own skills (untouched):$others"
+  if [[ -n "$others" ]]; then
+    say "  project's own skills (untouched):$others"
+  fi
 }
 
 write_workflow_doc() {  # $1 dir, $2 tracker (youtrack|github|none), $3 detail (project key or owner/repo)
@@ -941,6 +981,26 @@ say "what am I working on?". Details:
 .agents/skills/story-workflow/references/.
 WFEOF
   ok "docs/WORKFLOW.md written (human-facing guide, regenerated on refresh)"
+}
+
+verify_bind() {  # $1 dir - post-condition: did the bind actually land?
+  local dir="$1" missing=""
+  [[ -f "$dir/.agents/config/story-tools.json" ]] \
+    || missing="$missing
+    .agents/config/story-tools.json  (the pointer - update checks read it)"
+  [[ -f "$dir/.agents/setup.sh" ]] \
+    || missing="$missing
+    .agents/setup.sh                 (teammate onboarding)"
+  [[ -d "$dir/.agents/skills" ]] \
+    || missing="$missing
+    .agents/skills/                  (the skills themselves)"
+  [[ -z "$missing" ]] && return 0
+  say ""
+  warn "BIND INCOMPLETE - this project is NOT set up, despite what is above."
+  say  "  Missing:$missing"
+  say  "  Nothing above should be trusted. Re-run and watch for an error:"
+  cmd  "./install.sh --project $dir"
+  return 1
 }
 
 attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 readonly, $5 mode
@@ -1110,6 +1170,7 @@ bind_project_interactive() {  # uses PROJECT_DIR/PROJECT_NAME from pick_project
   [[ "$ro" =~ ^[Yy] ]] && ro="true" || ro=""
   attach_project "$PROJECT_DIR" "$yt_project" "$ro" link
   enable_time_tracking "$yt_project"
+  verify_bind "$PROJECT_DIR" || true
   # remember for next run (most recent first, deduped)
   mkdir -p "$CONF_DIR"
   { echo "$PROJECT_DIR"; grep -vxF "$PROJECT_DIR" "$CONF_DIR/recent-projects" 2>/dev/null || true; } \
@@ -1145,6 +1206,7 @@ github_wizard() {
   [[ -n "${GITHUB_TOKEN:-}" ]] && ensure_labels "$gh_repo"
   GH_CONN="$conn" GH_PREFIX="$gh_prefix" attach_project_github "$PROJECT_DIR" "$gh_repo" "$gh_proj" "" "link"
   check_github_drift
+  verify_bind "$PROJECT_DIR" || true
   step "Done"
   note "Refresh any time by running this installer inside the project, no flags."
   note "Teammates: clone, then run this once on their machine:"
@@ -1162,6 +1224,7 @@ none_wizard() {
   say "  wizard when the project adopts YouTrack or GitHub."
   write_updates_config "$PROJECT_DIR"
   ship_setup "$PROJECT_DIR"
+  verify_bind "$PROJECT_DIR" || true
 }
 
 wizard() {

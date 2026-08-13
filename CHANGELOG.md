@@ -42,6 +42,35 @@ Nothing yet.
   and `worklog` - this one shipped without one, so a bound project had no
   way to tell it was behind.
 
+### Fixed
+
+- **A bind on a brand-new project stopped silently, half done.**
+  `copy_skills` ended with `[[ -n "$others" ]] && say ...`, listing skills
+  the installer does not manage. In a project that has none - which is
+  exactly what a new project is - the test failed, so the function
+  returned non-zero and `set -e` killed the run right after the skills
+  were copied. No pointer, no `setup.sh`, no entry in `recent-projects`,
+  and not a word printed. Every project it had been exercised against had
+  project-local skills, so the bug was invisible until a genuinely new
+  repo hit it.
+
+- **An aborted run now says so.** A `trap ... ERR` reports the exit code
+  and line, states that nothing after that point ran, and names the
+  pointer and `setup.sh` if they are missing. A `set -e` exit used to
+  produce no output at all, which is how the above went unnoticed.
+
+- **`node` is no longer required.** `merge_json` was the only user of it
+  and now uses `python3`, which the installer needs anyway; `python3` is
+  checked up front rather than mid-bind. The pointer is written via a
+  temporary file and `os.replace`, so an interrupted run cannot leave a
+  truncated one. Node remains a maintainer-only dependency for the
+  YouTrack app's tests, which run in YouTrack's sandbox, not here.
+
+- **Binds verify themselves.** `verify_bind` checks the pointer,
+  `setup.sh` and the skills directory at the end of the GitHub,
+  tracker-less and YouTrack flows, and reports plainly when a project is
+  not actually set up.
+
 ## [2026.08.08.1]
 
 Nothing yet.

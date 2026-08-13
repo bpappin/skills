@@ -2,10 +2,9 @@
 name: handoff
 description: Compact the current conversation into a handoff document for another agent to pick up. Use when transitioning work to a fresh session or another agent.
 license: MIT
-derived-from: https://github.com/mattpocock/skills (MIT, (c) 2026 Matt Pocock) - heavily modified
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
   argument-hint: "What will the next session be used for?"
 ---
 
@@ -40,5 +39,5 @@ agent can continue the work.
   next session will focus on and tailor the doc accordingly.
 - A handoff usually ends the working session: if this session's time isn't
   logged yet, propose one entry (rounded to 15m) on the story that got most
-  of it, and record it via story-workflow's `work.logTime` once the user
+  of it, and record it via story-workflow's `effort.log` once the user
   approves the number.

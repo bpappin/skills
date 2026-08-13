@@ -8,7 +8,7 @@
 | Mark discovered/migrated provenance | `discovered` label + body line `Discovered from #N` (or the source doc path) |
 | Match candidates | Search `state:all` by title keywords before creating - closed issues count as matches |
 | Close obsolete | Close as "not planned" with a comment; never delete |
-| Worklog replay: time entries | GitHub has no work items - post approved session time as issue comments (`Session time: 2h`), one per approved entry |
+| Worklog replay: effort entries | GitHub has no work items - post approved effort as a comment on the recorded story (`Effort: 2h`), one per approved entry |
 | Worklog replay: stage moves | Projects mode: `scripts/gh-stage.sh N "<column>"` per recorded transition |
 
 Connection facts from `.agents/config/story-tools.json` (`tracker.repo`,

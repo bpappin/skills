@@ -12,7 +12,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Removed
+
+- **`to-library-skill` has left the suite.** It moves to the
+  dependency-skills project, where it ships beside the build plugin it
+  teaches so the two cannot drift. It is now in the installer's
+  `RETIRED_SKILLS`, so existing copies are pruned from projects and from
+  `~/.agents/skills` on the next refresh. This happens before the
+  replacement is installable on purpose — the version that shipped here
+  scaffolds a packaging convention that has since been abandoned, and a
+  stale skill teaching an abandoned convention is worse than none.
+
+- **Five superseded skills retired.** `setup-project`, `manage-skills`,
+  `manage-docs`, `manage-persona` and `sync-tracking` predate the current
+  suite and were still sitting in projects installed by older versions of
+  the wizard - the installer had no record of owning them, so nothing
+  pruned them. They are now in `RETIRED_SKILLS` and go on the next
+  refresh. Their work is done by the installer, `project-docs`, and
+  `to-issues`/`story-reconcile` respectively.
+
+### Changed
+
+- **`grill-with-docs` 2.1.** Version bump for the story-format changes
+  made in the same round that moved `story-workflow`, `story-reconcile`
+  and `worklog` - this one shipped without one, so a bound project had no
+  way to tell it was behind.
 
 ## [2026.08.08.1]
 

@@ -6,8 +6,9 @@ Keywords: time tracking, worklog, timesheet, hours, billable, invoicing,
           inference, daily target, gaps, rejected: evidence-derived hours,
           rejected: tamper-evident ledger, rejected: proportional gap filling
 
-Status: design settled. Skill not built. The `worklog` skill that follows
-from this ships marked **experimental**.
+Status: design settled; reached by discussion, not experiment - no
+`Measured against:` line. The `worklog` skill that follows from it ships
+at stability **experimental**.
 
 ## Question
 
@@ -97,6 +98,26 @@ that had a person. Any evidence layer must separate authored work from
 agent-produced output, or the record drifts toward whatever was delegated
 most.
 
+### Two records, not one
+
+A late correction, and the one most likely to be re-broken. Trackers
+already log **effort**: time spent on an issue, recorded on that issue,
+answering "how much did this story cost." A **work log** is a different
+record: the developer's working time, attributed to a project, answering
+"what did I do today" and feeding timesheets and invoicing.
+
+They look alike and are not. Effort is bounded by a story; a working day
+contains meetings, several projects, and work no issue covers. Conflating
+them produces the two failures that prompted this split — an agent
+recording an eleven-hour day as effort on a single issue, and an agent
+hunting for "the best home" for a number that no story owns.
+
+So they stay separate, with separate owners. story-workflow keeps
+`effort.log`, on the focused issue only, and never picks an issue on the
+developer's behalf; if no story is focused there is no effort to record.
+The work log belongs to the `worklog` skill and is what the rest of this
+document describes.
+
 ### What the patterns leave
 
 Taken together they delete most of an ambitious design: reconstruction of
@@ -146,8 +167,10 @@ description, and in a banner at the top of the body.
 cross-project. No git, no auto-commit. Location configurable, with a
 per-project override registered in the user config so a day can still be
 assembled from a directory that isn't the one holding the file. Entries
-carry when, how long, project, optional story or category, and a short
-description. Times are optional — a day-level entry is just a duration.
+carry when, how long, the project, and a short summary. **The project is
+the unit of attribution.** A story reference is at most a phrase in the
+summary — see the two-records distinction below. Times are optional; a
+day-level entry is just a duration.
 
 **Commands.** Assert (`log 3 hours`, optionally against a project, story or
 date), and bracket (start / stop). An open span lives in

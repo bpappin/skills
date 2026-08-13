@@ -1,11 +1,11 @@
 ---
 name: project-docs
-description: Decide where a document belongs, and keep the repo's docs/knowledge/ tree in two-way sync with the tracker knowledge base (YouTrack articles or the GitHub repo wiki; tracker-agnostic via bindings). Owns filing, sections, templates, and the sync - NOT the authoring of specific document types, which have their own skills (to-adr for decisions, to-prd for requirements, to-research for investigations, to-wiring for wiring rules). Use when placing a document, creating a section, syncing or publishing docs, resolving a sync conflict, or adopting the docs system. Triggers - "where should this doc go", "file this", "what section", "update docs", "sync docs", "publish the docs", "docs conflict", "set up the docs".
+description: Decide where a document belongs, and keep the repo's docs/knowledge/ tree in two-way sync with the tracker knowledge base (YouTrack articles or the GitHub repo wiki; tracker-agnostic via bindings). Owns filing, sections, templates, and the sync - NOT the authoring of specific document types, which have their own skills (to-adr for decisions, to-prd for requirements, to-rad for investigations and proofs of concept, to-wiring for wiring rules). Use when placing a document, creating a section, syncing or publishing docs, resolving a sync conflict, or adopting the docs system. Triggers - "where should this doc go", "file this", "what section", "update docs", "sync docs", "publish the docs", "docs conflict", "set up the docs".
 license: MIT
 compatibility: Standalone for filing/creating docs. Syncing requires git on PATH plus the binding's connection - YouTrack REST (story-tools connection or YOUTRACK_URL/TOKEN env), or a GitHub token with Contents RW and an initialized wiki.
 metadata:
   author: bpappin
-  version: "1.12"
+  version: "1.14"
 ---
 
 # Project Docs
@@ -25,6 +25,10 @@ Everything lives in exactly one of four kinds of place:
 4. **Machinery** (agent instructions, wiring rules, indexes, tooling
    state) → plain git files. `AGENTS.md` and `WIRING.md` at the repo
    root; doc-system notes and indexes at the `docs/` root. Never synced.
+5. **Experiments** (spikes, prototypes, proofs of concept - code written
+   to answer a question, expected to be thrown away) → `poc/<name>/`. Not
+   knowledge and not product; what it *proved* becomes a RAD. See Proofs
+   of concept below.
 
 `docs/stories/` is the generated issue snapshot (story-reconcile skill) -
 unchanged by this skill, never edited, never synced as articles.
@@ -36,7 +40,8 @@ and keeps it in sync. Writing one is a different job with its own skill:
 |---|---|
 | A decision, and why the alternatives lost | `to-adr` |
 | Requirements | `to-prd` |
-| An investigation | `to-research` |
+| An investigation, a design worked out by discussion, or what a proof of concept proved | `to-rad` |
+| UX, AX and visual design | `to-ux` |
 | Feature wiring rules | `to-wiring` |
 
 Reach for those when the task is "record this decision" or "write this up",
@@ -47,6 +52,9 @@ Bundled resources:
 
 - [references/taxonomy.md](references/taxonomy.md) - filing conventions
   and suggested starting sections.
+- [references/stability.md](references/stability.md) - the four stability
+  levels (spike, proof of concept, experimental, supported), what each
+  promises, and where the word gets written.
 - `assets/templates/` - starting points: `prd.md`, `adr.md`,
   `research.md`, `qa-plan.md`, `prospect.md`, `pm-brief.md` and
   `bd-brief.md` (audience renderings derived from a PRD - see to-prd),
@@ -204,6 +212,50 @@ server. Never push blind after a move. The ritual:
 
 The installer warns about all of this when it detects a rebind; this
 section is what to do about the warnings.
+
+## Proofs of concept
+
+Code written to find something out, not to ship. **A spike is the same
+thing** - so are "prototype", "experiment" and "throwaway" in this sense -
+and all of them land here. The difference between a spike and a proof of
+concept is only whether anyone means to keep it (see
+[references/stability.md](references/stability.md)); the place and the
+rules are identical, so nothing turns on which word gets used.
+
+It lives in `poc/<name>/` with a `README.md` opening on the question it
+exists to answer, and it is the one part of the repo where the usual
+discipline is deliberately off. A project already using `spikes/` or
+`experiments/` should keep it - one such directory, whatever it is called,
+and do not create a second.
+
+**Inside `poc/`**, do not apply the project's standards. No acceptance
+criteria, no wiring conformance, no test coverage bar, no ADR compliance
+check. A proof of concept that is held to production standards stops being
+cheap, which removes the only reason to write one. Shortcuts, hard-coded
+values and dead ends are all fine and should not be tidied.
+
+**Nothing leaves `poc/` by being copied.** Code moves out only as a story
+someone picked up, written against the project's standards, with the
+proof of concept as a reference rather than a source. An agent that lifts
+a shortcut out of `poc/` into `src/` has done the one genuinely damaging
+thing available here. Both halves of this fence get broken in practice -
+agents gold-plate spikes, and agents promote them silently.
+
+The README carries the question, the answer once there is one, the
+stability level (see [references/stability.md](references/stability.md)),
+and what it was measured against. **Findings go to a RAD** - `to-rad`,
+filed in the knowledge base - because a finding nobody wrote up is a
+proof of concept you will run twice.
+
+**Measured findings carry their environment or they rot.** Anything
+established by experiment is true against particular versions, and the
+versions move. Record them on the RAD's `Measured against:` line, and say
+whether the proof of concept still runs; re-deriving a finding is far
+cheaper than trusting a stale one.
+
+Retire them. A `poc/` directory that only grows is a second codebase
+nobody maintains: once the RAD is written, the proof of concept has done
+its job and can go.
 
 ## Reorganizing
 

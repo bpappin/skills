@@ -11,7 +11,7 @@ capability-detected modes, NOT a configuration choice:
 
 Connection: agents get GitHub's hosted MCP server (registered by the
 installer with a PAT header; server name = the pointer's `tracker.mcpServer`,
-e.g. `github-acme`) when available; bundled scripts and the `gh` CLI
+e.g. `github-occurrence`) when available; bundled scripts and the `gh` CLI
 cover the rest. Connections are per-project by default (named from the
 project directory - a fine-grained PAT is scoped to one org, so tokens
 don't globally share). Script token resolution: `$GITHUB_TOKEN` → the
@@ -27,7 +27,7 @@ pointer's connection env → legacy `github.env` → `gh auth token`.
 | `ac.add` | Same read-modify-write, appending a `- [ ]` line (explicit user approval only) |
 | `work.discovered` | Create an issue in the same repo (canonical story format), labels: `discovered` + the story's topical labels; body starts `Discovered from #<n>.` GitHub has no typed links - the `#<n>` reference is the provenance |
 | `story.completeCheck` | Parse AC yourself: all checked? `needs-gherkin` label but no `## QA` section? Open discovered issues referencing this one? Report; don't close otherwise |
-| `work.logTime` | No time tracking on GitHub - record approved session time as an issue comment (`Session time: 2h`), never silently |
+| `effort.log` | GitHub has no work items - record approved effort as a comment on the FOCUSED issue (`Effort: 2h`), never silently. The developer's working day is not effort and does not go here - see the `worklog` skill |
 | `story.next` | Search: `label:ready-for-agent state:open` , prefer `priority:show-stopper` > `priority:critical` > ... labels when present |
 | Stage on pickup | Projects mode: `scripts/gh-stage.sh N "Develop"` (real column names from `docs/dimensions.md` or the script's error listing; auto-adds the issue to the project). Issues-only: no-op - say so once |
 | Stage on completion | Projects mode: move to the review/testing column when one exists (implementer-done = ready for verification; a human moves it to done), else the done column. Also close the issue when the board's done column implies it - ask if unsure. Issues-only: close the issue (completed) |

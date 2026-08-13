@@ -2,7 +2,7 @@
 
 The fallback binding when the configured tracker cannot be reached. The
 neutral operations stay the same; they write to a local **worklog** instead
-of the tracker, and story-reconcile replays the worklog once a connection
+of the tracker, and story-reconcile replays the pending log once a connection
 exists. Nothing is lost by working offline - it is just deferred.
 
 ## When to enter
@@ -21,7 +21,7 @@ Always confirm before entering; never slide into offline mode silently.
 
 ## The worklog
 
-`<project>/.agents/offline/worklog.md` - append-only, created lazily on
+`<project>/.agents/offline/pending.md` - append-only, created lazily on
 first use. Safe to commit (a teammate can reconcile it) or gitignore
 (user's choice; ask once when creating it). One `## Session` block per
 working session:
@@ -40,8 +40,9 @@ Story: PROJ-123 - Import pipeline retries        <!-- or a title if no ID -->
 <canonical story body - ## Purpose + ## Specification, plus
 ## Acceptance Criteria if clear>
 
-### Time
+### Effort
 90m - approved by user
+<!-- effort on the story above; a working day is not effort -->
 
 ### Notes
 <anything the next session or the reconcile pass needs>
@@ -58,7 +59,7 @@ Story: PROJ-123 - Import pipeline retries        <!-- or a title if no ID -->
 | `ac.add` | Same, marked `(added)` - still requires explicit user approval |
 | `work.discovered` | Canonical story block under `### Discovered work` - the off-ramp rules are unchanged: log it, tell the user, continue the focused story |
 | `story.completeCheck` | Parse the AC you have; report the verdict and record it in Notes. Never declare done beyond what you can verify |
-| `work.logTime` | `### Time` entry - still one rounded, user-approved number per session |
+| `effort.log` | `### Effort` entry - one rounded, user-approved number against the session's focused story. No focused story means no effort entry |
 
 All scope-guard rules apply verbatim offline: the AC list is the scope, the
 off-ramp is the default for anything else, silent expansion is still
@@ -67,7 +68,7 @@ forbidden.
 ## Leaving offline mode
 
 When a connection is available again (or the user says so), offer to replay
-the worklog via the **story-reconcile** skill - it proposes every pending
+the pending log via the **story-reconcile** skill - it proposes every pending
 entry for approval before anything is written, marks each session block
 `Reconciled: <date>` as it lands, and offers to delete the file when all
-sessions are applied. Never replay the worklog silently.
+sessions are applied. Never replay the pending log silently.

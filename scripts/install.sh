@@ -42,14 +42,21 @@ if [[ $SHIPPED -eq 0 && -d "$REPO_DIR/.githooks" && -d "$REPO_DIR/.git" ]]; then
 fi
 SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/story-reconcile"
         "$REPO_DIR/skills/stories/to-issues" "$REPO_DIR/skills/stories/triage"
+        "$REPO_DIR/skills/sessions/worklog"
         "$REPO_DIR/skills/docs/project-docs" "$REPO_DIR/skills/docs/to-prd"
         "$REPO_DIR/skills/docs/to-adr" "$REPO_DIR/skills/docs/to-rad"
         "$REPO_DIR/skills/docs/grill-with-docs" "$REPO_DIR/skills/docs/regulatory-compliance" "$REPO_DIR/skills/docs/to-wiring"
         "$REPO_DIR/skills/sessions/handoff" "$REPO_DIR/skills/sessions/housekeeping"
         "$REPO_DIR/skills/sessions/zoom-out" "$REPO_DIR/skills/engineering/tdd"
         "$REPO_DIR/skills/engineering/improve-codebase-architecture"
-        "$REPO_DIR/skills/engineering/to-ux"
-        "$REPO_DIR/skills/docs/to-library-skill")
+        "$REPO_DIR/skills/engineering/to-ux")
+# to-library-skill has left this suite. It moved to the dependency-skills
+# project, where it ships alongside the plugin it teaches so the two cannot
+# drift, and it is now in RETIRED_SKILLS so existing copies are pruned on
+# refresh. Retired ahead of the replacement being installable on purpose:
+# the version here teaches a packaging convention that has since been
+# abandoned, and a stale copy of that is worse than none. See
+# docs/outbox/to-library-skill-move-brief.md.
 # Skills THIS SUITE authored and has since retired. They are pruned from
 # projects on refresh - otherwise a retired skill lingers in every repo
 # until someone notices.
@@ -58,7 +65,9 @@ SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/stor
 # never pruned, even if an older installer once shipped it: the developer
 # may want it, and it is not ours to remove. Same for anything the
 # project added itself.
-RETIRED_SKILLS=(grill-me to-ai-skill to-research to-design)
+RETIRED_SKILLS=(grill-me to-ai-skill to-research to-design to-library-skill
+                setup-project manage-docs manage-persona manage-skills
+                sync-tracking)
 
 # Where the suite lives, for version checks and teammate updates.
 SKILLS_REPO="${STORY_TOOLS_REPO:-bpappin/skills}"
@@ -846,7 +855,7 @@ write_workflow_doc() {  # $1 dir, $2 tracker (youtrack|github|none), $3 detail (
     *)
       tracker_line="none yet - agents work offline and reconcile later"
       stage_note="Without a tracker, agents keep a local worklog and replay it when one is adopted."
-      capture_note="Captured items live in the worklog until a tracker exists."
+      capture_note="Captured items live in the pending log until a tracker exists."
       docs_row=""
       ;;
   esac
@@ -1343,7 +1352,7 @@ ship_setup() {  # copy this installer into the project as .agents/setup.sh
 
 offline_note() {
   say "  Offline it is - the workflow still runs in full: agents keep a"
-  say "  worklog at .agents/offline/worklog.md and a connected teammate"
+  say "  worklog at .agents/offline/pending.md and a connected teammate"
   say "  reconciles it into the tracker. Re-run .agents/setup.sh any time"
   say "  to connect."
 }
@@ -1383,7 +1392,7 @@ developer_setup() {  # shipped-copy flow: credential + agent registration only
       ;;
     none|"")
       say "  Tracker: none - nothing to connect. Agents work tracker-less"
-      say "  (offline worklog) out of the box."
+      say "  (offline pending log) out of the box."
       check_skill_updates "$dir"
       ;;
   esac

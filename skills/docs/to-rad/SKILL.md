@@ -1,11 +1,11 @@
 ---
 name: to-rad
-description: Record a Research & Development log (RAD) - the trail behind a technical question, landing on findings and a recommendation. Use while a hard problem is still being worked out - comparing options, weighing trade-offs, chasing an approach that failed, checking an assumption, and when someone asks for a "DD" - the engineering detailed/technical design document - since no such type exists here and the investigation belongs in a RAD. NOT for UI, UX, visual or accessibility design, which is a different skill entirely; "design" alone never means this. RADs hold what is NOT yet decided; a recommendation that hardens becomes an ADR. Triggers - "what are the options", "let's compare", "I'm not sure which approach", "weigh the trade-offs", "write this up", "DD", "detailed design document", "capture what we worked out", "why did we rule that out", "log the research".
+description: Record a Research & Development log (RAD) - the trail behind a technical question, landing on findings and a recommendation. Use while a hard problem is still being worked out - comparing options, weighing trade-offs, chasing an approach that failed, checking an assumption, and when someone asks for a "DD" - the engineering detailed/technical design document - since no such type exists here and the investigation belongs in a RAD. NOT for UI, UX, visual or accessibility design, which is a different skill entirely; "design" alone never means this. RADs hold what is NOT yet decided; a recommendation that hardens becomes an ADR. Triggers - "what are the options", "let's compare", "I'm not sure which approach", "weigh the trade-offs", "write this up", "DD", "detailed design document", "capture what we worked out", "why did we rule that out", "log the research", "write up the spike", "what did the spike show", "proof of concept", "POC".
 license: MIT
 compatibility: Standalone for authoring. The project-docs skill owns the KB section layout and the tracker sync; run its sync after writing.
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.3"
   supersedes: to-research
 ---
 
@@ -89,6 +89,21 @@ A RAD usually records a conversation rather than an experiment: propose,
 refute, ask for alternatives, weigh, land. Write it **as the deliberation
 happens or immediately after** — the reasoning is available for about an
 hour and is reconstruction thereafter.
+
+A RAD also covers the other route to a finding: a **proof of concept** -
+code written in `poc/<name>/` to settle a question that argument could not.
+The write-up is the same document. Say in the Trail what was built, where it
+lives or that it has been deleted, and whether it still runs; put the
+finding in Findings like any other. There is no separate document type for
+this, because a proof of concept is a method of arriving at a finding, not a
+different kind of finding.
+
+**Anything established by experiment gets a `Measured against:` line** -
+versions, platforms, the date. Measured findings are true against a moving
+target and rot silently without it; a reader who cannot tell what a claim
+was verified on has to redo the work or trust it blindly. Findings reached
+by argument need no such line, and separating the measured from the assumed
+inside Findings tells a reader which claims to re-check first.
 
 1. **Find the section.** Do not assume. R&D Logs may be a top-level section
    or nested inside a Product Development pillar. Locate it by its README

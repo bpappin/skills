@@ -2,10 +2,9 @@
 name: grill-with-docs
 description: Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree - and, where the project has a docs system, challenge the plan against the domain glossary and record decisions as they crystallise. Use when the user wants to stress-test a plan, sharpen terminology, or get grilled on their design. Triggers - "grill me", "stress-test this plan", "poke holes in this", "challenge my design", "am I missing anything".
 license: MIT
-derived-from: https://github.com/mattpocock/skills (MIT, (c) 2026 Matt Pocock) - heavily modified
 metadata:
   author: bpappin
-  version: "2.0"
+  version: "2.1"
 ---
 
 <what-to-do>
@@ -111,7 +110,7 @@ When grilling surfaces *work* - a missing feature, a bug, a follow-up -
 it becomes a tracker issue (the discovered-work off-ramp, or to-issues
 for a batch), never an inline scope expansion, a GAP document, or a
 local TODO. Decisions go to docs; work goes to the tracker. No tracker
-configured → the offline worklog (story-workflow's offline mode), still
+configured → the offline pending log (story-workflow's offline mode), still
 never a TODO file.
 
 </supporting-info>

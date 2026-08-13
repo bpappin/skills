@@ -103,7 +103,7 @@ work — it belongs upstream here, never in a project's copy.
 | Directory | Contents |
 |---|---|
 | `skills/stories/` | Tracker discipline: story-workflow, story-reconcile, to-issues, triage |
-| `skills/docs/` | Documentation system: project-docs, to-prd, to-research, grill-with-docs, to-wiring, regulatory-compliance, to-library-skill |
+| `skills/docs/` | Documentation system: project-docs, to-prd, to-adr, to-rad, grill-with-docs, to-wiring, regulatory-compliance |
 | `skills/sessions/` | Session lifecycle: handoff, housekeeping, zoom-out |
 | `skills/engineering/` | Practice: tdd, improve-codebase-architecture, prototype, to-design |
 | `skills/authoring/` | Making skills: write-a-skill |
@@ -146,17 +146,16 @@ tracked files into somebody's repo.
 
 ## Library skills
 
-`to-library-skill` is the odd one out: it maintains the agent skill a
-**library** ships inside its own artifact, so agents in consuming projects
-stop reinventing code they cannot see. It scaffolds one per module
-(`.agents/skills/<name>/SKILL.md`, `META-INF/agents/skills/` on the JVM),
-indexes every skill in a multi-module repo, and harvests skills out of
-dependencies across npm, SPM, Python, Go, Cargo, NuGet and JVM jars.
+`to-library-skill` used to live here. It has moved to the dependency-skills
+project, where it ships next to the build plugin it teaches so the two
+cannot drift apart, and it is listed in the installer's `RETIRED_SKILLS` so
+existing copies are removed on the next refresh.
 
-It runs standalone — no tracker, no pointer, no knowledge tree — and ships
-with the docs group because that is where it belongs conceptually. See
-[docs/outbox/](docs/outbox/) for the JVM packaging proposal headed to the
-other maintainers.
+It was retired before its replacement was installable, deliberately: the
+version that shipped here scaffolds a packaging convention that has since
+been abandoned, and a stale skill teaching an abandoned convention is worse
+than no skill at all. See
+[docs/outbox/to-library-skill-move-brief.md](docs/outbox/to-library-skill-move-brief.md).
 
 ## Using independent skills
 

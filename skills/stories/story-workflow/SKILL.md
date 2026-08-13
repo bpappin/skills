@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.13"
+  version: "1.16"
 ---
 
 # Story Workflow
@@ -51,7 +51,7 @@ story-reconcile. Point the user at the installer once, confirm, then work.
 | `ac.add` | Expand scope — explicit user approval only |
 | `work.discovered` | Log out-of-scope work as a NEW linked issue |
 | `story.completeCheck` | Verdict: all AC done? QA required and present? |
-| `work.logTime` | Record human-approved session time on a story |
+| `effort.log` | Record human-approved EFFORT on the focused issue (was `work.logTime`). The developer's working day is a separate record - see the `worklog` skill |
 | `story.next` | Pick the next story: highest priority, ready first |
 
 The story format is the same everywhere (see
@@ -93,22 +93,53 @@ toggle or edit them as if they were checklist items.
 - `ac.add` is allowed only when the user explicitly asks to widen this
   story's scope. When in doubt, offer `work.discovered` first.
 
-## Session time
+## Effort on the focused story
 
-Sessions are the unit of time tracking: the user is either working or not,
-and they decide which. At session close (completion, handoff, housekeeping,
-or "I'm done"), compute end minus session start, round to the nearest 15
-minutes, and propose ONE entry: "This session was about 2h - log it on
-PROJ-123?" On approval, `work.logTime`. If several stories shared the
-session, propose logging it on the one that got most of the time; offer a
-coarse split only when it was genuinely even. Rules:
+There are TWO kinds of time record and this skill owns only one of them.
 
-- **Never log time silently** - every entry is a number the user approved.
+**Effort** is time spent on *this issue*, recorded on the issue. That is
+`effort.log`, and it is what this section is about.
+
+**A work log** is the developer's working time, attributed to a *project*
+and destined for a timesheet or an invoicing tool. It is a separate record
+with a separate owner — the `worklog` skill — and this skill never writes
+it. A day contains meetings, several projects, and work no issue covers;
+none of that is effort on a story.
+
+Mixing them produces two specific failures, both seen in the wild:
+
+- Recording a whole working day as effort on one issue. Eleven hours never
+  belongs to a story - that is a work log, and the `worklog` skill owns it.
+- Hunting for "the best home" for a number when no single story owns it.
+  **If no story is focused, there is no effort to record** — that time is
+  work-log time, and the answer is to say so, not to pick an issue.
+
+Effort goes on the focused story and nowhere else. Never search for a
+story to carry a number, never split a number across several.
+
+At session close (completion, handoff, housekeeping, or "I'm done"), if a
+story was focused, compute end minus session start, round to the nearest 15
+minutes, and propose ONE entry: "About 2h on PROJ-123 — log it as effort?"
+On approval, `effort.log`.
+
+- **Never record effort silently** - every entry is a number the user
+  approved.
+- **The duration is the user's to state, never inferred.** Do not derive it
+  from commits, tracker activity or elapsed tool calls, and never adjust it
+  to hit a target. "It says 3h but I worked 5" is a correction, not a
+  conflict - take the number given.
 - Gaps inside a session are work (thinking counts); don't subtract them.
 - An absurd computed number (unclosed session overnight) → ask what the
-  session actually took and log that.
-- "Log 30m on PROJ-123" from the user at any moment → `work.logTime`
-  directly, no proposal needed.
+  session actually took, and consider whether it is effort at all or the
+  developer's day, which is the work log's business.
+- **"log time", "log 3h", "log my day" are NOT this.** Those phrases mean
+  the developer's work log — hand them to the `worklog` skill, which
+  attributes to a project and feeds timesheets. Only an explicit "log 30m
+  ON PROJ-123" is effort, and only because they named the issue.
+- Effort should be near-automatic: the session had a focused story and a
+  duration, so propose it at close and take a one-word yes. It never
+  competes for the phrase "log time".
+- A comment on the entry is one short line, not a play-by-play.
 
 ## Priority and tags
 

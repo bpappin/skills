@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.08.13]
+
 ### Removed
 
 - **`to-library-skill` has left the suite.** It moves to the

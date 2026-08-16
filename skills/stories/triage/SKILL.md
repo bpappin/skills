@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.18"
+  version: "1.20"
 ---
 
 # Triage
@@ -96,6 +96,20 @@ issue; let the maintainer pick.
 
 ## Triage a specific issue
 
+**Never write a dimension value you have not read.** Before creating or
+updating any issue, read the project's dimensions - the binding's dimensions
+tool, or `.agents/config/dimensions.md`. If you have not read them *in this session*,
+read them now. A value you invented is not a new value, it is a
+near-duplicate: the issue drops out of every filter, board and saved search
+the real value feeds, and nobody notices until someone wonders where the
+work went.
+
+**Topical tags come from the existing set.** Freeform is not permission.
+Proposing a genuinely new tag is a human decision - name it, say why nothing
+existing fits, and get confirmation before it is written. Never create one
+in passing, and never leave a dimension unset silently: if you cannot infer
+a value, say so and ask.
+
 1. **Gather context.** Read the full issue (body, comments, roles,
    reporter, dates). Parse prior triage notes so you don't re-ask resolved
    questions. Explore the codebase using the project's domain glossary,
@@ -128,7 +142,10 @@ issue; let the maintainer pick.
    a new value ("CMS-Server" when "CMS Server" exists); adding one is a
    project-settings change and may need an admin. Curate topical tags:
    Title Case, human-readable ("Trust Insights"),
-   reusing existing tags over inventing near-duplicates. Reserved workflow
+   **chosen from the tags the project already uses** - freeform is not
+   permission to invent one. A genuinely new tag is a human decision:
+   name it, say why nothing existing fits, and get confirmation before
+   writing it. Reserved workflow
    tags (the role tags, `triaged`, `needs-gherkin`, `discovered`) are
    machinery, not topics. **Human-added tags are data**: users tag stories to group things
    their own way - never remove or rename a tag on your own initiative,

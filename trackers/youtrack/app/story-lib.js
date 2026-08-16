@@ -30,8 +30,48 @@ function getFocusId() {
   return r.user.extensionProperties.focusIssueId || null;
 }
 
-/** Resolve the target issue: explicit id wins, else the caller's focused issue. */
-function resolveIssue(issueId) {
+/**
+ * Who owns the focus, and where it points. Focus lives on the user record,
+ * so WHICH user that is decides whether focus is per-person or shared by
+ * everyone using the same token. Report it rather than assume it.
+ */
+function focusInfo() {
+  const out = { id: null, project: null, login: null };
+  const r = currentUser();
+  if (r.error) return out;
+  try { out.login = r.user.login || null; } catch (e) { /* not readable */ }
+  try { out.id = r.user.extensionProperties.focusIssueId || null; } catch (e) { /* unset */ }
+  try { out.project = r.user.extensionProperties.focusProject || null; } catch (e) { /* older focus, set before projects were recorded */ }
+  return out;
+}
+
+function setFocus(issue) {
+  const r = currentUser();
+  if (r.error) return { error: r.error };
+  r.user.extensionProperties.focusIssueId = issue.id;
+  // Recorded so a caller can see the project without loading the issue -
+  // a focus pointing at another project is the failure that costs real work.
+  try { r.user.extensionProperties.focusProject = issue.project.key; } catch (e) { /* best effort */ }
+  return { ok: true };
+}
+
+/** Is this issue closed? Best-effort - never throws, never blocks on failure. */
+function isResolved(issue) {
+  try { return !!issue.resolved; } catch (e) { return false; }
+}
+
+/**
+ * Resolve the target issue: an explicit id ALWAYS wins.
+ *
+ * Falling back to focus is the dangerous path. Focus is one value on the
+ * user record with no project dimension, so it can point at a story in a
+ * completely different project - and a write that lands there is not a
+ * typo, it is an issue filed under the wrong key, linked to unrelated work
+ * and needing manual cleanup. So the fallback reports itself, and refuses
+ * when the focused story is closed, which is the usual sign it is stale.
+ */
+function resolveIssue(issueId, opts) {
+  const options = opts || {};
   const id = issueId || getFocusId();
   if (!id) {
     return { error: 'No issueId given and no focused story. Call story_set_focus first, or pass issueId.' };
@@ -40,7 +80,17 @@ function resolveIssue(issueId) {
   if (!issue) {
     return { error: 'Issue ' + id + ' not found or not visible to you.' };
   }
-  return { issue, id };
+  const usedFocus = !issueId;
+  if (usedFocus && options.forWrite && isResolved(issue)) {
+    return {
+      error: 'Refusing to act on the focused story ' + id + ': it is already resolved, ' +
+        'so the focus is almost certainly stale. Pass an explicit issueId, or call ' +
+        'story_set_focus with the story you are actually working on.',
+    };
+  }
+  let project = null;
+  try { project = issue.project.key; } catch (e) { /* unreadable */ }
+  return { issue, id, usedFocus, project };
 }
 
 // Case-insensitive: humans Title Case tags ("Triaged"), and a case
@@ -180,6 +230,9 @@ exports.DISCOVERED_LINK = DISCOVERED_LINK;
 exports.NEEDS_GHERKIN_TAG = NEEDS_GHERKIN_TAG;
 exports.currentUser = currentUser;
 exports.getFocusId = getFocusId;
+exports.focusInfo = focusInfo;
+exports.setFocus = setFocus;
+exports.isResolved = isResolved;
 exports.resolveIssue = resolveIssue;
 exports.hasTag = hasTag;
 exports.linkedIssues = linkedIssues;

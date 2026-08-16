@@ -29,16 +29,28 @@ exports.aiTool = {
     if (!issue) {
       return { error: 'Issue ' + ctx.arguments.issueId + ' not found or not visible to you.' };
     }
-    const r = lib.currentUser();
-    if (r.error) return { error: r.error };
+    const w = lib.setFocus(issue);
+    if (w.error) return { error: w.error };
 
-    r.user.extensionProperties.focusIssueId = issue.id;
-    return Object.assign({ focused: true }, lib.miniContext(issue));
+    // Read it back. A write that reports success and does not stick is the
+    // worst outcome here: every later tool then acts on the old story.
+    const after = lib.focusInfo();
+    if (after.id !== issue.id) {
+      return {
+        error: 'Focus did not take: asked for ' + issue.id + ', reads back as ' +
+          (after.id || 'nothing') + '. Do not rely on focus - pass issueId explicitly.',
+      };
+    }
+    let project = null;
+    try { project = issue.project.key; } catch (e) { /* unreadable */ }
+    return Object.assign({ focused: true, project: project, owner: after.login }, lib.miniContext(issue));
   },
   outputSchema: {
     type: 'object',
     properties: {
       focused: { type: 'boolean' },
+      project: { type: ['string', 'null'] },
+      owner: { type: ['string', 'null'] },
       id: { type: 'string' },
       summary: { type: 'string' },
       acOpen: { type: 'number' },

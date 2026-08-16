@@ -78,7 +78,7 @@ if [[ -n "$NUM" ]]; then
   ( cd "$TDIR" && printf '{"tracker":{"type":"github","repo":"%s","project":"%s"}}' "$REPO" "$PROJ" \
       > pointer.json && mkdir -p .agents/config && mv pointer.json .agents/config/story-tools.json \
       && "$PULL" "$REPO" docs/stories ) >/dev/null 2>/tmp/gh-smoke-pull || fail "gh-pull failed: $(tail -2 /tmp/gh-smoke-pull)"
-  SNAP=$(ls "$TDIR/docs/stories/" 2>/dev/null | grep -c "_") ; DIMS="$TDIR/docs/dimensions.md"
+  SNAP=$(ls "$TDIR/docs/stories/" 2>/dev/null | grep -c "_") ; DIMS="$TDIR/.agents/config/dimensions.md"
   [[ "${SNAP:-0}" -gt 0 ]] && ok "snapshot files: $SNAP" || fail "no snapshot files"
   if [[ -f "$DIMS" ]]; then
     grep -q "Status (Project field)" "$DIMS" && ok "dimensions.md has Status columns" || fail "dimensions.md missing Status field"

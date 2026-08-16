@@ -16,15 +16,33 @@ exports.aiTool = {
     returnDirect: false,
   },
   execute: () => {
-    const focusId = lib.getFocusId();
-    if (!focusId) {
-      return { focus: null, message: 'No focused story. Call story_set_focus with an issueId.' };
+    const info = lib.focusInfo();
+    if (!info.id) {
+      return { focus: null, owner: info.login, message: 'No focused story. Call story_set_focus with an issueId.' };
     }
-    const issue = entities.Issue.findById(focusId);
+    const issue = entities.Issue.findById(info.id);
     if (!issue) {
-      return { focus: null, message: 'Focused story ' + focusId + ' no longer exists or is not visible. Call story_set_focus again.' };
+      return {
+        focus: null,
+        owner: info.login,
+        message: 'Focused story ' + info.id + ' no longer exists or is not visible. Call story_set_focus again.',
+      };
     }
-    return { focus: lib.miniContext(issue) };
+    let project = info.project;
+    try { project = issue.project.key; } catch (e) { /* keep the recorded one */ }
+    const stale = lib.isResolved(issue);
+    return {
+      focus: lib.miniContext(issue),
+      project: project,
+      owner: info.login,
+      stale: stale,
+      message: (stale
+        ? 'This focused story is already resolved - the focus is probably stale. '
+        : '') +
+        'Focus is stored per user (' + (info.login || 'unknown') + '), not per project: ' +
+        'it is a single value, so a story in another project can be sitting here. ' +
+        'Pass issueId explicitly on any tool that writes.',
+    };
   },
   outputSchema: {
     type: 'object',
@@ -37,6 +55,9 @@ exports.aiTool = {
           acOpen: { type: 'number' },
         },
       },
+      project: { type: ['string', 'null'] },
+      owner: { type: ['string', 'null'] },
+      stale: { type: 'boolean' },
       message: { type: 'string' },
     },
   },

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.16"
+  version: "1.17"
 ---
 
 # Story Workflow
@@ -31,7 +31,7 @@ ONLY authoritative pointer: if some other config file names a different
 tracker server (legacy `.agents/youtrack.json`, `.agents/config/youtrack.json`,
 leftovers from earlier tooling), that file is stale — flag the
 disagreement to the user and stop; never pick a server by guessing.
-After a server move, local mirrors (`docs/stories/`, `docs/dimensions.md`,
+After a server move, local mirrors (`docs/stories/`, `.agents/config/dimensions.md`,
 docs sync state) reference the OLD server until refreshed — the
 project-docs skill has the recovery ritual.
 
@@ -197,7 +197,7 @@ nagging:
 - **Session close**: walk the ritual unprompted - completion check, stage
   move, the time proposal, docs sync where the project has one. The user
   should never have to remember the checklist; that is what you are for.
-- **"How does this work again?"** - answer from `docs/WORKFLOW.md` (the
+- **"How does this work again?"** - answer from `WORKFLOW.md` (the
   project-local guide the installer maintains); keep the answer to the
   piece they asked about.
 

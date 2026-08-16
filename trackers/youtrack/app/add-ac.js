@@ -30,7 +30,7 @@ exports.aiTool = {
     });
     if (ro) return ro;
 
-    const r = lib.resolveIssue(ctx.arguments.issueId);
+    const r = lib.resolveIssue(ctx.arguments.issueId, { forWrite: true });
     if (r.error) return { error: r.error };
     const issue = r.issue;
 

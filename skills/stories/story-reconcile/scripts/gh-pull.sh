@@ -4,7 +4,7 @@
 # Usage: gh-pull.sh [owner/repo] [OUT_DIR] [--dimensions-only]
 #   owner/repo  defaults to tracker.repo from .agents/config/story-tools.json
 #   OUT_DIR     defaults to ./docs/stories
-#   --dimensions-only   refresh docs/dimensions.md only (no issue snapshot)
+#   --dimensions-only   refresh .agents/config/dimensions.md only (no issue snapshot)
 #
 # Output: one .md per issue (OC-0123_title-slug.md; prefix from
 # tracker.prefix, blocks OC-A-0001 past 9999) + INDEX.md; a
@@ -63,7 +63,8 @@ PREFIX = (os.environ.get('PREFIX') or re.sub(r'[^A-Za-z]', '', NAME)[:2]).upper(
 def fid(num):
     block, rem = divmod(num, 10000)
     return f"{PREFIX}-{rem:04d}" if block == 0 else f"{PREFIX}-{chr(64 + block)}-{rem:04d}"
-DIM_DIR = os.path.dirname(OUT) or '.'
+DIM_DIR = os.path.join('.agents', 'config')   # generated reference data, not docs
+os.makedirs(DIM_DIR, exist_ok=True)
 HDRS = {'Authorization': 'Bearer ' + TOKEN, 'Accept': 'application/vnd.github+json'}
 
 def rest(path):

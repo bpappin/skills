@@ -85,8 +85,8 @@ articles, or the GitHub repo wiki where one is enabled. No wiki, no problem:
 | `.agents/skills/MANAGED.md` | Which skills the installer owns, and their versions — generated |
 | `.agents/config/story-tools.json` | Tracker pointer + settings. Non-secret; commit it |
 | `.agents/setup.sh` | Teammate onboarding: their credential, their agents, nothing else |
-| `docs/WORKFLOW.md` | Human-facing guide to the loop — generated, tracker-flavoured |
-| `docs/stories/`, `docs/dimensions.md` | Generated tracker snapshot and real field values |
+| `WORKFLOW.md` | Human-facing guide to the loop — generated, tracker-flavoured |
+| `docs/stories/`, `.agents/config/dimensions.md` | Generated tracker snapshot and real field values |
 
 A teammate clones and runs `.agents/setup.sh` — this repo is not needed. It
 sets up their own credential (or lets them decline and work offline,

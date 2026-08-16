@@ -12,7 +12,76 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **`add_discovered_work` ignored the issue id it was given, and filed in
+  the wrong project.** Its parameter was named `fromIssueId` while every
+  other tool in the app takes `issueId`, so an agent passing `issueId` had
+  it dropped as an unknown property and the call fell through to the
+  focused story - which can belong to a different project entirely. Twice
+  observed in the wild: issues created under the wrong key, linked to
+  unrelated work, needing manual cleanup. It now accepts either name,
+  returns `project` and `usedFocus`, and says in its message when it fell
+  back to focus so a wrong project is visible immediately rather than
+  after the write. Needs a YouTrack deploy to take effect.
+
+- **Focus is now honest about what it is.** It lives on the user record as
+  a single value with no project dimension, so a story from another project
+  can be sitting in it - which is how the above went wrong twice.
+  `story_set_focus` records the project, reads the value back and fails
+  loudly if it did not stick; `story_get_focus` returns the project, the
+  user the focus belongs to, and whether the focused story is already
+  resolved. The tools that write acceptance criteria or file discovered
+  work refuse to act on a focused story that is resolved, since that is the
+  usual sign the focus is stale - an explicit `issueId` always wins and is
+  never second-guessed. `complete_story` and `log_work` are deliberately
+  exempt: finishing a story resolves it, and effort is often logged
+  straight afterwards.
+
+### Changed
+
+- **`docs/` no longer holds anything a public site should not publish.**
+  GitHub Pages offers a `/docs` branch source, and selecting it publishes
+  everything beneath - the knowledge tree and the story snapshot included.
+  Nothing else claims `docs/`; this is one host's shortcut landing on a
+  directory that already meant something here, and GitLab Pages has no
+  equivalent. Three moves rather than a restructure: `WORKFLOW.md` goes to
+  the repo root, where the orientation files already live and a human will
+  find it; `dimensions.md` moves to `.agents/config/`, since it is
+  tool-read reference data and never was documentation; and the installer
+  now generates `docs/_config.yml` excluding `knowledge/` and `stories/`.
+  Story snapshots stay in `docs/` - people read them. The config is
+  generated, so it stays in step with what the suite writes, and it is
+  left alone if a project already has one of its own.
+
+  On refresh the installer notices copies left at the old paths and **asks**
+  before touching them - removing one that has been superseded, moving one
+  whose new location is still empty. Nothing in a project's repo is moved
+  or deleted without a yes, and a non-interactive run reports and leaves
+  them alone.
+
+
+- **`to-issues` 1.10, `triage` 1.19 - dimensions are a precondition, not
+  advice.** The rule to read a project's dimension values lived only in the
+  *proposal* step, mid-paragraph; the step that actually writes to the
+  tracker said nothing. An agent that compressed the proposal round arrived
+  at the write with no constraint in view, invented a topical tag and left
+  Subsystem unset. The rule now sits at the top of the write step in both
+  skills, stated as a refusal, and topical tags are explicitly drawn from
+  the set the project already uses - freeform is not permission to invent
+  one.
+
+- **The YouTrack bindings now say where tags actually live.**
+  `story_project_dimensions` returns fields only - it has never returned
+  tags - while the binding pointed at it as the source for "dimension
+  values", so an agent looking for the existing tag set found nothing and
+  reasonably concluded it had no way to check. `docs/dimensions.md` has
+  listed every usable tag, workflow and topical, all along. Both bindings
+  now carry a separate row for it, note that the dimensions tool derives
+  the project from the focused story when `projectKey` is omitted, and say
+  plainly: never mint a tag because you could not find a list - say you
+  could not read it and ask.
+
 
 ## [2026.08.13]
 

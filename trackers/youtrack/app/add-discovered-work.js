@@ -11,7 +11,8 @@ exports.aiTool = {
     properties: {
       summary: { type: 'string', description: 'Short title for the discovered work.' },
       description: { type: 'string', description: 'Optional details: what was found, where, why it matters. Include an "## Acceptance Criteria" section if the scope is already clear.' },
-      fromIssueId: { type: 'string', description: 'The story you were working on when this surfaced. Omit to use your focused story.' },
+      issueId: { type: 'string', description: 'The story you were working on when this surfaced. Omit ONLY if you want your focused story used - the focus may belong to another project.' },
+      fromIssueId: { type: 'string', description: 'Alias of issueId, kept for older callers. Prefer issueId.' },
     },
     required: ['summary'],
   },
@@ -28,11 +29,15 @@ exports.aiTool = {
       action: 'add_discovered_work',
       summary: ctx.arguments.summary,
       description: ctx.arguments.description || null,
-      fromIssueId: ctx.arguments.fromIssueId || null,
+      fromIssueId: ctx.arguments.issueId || ctx.arguments.fromIssueId || null,
     });
     if (ro) return ro;
 
-    const r = lib.resolveIssue(ctx.arguments.fromIssueId);
+    // Accept either name. Passing an id and having it silently ignored
+    // creates the issue in whatever project the focus points at - a
+    // different project entirely, in the worst case.
+    const passedId = ctx.arguments.issueId || ctx.arguments.fromIssueId || null;
+    const r = lib.resolveIssue(passedId, { forWrite: true });
     if (r.error) return { error: r.error };
     const source = r.issue;
 
@@ -77,10 +82,15 @@ exports.aiTool = {
     return {
       newIssueId: created.id,
       linkedTo: source.id,
+      project: source.project.key,
+      usedFocus: !passedId,
       linkType: linkType,
       inheritedTags: inherited,
       message:
-        'Discovered work logged as ' + created.id + ' - it will be triaged separately. Now continue working on ' + source.id + '; do not start the new issue.',
+        'Discovered work logged as ' + created.id + ' in project ' + source.project.key +
+        (passedId ? '' : ' (from your FOCUSED story - no issue id was passed; check the project is right)') +
+        ' - it will be triaged separately. Now continue working on ' + source.id +
+        '; do not start the new issue.',
     };
   },
   outputSchema: {
@@ -88,6 +98,8 @@ exports.aiTool = {
     properties: {
       newIssueId: { type: 'string' },
       linkedTo: { type: 'string' },
+      project: { type: 'string' },
+      usedFocus: { type: 'boolean' },
       linkType: { type: ['string', 'null'] },
       inheritedTags: { type: 'array', items: { type: 'string' } },
       message: { type: 'string' },

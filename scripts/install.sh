@@ -70,7 +70,6 @@ if [[ $SHIPPED -eq 0 && -d "$REPO_DIR/.githooks" && -d "$REPO_DIR/.git" ]]; then
 fi
 SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/story-reconcile"
         "$REPO_DIR/skills/stories/to-issues" "$REPO_DIR/skills/stories/triage"
-        "$REPO_DIR/skills/sessions/worklog"
         "$REPO_DIR/skills/docs/project-docs" "$REPO_DIR/skills/docs/to-prd"
         "$REPO_DIR/skills/docs/to-adr" "$REPO_DIR/skills/docs/to-rad"
         "$REPO_DIR/skills/docs/grill-with-docs" "$REPO_DIR/skills/docs/regulatory-compliance" "$REPO_DIR/skills/docs/to-wiring"
@@ -78,6 +77,12 @@ SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/stor
         "$REPO_DIR/skills/sessions/zoom-out" "$REPO_DIR/skills/engineering/tdd"
         "$REPO_DIR/skills/engineering/improve-codebase-architecture"
         "$REPO_DIR/skills/engineering/to-ux")
+# worklog is NOT here on purpose. A developer's working day is personal -
+# it spans every project and belongs to the person, not to any repo - so
+# installing it into every bound project put a private record in front of
+# people who never asked for it. It stays in this repo and attaches à la
+# carte: copy skills/sessions/worklog into a project that wants it. Not in
+# RETIRED_SKILLS - it is not retired, just not part of the suite.
 # to-library-skill has left this suite. It moved to the dependency-skills
 # project, where it ships alongside the plugin it teaches so the two cannot
 # drift, and it is now in RETIRED_SKILLS so existing copies are pruned on
@@ -136,6 +141,10 @@ err()  { printf '  %s✗%s %s\n' "$C_R" "$C_0" "$*" >&2; }
 note()  { printf '    %s%s%s\n' "$C_D" "$*" "$C_0"; }
 # Something to run or a path to open: worth making copy-able at a glance.
 cmd()   { printf '    %s%s%s\n' "$C_C" "$*" "$C_0"; }
+# A pickable option: the letter stands out, the label names it, the
+# explanation sits behind in dim so the eye lands on the choices first.
+choice()      { printf '    %s%s%s  %s%-12s%s %s%s%s\n' "$C_C" "$1" "$C_0" "$C_B" "$2" "$C_0" "$C_D" "$3" "$C_0"; }
+choice_cont() { printf '       %12s %s%s%s\n' "" "$C_D" "$1" "$C_0"; }
 # Aligned settings, so values line up down the page.
 kv()    { printf '  %s%-24s%s %s\n' "$C_D" "$1" "$C_0" "$2"; }
 
@@ -1003,6 +1012,33 @@ $docs_row
 - **Time is sessions.** One human-approved entry at session close - agents
   never log time silently.
 
+## Who does what
+
+Each person answers one question when they run \`.agents/setup.sh\`, and it
+is remembered for them - not for the repo. Nothing here is stored in the
+project, because the project is shared: the skills and this file are
+committed, so a fresh clone looks fully set up even when the person is not.
+
+| Role | Does |
+|---|---|
+| \`developer\` | Implements features. Works ready stories, files issues and bugs, routes anything unclear back to triage |
+| \`lead\` | Manages the work. Triage routing: priority, subsystem, deciding a story is ready |
+| \`architect\` | Makes the technical calls. Architecture decisions, ADRs, research records |
+| \`product\` | Decides what the product does. PRDs and requirements |
+
+They are not exclusive - most people hold several, and working solo means
+holding all of them, which is what pressing Enter at the prompt gives you.
+
+**It is a hint, not a permission.** Agents use it to decide what to offer
+you; the tracker decides what you can actually do. The point is that nobody
+gets steered into work that is not theirs to do - a developer handed a story
+with no acceptance criteria hands it back to triage rather than inventing
+the requirements, and nobody ends up writing a PRD because that was where
+the workflow happened to point.
+
+**Capture is never gated.** Anyone can file an issue or a bug, whatever
+their roles. That is how work reaches the person who can decide about it.
+
 ## Label / tag legend
 
 \`needs-triage\` awaiting triage - \`triaged\` has been dispositioned (never
@@ -1088,6 +1124,7 @@ attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 rea
   write_workflow_doc "$dir" github "$gh_repo"
   write_pages_config "$dir"
   migrate_docs_layout "$dir"
+  ask_roles "$dir"
   write_updates_config "$dir"
   ship_setup "$dir"
   # seed .agents/config/dimensions.md right away so triage can prompt real values
@@ -1139,6 +1176,7 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
   write_workflow_doc "$dir" youtrack "${yt_project:-$YOUTRACK_URL}"
   write_pages_config "$dir"
   migrate_docs_layout "$dir"
+  ask_roles "$dir"
   # refresh .agents/config/dimensions.md so agents see the current fields, versions
   # and the full tag list - the GitHub path already does this
   local ytpull="$REPO_DIR/skills/stories/story-reconcile/scripts/yt-pull.sh"
@@ -1291,6 +1329,8 @@ none_wizard() {
   merge_json "$PROJECT_DIR/.agents/config/story-tools.json" "tracker" '{"type":"none"}'
   ok "pointer: tracker type 'none' - skills run tracker-less (offline mode); re-run this"
   say "  wizard when the project adopts YouTrack or GitHub."
+  # the doc has always had a tracker-less variant; it was simply never called
+  write_workflow_doc "$PROJECT_DIR" none ""
   write_updates_config "$PROJECT_DIR"
   write_pages_config "$PROJECT_DIR"
   migrate_docs_layout "$PROJECT_DIR"
@@ -1491,11 +1531,91 @@ offline_note() {
   say "  to connect."
 }
 
+# ---------- step: this developer's role on this project ----------
+# Role is a property of the PERSON, not the project: installed skills are
+# tracked files, so everyone who clones gets the same set and the repo
+# cannot carry it. It lives beside the credentials, user-side, and it is a
+# hint that shapes what an agent offers - never a permission. The tracker
+# enforces; this only stops someone being pushed into work that is not
+# theirs to do. See docs/rad/0003-more-than-one-person.md.
+DEV_FILE="$AGENTS_HOME/story-tools/developer.json"
+ROLE_ARG="${ROLE_ARG:-}"
+
+project_ident() {  # $1 dir -> stable key for this project (tracker identity)
+  local dir="$1" k
+  k="$(read_pointer "$dir" repo)"; [[ -n "$k" ]] && { printf '%s' "$k"; return; }
+  k="$(read_pointer "$dir" project)"; [[ -n "$k" ]] && { printf '%s' "$k"; return; }
+  basename "$dir"
+}
+
+read_role() {  # $1 dir -> role or empty
+  local key; key="$(project_ident "$1")"
+  [[ -f "$DEV_FILE" ]] || return 0
+  KEY="$key" F="$DEV_FILE" python3 - <<'RPY' 2>/dev/null || true
+import json, os
+try:
+    d = json.load(open(os.environ["F"]))
+except Exception:
+    raise SystemExit
+e = d.get("projects", {}).get(os.environ["KEY"], {}) or {}
+r = e.get("roles") or ([e["role"]] if e.get("role") else [])
+print(" ".join(r))
+RPY
+}
+
+ask_roles() {  # $1 dir - what does this person DO here? asked once, remembered
+  local dir="$1" key cur pick roles
+  key="$(project_ident "$dir")"; cur="$(read_role "$dir")"
+  pick="${ROLE_ARG:-}"
+  if [[ -z "$pick" ]]; then
+    if [[ -n "$cur" ]]; then
+      # already answered - keep it, this is not a question worth re-asking
+      ok "roles: $cur on $key"
+      return 0
+    elif [[ -t 0 ]]; then
+      blank
+      printf '  %sWhat do you do on this project?%s\n' "$C_B" "$C_0"
+      note "Agents use this to decide what to offer you."
+      note "It grants and removes no permissions."
+      blank
+      choice d "developer"    "implement features"
+      choice l "team lead"    "manage the work: triage, priorities,"
+      choice_cont             "deciding a story is ready"
+      choice a "architect"    "make the technical calls: architecture,"
+      choice_cont             "ADRs, research (senior dev / architect)"
+      choice p "product"      "decide what the product does: PRDs"
+      blank
+      pick="$(ask "Letters, any order - Enter for all of them (working solo)" "dlap")"
+      blank
+    else
+      return 0
+    fi
+  fi
+  # accept letters or names, in any order
+  roles=""
+  case "$pick" in
+    all|ALL) pick="dlap";;
+  esac
+  [[ "$pick" == *[dD]* || "$pick" == *developer* ]] && roles="$roles developer"
+  [[ "$pick" == *[lL]* || "$pick" == *lead* ]]      && roles="$roles lead"
+  [[ "$pick" == *[aA]* || "$pick" == *architect* ]] && roles="$roles architect"
+  [[ "$pick" == *[pP]* || "$pick" == *product* ]]   && roles="$roles product"
+  roles="${roles# }"
+  if [[ -z "$roles" ]]; then
+    warn "no roles recognised in '$pick' - use any of d, l, a, p (or Enter for all)"
+    return 0
+  fi
+  local json; json="$(printf '%s' "$roles" | tr ' ' '\n' | sed 's/.*/"&"/' | paste -sd, -)"
+  merge_json "$DEV_FILE" "projects.$key" '{"roles": ['"$json"']}'
+  ok "roles: $roles on $key (~/.agents/story-tools/developer.json)"
+}
+
 developer_setup() {  # shipped-copy flow: credential + agent registration only
   local dir; dir="$(cd "$(dirname "$0")/.." && pwd)"
   local ptype conn
   ptype="$(read_pointer "$dir" type)"; conn="$(read_pointer "$dir" connection)"
   step "story-tools developer setup: $(basename "$dir")"
+  ask_roles "$dir"
   say "  Skills and workflow docs already travel with this repo. This sets up"
   say "  YOUR tracker credential and registers it in YOUR agents - secrets"
   say "  live in ~/.agents/story-tools/, never in the repo."
@@ -1636,7 +1756,9 @@ EOF
 if [[ $SHIPPED -eq 1 ]]; then
   # project-shipped copy: developer onboarding only
   case "${1:-}" in
-    ""|--setup) developer_setup;;
+    ""|--setup) shift 2>/dev/null || true
+      [[ "${1:-}" == "--role" ]] && ROLE_ARG="${2:-}"
+      developer_setup;;
     --github) shift
       if [[ -n "${1:-}" && "${1:-}" != -* ]]; then
         say "error: --github takes no repo here - per-developer credential setup only." >&2; exit 1

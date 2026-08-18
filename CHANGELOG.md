@@ -42,7 +42,64 @@ Nothing yet.
   exempt: finishing a story resolves it, and effort is often logged
   straight afterwards.
 
+### Removed
+
+- **`worklog` is no longer part of the suite install.** A developer's
+  working day is personal - it spans every project and belongs to the
+  person, not to any repo - so installing it into every bound project put a
+  private record in front of people who never asked for it. It stays in
+  this repo and attaches à la carte: copy `skills/sessions/worklog` into a
+  project that wants it. Deliberately **not** in `RETIRED_SKILLS`; it is
+  not retired, just not installed by default. Existing copies are pruned
+  from projects on the next refresh via the manifest, so anyone still using
+  it should copy it back.
+
+### Added
+
+- **Roles, asked once at setup, in terms of what you actually do.**
+  `setup.sh` asks whether you implement features (`developer`), manage the
+  work (`lead` - triage, priorities, deciding a story is ready), make the
+  technical calls (`architect` - architecture, ADRs, research), or decide
+  what the product does (`product` - PRDs). They are listed in
+  chain-of-command order, so the list reads the way a team is arranged, and
+  they are not exclusive: Enter takes all of them, which is the answer for
+  someone working solo, so the common case costs one keystroke rather than
+  acquiring ceremony. Stored
+  in `~/.agents/story-tools/developer.json`, keyed by the tracker's own
+  identity for the project, because installed skills are tracked files -
+  the repo is shared and cannot carry anything about a particular person.
+  `--role dlap` sets it without the prompt. It shapes what agents offer and
+  nothing else: the tracker still enforces what can actually happen. See
+  `docs/rad/0003-more-than-one-person.md`.
+
+  `WORKFLOW.md` gained a **Who does what** section covering the same ground
+  for humans: the four roles and what each does, that they are not
+  exclusive and solo means all of them, that a role is a hint rather than a
+  permission, and that capture is never gated. It regenerates on refresh,
+  so bound projects pick it up without anyone editing a file.
+
+- **Agents now notice when setup has not been run.** A fresh clone looks
+  fully configured - skills and workflow docs are committed - while the
+  person has no credential and no role. `story-workflow` and `triage` stop
+  and point at `.agents/setup.sh` when there is no entry for the project,
+  rather than failing later in a way that reads as a broken tracker.
+
 ### Changed
+
+- **A story with no acceptance criteria goes back to triage instead of
+  being written on the spot.** `story-workflow` used to say "stop and
+  draft AC with the user" - which, when the person holding the ticket is
+  not the person who decides what the product does, means requirements get
+  invented mid-implementation by whoever is under time pressure, or the
+  developer gets pushed up into `to-prd` because that is where the
+  workflow pointed. It now tags `needs-triage` and hands the story back.
+  Deliberately not a permissions rule: nobody should be authoring
+  requirements inside a work session. Whoever owns them can still fix the
+  story - as a separate, deliberate triage step, not a detour. Filing the
+  gap as an issue or a bug stays open to everyone; that is the off-ramp.
+  `to-prd` gained a matching note that a PRD is a product decision rather
+  than a way to record something you noticed.
+
 
 - **`docs/` no longer holds anything a public site should not publish.**
   GitHub Pages offers a `/docs` branch source, and selecting it publishes

@@ -104,7 +104,7 @@ work — it belongs upstream here, never in a project's copy.
 |---|---|
 | `skills/stories/` | Tracker discipline: story-workflow, story-reconcile, to-issues, triage |
 | `skills/docs/` | Documentation system: project-docs, to-prd, to-adr, to-rad, grill-with-docs, to-wiring, regulatory-compliance |
-| `skills/sessions/` | Session lifecycle: handoff, housekeeping, zoom-out |
+| `skills/sessions/` | Session lifecycle: handoff, housekeeping, zoom-out; worklog (à la carte) |
 | `skills/engineering/` | Practice: tdd, improve-codebase-architecture, prototype, to-design |
 | `skills/authoring/` | Making skills: write-a-skill |
 | `skills/setup/` | Agent/tool configuration: git-guardrails (Claude Code, Gemini), setup-github-copilot, setup-gitlab-duo |
@@ -159,8 +159,10 @@ than no skill at all. See
 
 ## Using independent skills
 
-Seven skills here are not part of the suite and attach à la carte — copy
-the ones you want into a project:
+Eight skills here are not part of the suite and attach à la carte — copy
+the ones you want into a project. `worklog` is one of them: a developer's
+working day spans every project and belongs to the person, so it is opt-in
+rather than installed everywhere.
 
 ```bash
 cp -R skills/engineering/tdd /path/to/project/.agents/skills/

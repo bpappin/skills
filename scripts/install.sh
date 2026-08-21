@@ -5,6 +5,7 @@
 #   ./install.sh --user [--connection <name>]   NOT recommended - see below
 #   ./install.sh --clean-user   remove user-level copies of suite skills
 #   ./install.sh --project <dir> [--connection <name>] [--yt-project <KEY>] [--readonly] [--copy]
+#                                [--snapshot synced|committed]   override the derived choice
 #   ./install.sh --project <dir> --github owner/repo [--gh-project N]   bind to GitHub
 #   ./install.sh --github     per-developer GitHub setup: PAT -> connection,
 #                             register the 'github' MCP server in agent configs
@@ -1017,10 +1018,18 @@ set_snapshot_mode() {  # $1 dir - derived, not asked
   case "${SNAPSHOT_ARG:-$cur}" in
     s|synced|local) mode="synced";;      # 'local' accepted from earlier runs
     c|committed)    mode="committed";;
-    "") case "$ttype" in
-          github|youtrack) mode="synced";;
-          *)               mode="committed";;
-        esac;;
+    "") # An already-committed snapshot IS a choice - somebody put it in git,
+        # and for one person working alone that is a good one: no conflicts
+        # to have, and a copy readable with no tracker. Never flip it
+        # silently. Only a project with nothing tracked gets the new default.
+        if git -C "$dir" ls-files docs/stories 2>/dev/null | head -1 | grep -q .; then
+          mode="committed"
+        else
+          case "$ttype" in
+            github|youtrack) mode="synced";;
+            *)               mode="committed";;
+          esac
+        fi;;
     *) warn "unknown snapshot mode '${SNAPSHOT_ARG:-$cur}' - leaving as-is"; return 0;;
   esac
   merge_json "$dir/.agents/config/story-tools.json" "snapshot" '"'"$mode"'"'
@@ -1031,7 +1040,11 @@ set_snapshot_mode() {  # $1 dir - derived, not asked
     untrack_snapshot "$dir"
   else
     set_gitignore_block "$dir" ""
-    ok "snapshot: committed - no tracker to sync from, so it travels with the repo"
+    if [[ -n "$ttype" && "$ttype" != "none" ]]; then
+      ok "snapshot: committed - already in git, left that way (set snapshot to 'synced' in the pointer if a team starts colliding on it)"
+    else
+      ok "snapshot: committed - no tracker to sync from, so it travels with the repo"
+    fi
   fi
 }
 
@@ -1801,6 +1814,7 @@ project_mode() {
       --github) gh_repo="$2"; shift 2;;
       --gh-project) gh_proj="$2"; shift 2;;
       --readonly) readonly_flag="true"; shift;;
+      --snapshot) SNAPSHOT_ARG="$2"; shift 2;;
       --copy) mode="copy"; shift;;
       *) say "unknown option: $1" >&2; exit 1;;
     esac
@@ -1951,7 +1965,7 @@ case "${1:-}" in
     say ""
     say "Registrations updated. Restart your agent sessions so they reconnect"
     say "with the new token.";;
-  --project) shift; [[ $# -ge 1 ]] || { say "usage: install.sh --project <dir> [--connection <name>] [--yt-project <KEY>] [--readonly] [--copy]" >&2; exit 1; }; project_mode "$@";;
+  --project) shift; [[ $# -ge 1 ]] || { say "usage: install.sh --project <dir> [--connection <name>] [--yt-project <KEY>] [--readonly] [--copy] [--snapshot synced|committed]" >&2; exit 1; }; project_mode "$@";;
   --list) list_connections;;
   --show) show;;
   --help|-h|*) sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//';;

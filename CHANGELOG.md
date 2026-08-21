@@ -102,9 +102,13 @@ Nothing yet.
   is no longer the default: a project bound to YouTrack or GitHub gets
   `snapshot: synced` - gitignored between markers in `.gitignore`, each
   developer pulling their own - and a project with no tracker gets
-  `committed`. Derived from the binding rather than asked, since the
-  binding already answers it; set `snapshot` in the pointer by hand to
-  override, and an existing value is always respected. On refresh the
+  `committed`. Derived rather than asked, since the binding
+  already answers it - but **an existing committed snapshot is treated as
+  a decision and never flipped silently**: one person working alone has no
+  conflicts to have and a copy readable with no tracker, so a project
+  already carrying its snapshot in git keeps it. Only a project with
+  nothing tracked yet takes the new default. An explicit `snapshot` in the
+  pointer always wins, and `--snapshot synced|committed` forces it. On refresh the
   installer notices a snapshot still tracked from an earlier setup and
   **offers to untrack it**, because gitignoring a tracked file does nothing
   on its own - it explains why in a yellow heads-up block -

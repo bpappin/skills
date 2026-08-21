@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-18",
+  "generated": "2026-08-21",
   "skills": {
     "write-a-skill": "1.0",
     "grill-with-docs": "2.1",
@@ -23,7 +23,7 @@
     "git-guardrails-gemini": "1.0",
     "setup-github-copilot": "1.0",
     "setup-gitlab-duo": "1.0",
-    "story-reconcile": "0.22",
+    "story-reconcile": "0.25",
     "story-workflow": "1.23",
     "to-issues": "1.11",
     "triage": "1.24"

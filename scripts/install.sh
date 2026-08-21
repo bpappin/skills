@@ -141,6 +141,9 @@ err()  { printf '  %s✗%s %s\n' "$C_R" "$C_0" "$*" >&2; }
 note()  { printf '    %s%s%s\n' "$C_D" "$*" "$C_0"; }
 # Something to run or a path to open: worth making copy-able at a glance.
 cmd()   { printf '    %s%s%s\n' "$C_C" "$*" "$C_0"; }
+# Something that needs a decision or a fix. Yellow and bold, because it is
+# an instruction to act rather than a result to read past.
+heads_up() { printf '\n  %s%s%s %s%s%s\n\n' "$C_Y" "!" "$C_0" "$C_B$C_Y" "$*" "$C_0"; }
 # A pickable option: the letter stands out, the label names it, the
 # explanation sits behind in dim so the eye lands on the choices first.
 choice()      { printf '    %s%s%s  %s%-12s%s %s%s%s\n' "$C_C" "$1" "$C_0" "$C_B" "$2" "$C_0" "$C_D" "$3" "$C_0"; }
@@ -922,6 +925,116 @@ migrate_docs_layout() {  # $1 dir - offer to clear copies left at the old paths
   say "  These are tracked files - review the diff before committing."
 }
 
+# ---------- step: is the tracker snapshot committed, or local? ----------
+# Committed is valuable when you cannot reach the tracker: a clone carries
+# the stories with it. It is also a shared file that every pull rewrites,
+# so on a team two people regenerating the same derived data collide. The
+# choice is the project's, not the person's, so it lives in the pointer.
+GITIGNORE_BEGIN="# BEGIN story-tools (generated - do not edit between markers)"
+GITIGNORE_END="# END story-tools"
+
+set_gitignore_block() {  # $1 dir, $2 body ("" removes the block)
+  local dir="$1" body="$2" f="$dir/.gitignore"
+  BODY="$body" B="$GITIGNORE_BEGIN" E="$GITIGNORE_END" F="$f" python3 - <<'GIPY'
+import os, re
+f, body = os.environ["F"], os.environ["BODY"]
+b, e = os.environ["B"], os.environ["E"]
+cur = open(f).read() if os.path.exists(f) else ""
+cur = re.sub(re.escape(b) + r".*?" + re.escape(e) + r"\n?", "", cur, flags=re.S)
+if body:
+    if cur and not cur.endswith("\n"):
+        cur += "\n"
+    cur += f"{b}\n{body}\n{e}\n"
+open(f, "w").write(cur)
+GIPY
+}
+
+untrack_snapshot() {  # $1 dir - offer to stop tracking a snapshot committed before
+  local dir="$1" tracked=""
+  git -C "$dir" rev-parse --git-dir >/dev/null 2>&1 || return 0
+  tracked="$(git -C "$dir" ls-files docs/stories .agents/config/dimensions.md 2>/dev/null | head -1)"
+  [[ -n "$tracked" ]] || return 0
+
+  heads_up "The snapshot is still tracked in git - the setting alone will not help"
+  say "  Git keeps tracking whatever it already tracks, ignore rules or not."
+  say "  So every pull still rewrites these files, everyone still gets the"
+  say "  diff, and two people pulling on different days still collide."
+  blank
+  say "  ${C_B}Fix it once, here:${C_0}"
+  cmd "git rm -r --cached docs/stories .agents/config/dimensions.md"
+  cmd "git commit -m 'untrack the generated tracker snapshot'"
+  cmd "git push"
+  blank
+  say "  ${C_B}Then everyone else, once, after pulling that:${C_0}"
+  cmd "git checkout -- docs/stories     # discard local edits - regenerable"
+  cmd "git pull                         # the files vanish; that is correct"
+  note "then a normal snapshot pull regenerates their own copy, ignored"
+  blank
+
+  if [[ ! -t 0 ]]; then
+    say "  (not interactive - run the first block yourself)"
+    return 0
+  fi
+  local yn; read -rp "  Run the untrack step now? Files stay on disk. [Y/n] " yn
+  [[ "$yn" =~ ^[Nn] ]] && { say "  left tracked - nothing changes until you do this."; return 0; }
+
+  # Never claim this worked without checking. Hooks, permissions and managed
+  # checkouts all refuse `git rm`, and a false "done" here is worse than not
+  # trying: the setting looks applied and the conflicts keep happening.
+  local out="" rc=0 did=0
+  out="$(git -C "$dir" rm -r --cached --quiet docs/stories 2>&1)" || rc=$?
+  [[ $rc -eq 0 ]] && did=1
+  rc=0
+  if git -C "$dir" ls-files --error-unmatch .agents/config/dimensions.md >/dev/null 2>&1; then
+    local out2=""
+    out2="$(git -C "$dir" rm --cached --quiet .agents/config/dimensions.md 2>&1)" || rc=$?
+    [[ -z "$out" ]] && out="$out2"   # keep the first error, not both concatenated
+    [[ $rc -eq 0 ]] && did=1
+  fi
+
+  if [[ $did -eq 1 ]] && [[ -z "$(git -C "$dir" ls-files docs/stories 2>/dev/null | head -1)" ]]; then
+    ok "untracked - files untouched on disk, deletions staged"
+    say "  Commit and push, then tell the others to run the second block."
+    return 0
+  fi
+
+  heads_up "Could not untrack it here - please run it yourself"
+  [[ -n "$out" ]] && note "git said: $(printf '%s' "$out" | head -1)"
+  say "  Some setups refuse this from a script - hooks, permissions, or a"
+  say "  managed checkout. Nothing has changed. Run the first block above by"
+  say "  hand, or do it in whatever git client you normally use."
+  return 0
+}
+
+set_snapshot_mode() {  # $1 dir - derived, not asked
+  local dir="$1" cur mode ttype
+  cur="$(read_pointer "$dir" snapshot)"
+  ttype="$(read_pointer "$dir" type)"
+  # Committed exists for the case where you CANNOT reach the tracker. If the
+  # project has one configured, you can - so this follows from the binding
+  # and there is nothing to ask. Set `snapshot` in the pointer by hand to
+  # override; a value already there is always respected.
+  case "${SNAPSHOT_ARG:-$cur}" in
+    s|synced|local) mode="synced";;      # 'local' accepted from earlier runs
+    c|committed)    mode="committed";;
+    "") case "$ttype" in
+          github|youtrack) mode="synced";;
+          *)               mode="committed";;
+        esac;;
+    *) warn "unknown snapshot mode '${SNAPSHOT_ARG:-$cur}' - leaving as-is"; return 0;;
+  esac
+  merge_json "$dir/.agents/config/story-tools.json" "snapshot" '"'"$mode"'"'
+  if [[ "$mode" == "synced" ]]; then
+    set_gitignore_block "$dir" "docs/stories/
+.agents/config/dimensions.md"
+    ok "snapshot: synced from the tracker, gitignored - no two people regenerating the same files"
+    untrack_snapshot "$dir"
+  else
+    set_gitignore_block "$dir" ""
+    ok "snapshot: committed - no tracker to sync from, so it travels with the repo"
+  fi
+}
+
 write_pages_config() {  # $1 dir - keep GitHub Pages off the internal docs tree
   # GitHub offers "deploy from a branch" with a /docs source, and picking it
   # publishes everything under docs/ - including the knowledge tree and the
@@ -1039,6 +1152,18 @@ the workflow happened to point.
 **Capture is never gated.** Anyone can file an issue or a bug, whatever
 their roles. That is how work reaches the person who can decide about it.
 
+## The tracker snapshot
+
+\`docs/stories/\` is generated from the tracker - never edit it, and never
+hand-merge a conflict in it. If neither side has a change the tracker does
+not already have, take either side and re-run the pull; if one does, get
+that change into the tracker first, then re-pull. The offline pending log
+is the opposite case: it is append-only, so a conflict there keeps **both**
+sides. Whether
+it is committed to the repo or gitignored and regenerated per developer is
+a project setting; if you are hitting conflicts on files nobody wrote, that
+setting is the fix.
+
 ## Label / tag legend
 
 \`needs-triage\` awaiting triage - \`triaged\` has been dispositioned (never
@@ -1123,6 +1248,7 @@ attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 rea
   ok "pointer: .agents/config/story-tools.json (github: $gh_repo${gh_proj:+, project $gh_proj}) - commit .agents/ .claude/ .github/ with the repo"
   write_workflow_doc "$dir" github "$gh_repo"
   write_pages_config "$dir"
+  set_snapshot_mode "$dir"
   migrate_docs_layout "$dir"
   ask_roles "$dir"
   write_updates_config "$dir"
@@ -1175,6 +1301,7 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
   ok "pointer: .agents/config/story-tools.json - commit .agents/ .claude/ .github/ with the repo"
   write_workflow_doc "$dir" youtrack "${yt_project:-$YOUTRACK_URL}"
   write_pages_config "$dir"
+  set_snapshot_mode "$dir"
   migrate_docs_layout "$dir"
   ask_roles "$dir"
   # refresh .agents/config/dimensions.md so agents see the current fields, versions
@@ -1333,6 +1460,7 @@ none_wizard() {
   write_workflow_doc "$PROJECT_DIR" none ""
   write_updates_config "$PROJECT_DIR"
   write_pages_config "$PROJECT_DIR"
+  set_snapshot_mode "$PROJECT_DIR"
   migrate_docs_layout "$PROJECT_DIR"
   ship_setup "$PROJECT_DIR"
   verify_bind "$PROJECT_DIR" || true
@@ -1540,6 +1668,7 @@ offline_note() {
 # theirs to do. See docs/rad/0003-more-than-one-person.md.
 DEV_FILE="$AGENTS_HOME/story-tools/developer.json"
 ROLE_ARG="${ROLE_ARG:-}"
+SNAPSHOT_ARG="${SNAPSHOT_ARG:-}"
 
 project_ident() {  # $1 dir -> stable key for this project (tracker identity)
   local dir="$1" k

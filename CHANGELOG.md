@@ -88,6 +88,39 @@ Nothing yet.
   and point at `.agents/setup.sh` when there is no entry for the project,
   rather than failing later in a way that reads as a broken tracker.
 
+### Fixed
+
+- **The story snapshot stamped its generation date into every file**, so a
+  pull rewrote all of them whether or not anything changed upstream. On a
+  team that meant two people pulling on different days conflicted on every
+  story - one project has 299 of them - over content neither had written.
+  The date now lives in `INDEX.md` alone, so a story file changes only when
+  the issue changed and a conflict means something.
+
+- **The snapshot is synced per developer wherever a tracker exists.**
+  Committed exists for the case where you *cannot* reach the tracker, so it
+  is no longer the default: a project bound to YouTrack or GitHub gets
+  `snapshot: synced` - gitignored between markers in `.gitignore`, each
+  developer pulling their own - and a project with no tracker gets
+  `committed`. Derived from the binding rather than asked, since the
+  binding already answers it; set `snapshot` in the pointer by hand to
+  override, and an existing value is always respected. On refresh the
+  installer notices a snapshot still tracked from an earlier setup and
+  **offers to untrack it**, because gitignoring a tracked file does nothing
+  on its own - it explains why in a yellow heads-up block -
+  git keeps tracking what it already tracks, so the ignore rule alone
+  changes nothing - then gives the exact commands for the person running it
+  and the separate ones everyone else needs after pulling, and offers to run
+  the first set. Files stay on disk; only the tracking stops. If git refuses
+  - hooks, permissions, a managed checkout - it says so, shows what git
+  reported, and asks the user to run it themselves rather than reporting a
+  success that did not happen. `story-reconcile` gained the rules for
+  resolving a conflict: never hand-merge, but "take either side" is only
+  safe when neither side holds a change the tracker lacks - otherwise that
+  change goes to the tracker first and the file is regenerated. The offline
+  pending log is the opposite case: append-only, so a conflict there keeps
+  both sides, and taking one loses somebody's session.
+
 ### Changed
 
 - **A story with no acceptance criteria goes back to triage instead of

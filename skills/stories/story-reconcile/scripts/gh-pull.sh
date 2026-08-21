@@ -176,7 +176,7 @@ milestone: "{milestone}"
 assignee: "{assignee}"
 url: {it['html_url']}
 ---
-<!-- GENERATED snapshot ({datetime.date.today()}): do not edit - GitHub is the source of truth. Re-run scripts/gh-pull.sh to refresh. -->
+<!-- GENERATED: do not edit - GitHub is the source of truth. Re-run scripts/gh-pull.sh to refresh. The pull date is in INDEX.md; keeping it out of every file means an issue changes here only when it changed upstream, so two people pulling do not conflict on unchanged files. -->
 
 # #{num}: {it.get('title','')}
 

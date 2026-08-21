@@ -127,7 +127,7 @@ tags: "{tags}"
 links: "{'; '.join(links)}"
 url: {url}/issue/{iid}
 ---
-<!-- GENERATED snapshot ({datetime.date.today()}): do not edit - YouTrack is the source of truth. Re-run scripts/yt-pull.sh to refresh. -->
+<!-- GENERATED: do not edit - YouTrack is the source of truth. Re-run scripts/yt-pull.sh to refresh. The pull date is in INDEX.md; keeping it out of every file means a story changes here only when the issue changed, so two people pulling do not conflict on 300 unchanged files. -->
 
 # {iid}: {it.get('summary','')}
 

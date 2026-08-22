@@ -183,7 +183,8 @@ save_connection() {  # $1 name
 }
 
 resolve_server() {  # always youtrack-<nickname>: explicit per server, no cross-pollination
-  MCP_SERVER="youtrack-$PROFILE"
+  # connection names carry the tracker prefix now; do not double it
+  MCP_SERVER="youtrack-${PROFILE#youtrack-}"
 }
 
 ask() {  # ask "prompt" "current" -> echoes answer (Enter keeps current)
@@ -436,10 +437,22 @@ setup_connection() {  # $1 = optional preselected name; sets PROFILE + creds var
     exit 1
   fi
 
+  # One connection per project, not per server. YouTrack tokens are not
+  # project-scoped today (JT-97918 is the open RFE to split them), so this
+  # buys clarity and independent revocation now - and when scoping lands,
+  # each project already has its own file to drop a narrower token into,
+  # with nothing to migrate. Falls back to the host when no project is in
+  # play (a user-level setup).
   local newname suggested
-  suggested="${PROFILE:-$(name_from_url "$YOUTRACK_URL")}"
+  if [[ -n "${PROFILE:-}" ]]; then
+    suggested="$PROFILE"
+  elif [[ -n "${PROJECT_NAME:-}" ]]; then
+    suggested="youtrack-$(printf '%s' "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-\n' '-')"
+  else
+    suggested="youtrack-$(name_from_url "$YOUTRACK_URL")"
+  fi
   while :; do
-    newname="$(ask "Connection nickname (this server + your token; shared by every repo that uses it)" "$suggested")"
+    newname="$(ask "Connection nickname (this server + your token; one per project keeps them separately revocable)" "$suggested")"
     # never silently replace a DIFFERENT server's connection that happens to share the name
     if [[ "$newname" != "$PROFILE" && -f "$CONN_DIR/$newname.env" ]]; then
       local other_url; other_url="$(sed -n 's/^YOUTRACK_URL=//p' "$CONN_DIR/$newname.env")"
@@ -1245,7 +1258,7 @@ verify_bind() {  # $1 dir - post-condition: did the bind actually land?
 attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 readonly, $5 mode
   local dir="$1" gh_repo="$2" gh_proj="$3" readonly_flag="$4" mode="${5:-link}"
   local conn="${GH_CONN:-github}" srv
-  srv="github-$conn"; [[ "$conn" == "github" ]] && srv="github"
+  srv="github-${conn#github-}"; [[ "$conn" == "github" ]] && srv="github"
   copy_skills "$dir" "$mode"
   warn_user_level_overlap
   rm -f "$dir/.agents/youtrack.json" "$dir/.agents/config/youtrack.json" "$dir/.agents/config/story-tools.json"
@@ -1430,7 +1443,9 @@ github_wizard() {
   step "1/3 Project"
   pick_project
   local conn="github"
-  [[ -n "$PROJECT_DIR" ]] && conn="$(basename "$PROJECT_DIR" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-\n' '-')"
+  # same shape as YouTrack: <tracker>-<project>, so a project that switches
+  # tracker gets the parallel name and the type is visible in the filename
+  [[ -n "$PROJECT_DIR" ]] && conn="github-$(basename "$PROJECT_DIR" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-\n' '-')"
   step "2/3 GitHub credential"
   conn="$(ask "Connection name for this token" "$conn")"
   if [[ -f "$CONN_DIR/$conn.env" ]] && load_github "$conn"; then
@@ -1530,7 +1545,7 @@ wizard() {
 
 check_github_drift() {  # $1 = connection; stale PAT in agent configs
   local conn="${1:-github}" srv
-  srv="github-$conn"; [[ "$conn" == "github" ]] && srv="github"
+  srv="github-${conn#github-}"; [[ "$conn" == "github" ]] && srv="github"
   [[ -n "${GITHUB_TOKEN:-}" ]] || return 0
   [[ -f "$CONN_DIR/$conn.env" || -f "$CONN_DIR/github.env" ]] || return 0
   local stale="" vsc=""

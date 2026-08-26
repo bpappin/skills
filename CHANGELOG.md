@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.08.26]
+
 ### Fixed
 
 - **A compound `local` declaration killed the tracker-less setup path.**

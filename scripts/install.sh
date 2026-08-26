@@ -939,6 +939,153 @@ migrate_docs_layout() {  # $1 dir - offer to clear copies left at the old paths
   say "  These are tracked files - review the diff before committing."
 }
 
+# ---------- step: KB section directories -> plain lowercase names ----------
+# taxonomy.md used to say section names are "spelled out - Architecture
+# Decision Records, never adr" without separating the KB title from the
+# path, so tracker-less projects grew directories with spaces in them.
+# Titles are still spelled out; they live in each section's README H1,
+# which is what the sync reads. The directory is now a plain word.
+KB_RENAMES=""
+
+migrate_kb_dirs() {  # $1 dir - offer to rename KB section directories
+  local dir="$1" kb="$dir/docs/knowledge"
+  [[ -d "$kb" ]] || return 0
+
+  local plan
+  plan="$(KB="$kb" python3 - <<'MKPY'
+import os, re
+kb = os.environ["KB"]
+MAP = {
+    "architecture-decision-records": "decisions", "decision-records": "decisions",
+    "adr": "decisions", "adrs": "decisions",
+    "product-requirements": "requirements", "prd": "requirements",
+    "prds": "requirements",
+    "specifications": "specifications", "spec": "specifications",
+    "specs": "specifications",
+    "research": "research",
+    "reference": "reference", "references": "reference",
+    "developer-guides": "guides", "dev-guides": "guides", "guides": "guides",
+    "quality-assurance": "testing", "qa": "testing",
+    "tests": "testing", "testing": "testing",
+    "mandates-compliance": "compliance", "mandates-and-compliance": "compliance",
+    "mandates": "compliance", "compliance": "compliance",
+    "regulations": "compliance",
+    "support": "support",
+}
+# Design direction moved to DESIGN.md at the repo root and accessibility
+# split between DESIGN.md and compliance/. Nothing to rename to - a person
+# decides where each file goes.
+FLAG = {"design-accessibility", "design-and-accessibility", "design",
+        "accessibility", "a11y"}
+
+def norm(s):
+    s = s.lower().replace("&", " ").replace("_", " ").replace("-", " ")
+    return re.sub(r"\s+", "-", s.strip())
+
+for name in sorted(os.listdir(kb)):
+    p = os.path.join(kb, name)
+    if not os.path.isdir(p) or name.startswith("."):
+        continue
+    # ID-prefixed directories are the sync's own naming, not a misnamed
+    # section - nothing to report about them.
+    if re.match(r"^[A-Z][A-Z0-9]*-A-[0-9]+_", name):
+        continue
+    n = norm(name)
+    if n in FLAG:
+        print("FLAG\t%s\t" % name)
+    elif n in MAP and MAP[n] != name:
+        print("MOVE\t%s\t%s" % (name, MAP[n]))
+    elif n not in MAP and name != n:
+        print("ODD\t%s\t%s" % (name, n))
+MKPY
+)"
+  [[ -z "$plan" ]] && return 0
+
+  # Under a sync the directory name is derived, not chosen: structure flows
+  # DOWN only, and the sync moves anything it finds to <ID>_<title-slug>.
+  # So a local rename is futile before it is dangerous - the next sync undoes
+  # it. Say that rather than going quiet: doing nothing without a word is how
+  # someone concludes the installer did not look.
+  if [[ -d "$kb/.yt-sync" || -d "$kb/.gh-wiki-sync" ]] \
+     || ls "$kb" 2>/dev/null | grep -qE '^[A-Z][A-Z0-9]*-A-[0-9]+_'; then
+    blank
+    heads_up "  knowledge sections here are named by the sync, not by hand:"
+    say "  <ID>_<title-slug>, derived from the article. Renaming one locally does"
+    say "  nothing - structure flows down only, and the next sync moves it back."
+    say "  To change a section name, rename the ARTICLE in the tracker and the"
+    say "  tree follows."
+    return 0
+  fi
+
+  local kind old new moves=0 flags=0
+  blank
+  warn "knowledge sections use directory names this version no longer writes:"
+  while IFS=$'\t' read -r kind old new; do
+    [[ -n "$kind" ]] || continue
+    case "$kind" in
+      MOVE) say "    $old  ->  $new"; moves=$((moves+1));;
+      ODD)  say "    $old  ->  $new   (not a known section - best guess)"; moves=$((moves+1));;
+      FLAG) flags=$((flags+1));;
+    esac
+  done <<< "$plan"
+
+  if [[ $flags -gt 0 ]]; then
+    heads_up "  design/accessibility sections are NOT renamed - they were split:"
+    say "    design direction and tokens  ->  DESIGN.md at the repo root"
+    say "    accessibility standards      ->  DESIGN.md (rules) + compliance/ (the legal floor)"
+    say "    records with mockups         ->  docs/design/ (unchanged)"
+    say "  Move those files yourself; there is no single target to rename to."
+  fi
+  [[ $moves -eq 0 ]] && return 0
+
+  say "  Section TITLES do not change - they live in each README's H1."
+  if [[ ! -t 0 ]]; then
+    say "  Not interactive - left alone. Re-run the installer to be asked."
+    return 0
+  fi
+  local yn; read -rp "  Rename them? [y/N] " yn
+  [[ "$yn" =~ ^[Yy] ]] || { say "  left as-is."; return 0; }
+
+  local git_ok=0
+  git -C "$dir" rev-parse --git-dir >/dev/null 2>&1 && git_ok=1
+  KB_RENAMES=""
+  while IFS=$'\t' read -r kind old new; do
+    case "$kind" in MOVE|ODD) ;; *) continue;; esac
+    if [[ -e "$kb/$new" ]]; then
+      warn "  $new already exists - skipped $old (merge it by hand)"
+      continue
+    fi
+    if [[ $git_ok -eq 1 ]] && git -C "$dir" mv "docs/knowledge/$old" "docs/knowledge/$new" 2>/dev/null; then
+      ok "$old -> $new (git mv, history kept)"
+    elif mv "$kb/$old" "$kb/$new"; then
+      ok "$old -> $new"
+    else
+      warn "  could not rename $old - do it by hand"
+      continue
+    fi
+    KB_RENAMES="$KB_RENAMES $old"
+  done <<< "$plan"
+
+  # Links are the half that breaks quietly. Report them; never rewrite -
+  # a bad sweep across a docs tree is discovered months later.
+  local hits=""
+  for old in $KB_RENAMES; do
+    if grep -rlF "$old" "$dir/docs" --include='*.md' 2>/dev/null | head -1 | grep -q .; then
+      hits="$hits $old"
+    fi
+  done
+  if [[ -n "$hits" ]]; then
+    blank
+    heads_up "  markdown still referring to the old paths:"
+    for old in $hits; do
+      say "    $old"
+      grep -rlF "$old" "$dir/docs" --include='*.md' 2>/dev/null | sed "s|^$dir/|      |"
+    done
+    say "  Not rewritten on purpose - check each one."
+  fi
+  say "  Tracked files: review the diff before committing."
+}
+
 # ---------- step: is the tracker snapshot committed, or local? ----------
 # Committed is valuable when you cannot reach the tracker: a clone carries
 # the stories with it. It is also a shared file that every pull rewrites,
@@ -948,7 +1095,8 @@ GITIGNORE_BEGIN="# BEGIN story-tools (generated - do not edit between markers)"
 GITIGNORE_END="# END story-tools"
 
 set_gitignore_block() {  # $1 dir, $2 body ("" removes the block)
-  local dir="$1" body="$2" f="$dir/.gitignore"
+  local dir="$1" body="$2"
+  local f="$dir/.gitignore"
   BODY="$body" B="$GITIGNORE_BEGIN" E="$GITIGNORE_END" F="$f" python3 - <<'GIPY'
 import os, re
 f, body = os.environ["F"], os.environ["BODY"]
@@ -1067,7 +1215,8 @@ write_pages_config() {  # $1 dir - keep GitHub Pages off the internal docs tree
   # story snapshot. Nothing else claims docs/; this is one host's shortcut
   # landing on a directory that already means something here. Generated, so
   # it stays in step with what the suite actually writes.
-  local dir="$1" f="$dir/docs/_config.yml"
+  local dir="$1"
+  local f="$dir/docs/_config.yml"
   mkdir -p "$dir/docs"
   if [[ -f "$f" ]] && ! grep -q "GENERATED by the story-tools installer" "$f"; then
     warn "docs/_config.yml exists and is not ours - leaving it alone."
@@ -1276,6 +1425,7 @@ attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 rea
   write_pages_config "$dir"
   set_snapshot_mode "$dir"
   migrate_docs_layout "$dir"
+  migrate_kb_dirs "$dir"
   ask_roles "$dir"
   write_updates_config "$dir"
   ship_setup "$dir"
@@ -1329,6 +1479,7 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
   write_pages_config "$dir"
   set_snapshot_mode "$dir"
   migrate_docs_layout "$dir"
+  migrate_kb_dirs "$dir"
   ask_roles "$dir"
   # refresh .agents/config/dimensions.md so agents see the current fields, versions
   # and the full tag list - the GitHub path already does this
@@ -1490,6 +1641,7 @@ none_wizard() {
   write_pages_config "$PROJECT_DIR"
   set_snapshot_mode "$PROJECT_DIR"
   migrate_docs_layout "$PROJECT_DIR"
+  migrate_kb_dirs "$PROJECT_DIR"
   ship_setup "$PROJECT_DIR"
   verify_bind "$PROJECT_DIR" || true
 }

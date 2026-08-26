@@ -12,7 +12,49 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **A compound `local` declaration killed the tracker-less setup path.**
+  `local dir="$1" f="$dir/docs/_config.yml"` looks like it reads
+  left to right, but `local` is a builtin: bash expands every argument
+  before the builtin runs, so `$dir` resolved against the outer, unset
+  name and `set -u` aborted the script. It only fires where no caller had
+  already set `dir` globally, which is why the `none` tracker path found
+  it first - the wizard died in `write_pages_config`, before
+  `ship_setup` and `verify_bind` could run, leaving a project with skills
+  but no `.agents/setup.sh`. Both occurrences fixed; the suite was swept
+  for the pattern and there were no others.
+
+### Changed
+
+- **Knowledge section directories are plain lowercase words.**
+  `taxonomy.md` said section names are spelled out - "Architecture
+  Decision Records", never "adr" - without distinguishing the KB title
+  from the path, so a tracker-less project grew
+  `docs/knowledge/Product Requirements/`, spaces and all. The sync never
+  needed that: it reads each section's README H1 and only falls back to
+  the directory stem. Titles stay spelled out; directories are now
+  `decisions/`, `requirements/`, `specifications/`, `research/`,
+  `reference/`, `guides/`, `testing/`, `compliance/`, `support/` -
+  readable without knowing the jargon. Subsystem directories follow the
+  same rule. These are starting points: a project's existing layout wins.
+
+### Added
+
+- **The installer offers to rename knowledge sections that predate that
+  change.** It recognises the variants in the wild - title case with
+  spaces, underscores, hyphens, and the abbreviations - previews every
+  rename, and asks. `git mv` where possible, so history survives. It
+  leaves synced trees alone, because there the directory name is derived
+  rather than chosen: structure flows down only, and the sync moves anything
+  it finds to `<ID>_<title-slug>`. A local rename there is futile before it
+  is dangerous. It says so, and points at the real fix - rename the article
+  in the tracker and the tree follows. Markdown still pointing at the old
+  paths is reported, never rewritten - an unattended sweep across a docs
+  tree is the kind of damage found months later. Design and accessibility
+  sections are flagged rather than renamed: that content was split
+  between `DESIGN.md`, `compliance/` and `docs/design/`, so there is no
+  single target and a person decides.
 
 ## [2026.08.21]
 

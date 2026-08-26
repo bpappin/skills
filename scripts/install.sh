@@ -948,11 +948,16 @@ migrate_docs_layout() {  # $1 dir - offer to clear copies left at the old paths
 KB_RENAMES=""
 
 migrate_kb_dirs() {  # $1 dir - offer to rename KB section directories
-  local dir="$1" kb="$dir/docs/knowledge"
+  local dir="$1"
+  local kb="$dir/docs/knowledge"
   [[ -d "$kb" ]] || return 0
 
-  local plan
-  plan="$(KB="$kb" python3 - <<'MKPY'
+  # The scan runs as its own statement, not inside $( ): bash 3.2 - which is
+  # what macOS ships as /bin/bash - cannot parse a here-document nested in a
+  # command substitution, and fails somewhere else entirely when it tries.
+  local plan tmp
+  tmp="${TMPDIR:-/tmp}/story-tools-kb.$$"
+  KB="$kb" python3 - > "$tmp" <<'MKPY'
 import os, re
 kb = os.environ["KB"]
 MAP = {
@@ -998,7 +1003,8 @@ for name in sorted(os.listdir(kb)):
     elif n not in MAP and name != n:
         print("ODD\t%s\t%s" % (name, n))
 MKPY
-)"
+  plan="$(cat "$tmp")"
+  rm -f "$tmp"
   [[ -z "$plan" ]] && return 0
 
   # Under a sync the directory name is derived, not chosen: structure flows
@@ -1626,24 +1632,37 @@ github_wizard() {
   cmd "./install.sh --github"
 }
 
+# The tracker-less bind, shared by the wizard and by a plain refresh of an
+# already-bound project. A refresh reaches project_mode, which knows how to
+# resolve a YouTrack or GitHub connection and - before this existed - went
+# looking for one on a project that has neither.
+attach_project_none() {  # $1 dir, $2 mode (link|copy)
+  local dir="$1"
+  local mode="${2:-link}"
+  copy_skills "$dir" "$mode"
+  # legacy pointers from before story-tools.json existed. The pointer itself
+  # is merged, not replaced: it also carries snapshot, updates and roles, and
+  # a refresh must not throw those away.
+  rm -f "$dir/.agents/youtrack.json" "$dir/.agents/config/youtrack.json"
+  merge_json "$dir/.agents/config/story-tools.json" "tracker" '{"type":"none"}'
+  ok "pointer: tracker type 'none' - skills run tracker-less (offline mode)"
+  # the doc has always had a tracker-less variant; it was simply never called
+  write_workflow_doc "$dir" none ""
+  write_updates_config "$dir"
+  write_pages_config "$dir"
+  set_snapshot_mode "$dir"
+  migrate_docs_layout "$dir"
+  migrate_kb_dirs "$dir"
+  ship_setup "$dir"
+  verify_bind "$dir" || true
+}
+
 none_wizard() {
   step "1/1 Project (skills only - no tracker)"
   pick_project
   [[ -z "$PROJECT_DIR" ]] && { say "  no project chosen - nothing to do"; return; }
-  copy_skills "$PROJECT_DIR" "link"
-  rm -f "$PROJECT_DIR/.agents/youtrack.json" "$PROJECT_DIR/.agents/config/youtrack.json" "$PROJECT_DIR/.agents/config/story-tools.json"
-  merge_json "$PROJECT_DIR/.agents/config/story-tools.json" "tracker" '{"type":"none"}'
-  ok "pointer: tracker type 'none' - skills run tracker-less (offline mode); re-run this"
-  say "  wizard when the project adopts YouTrack or GitHub."
-  # the doc has always had a tracker-less variant; it was simply never called
-  write_workflow_doc "$PROJECT_DIR" none ""
-  write_updates_config "$PROJECT_DIR"
-  write_pages_config "$PROJECT_DIR"
-  set_snapshot_mode "$PROJECT_DIR"
-  migrate_docs_layout "$PROJECT_DIR"
-  migrate_kb_dirs "$PROJECT_DIR"
-  ship_setup "$PROJECT_DIR"
-  verify_bind "$PROJECT_DIR" || true
+  attach_project_none "$PROJECT_DIR" "link"
+  say "  Re-run this wizard when the project adopts YouTrack or GitHub."
 }
 
 wizard() {
@@ -1987,8 +2006,17 @@ project_mode() {
     esac
   done
 
-  # GitHub-tracked project? (explicit flag, or the pointer says so)
   local ptype; ptype="$(read_pointer "$dir" type)"
+
+  # Tracker-less project: nothing to connect, so never go looking for a
+  # connection. Without this a refresh fell through to the YouTrack path and
+  # demanded --profile on a project that has no tracker at all.
+  if [[ -z "$gh_repo" && -z "$yt_project" && "$ptype" == "none" ]]; then
+    attach_project_none "$dir" "$mode"
+    return
+  fi
+
+  # GitHub-tracked project? (explicit flag, or the pointer says so)
   if [[ -n "$gh_repo" || "$ptype" == "github" ]]; then
     [[ -z "$gh_repo" ]] && gh_repo="$(read_pointer "$dir" repo)"
     [[ -z "$gh_proj" ]] && gh_proj="$(read_pointer "$dir" project)"

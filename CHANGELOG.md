@@ -14,6 +14,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Refreshing a tracker-less project asked which YouTrack instance to
+  use.** `project_mode` branched on GitHub and then fell through to the
+  YouTrack path, so a plain `install.sh` in a project whose pointer says
+  `tracker.type: none` went looking for a connection it has no reason to
+  want, and exited demanding `--profile`. The tracker-less bind is now its
+  own function shared by the wizard and by a refresh. It also stops
+  deleting the whole pointer: that file carries `snapshot`, `updates` and
+  roles besides the tracker, and a refresh has no business discarding
+  them.
+
+- **A here-document nested inside `$( )` broke the script on macOS.**
+  bash 3.2 - what macOS ships as `/bin/bash` - cannot parse that, and
+  desynchronises rather than failing where the problem is, so it reported
+  a syntax error four hundred lines further down. The scan now runs as its
+  own statement. Every other embedded python block in the script was
+  already at statement level; this was the only one that was not.
+
 - **A compound `local` declaration killed the tracker-less setup path.**
   `local dir="$1" f="$dir/docs/_config.yml"` looks like it reads
   left to right, but `local` is a builtin: bash expands every argument

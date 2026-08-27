@@ -24,6 +24,9 @@
 #                   .agents/config/story-tools.json)
 #   --pull-only     apply wiki -> local only; local changes reported pending
 #   --allow-delete  a locally deleted file deletes its wiki page
+#   --new-section N approve publishing a top-level section not seen before
+#                   (repeatable). Sub-groups inside a known section need no
+#                   approval - only a new top-level directory does.
 #   --force         bootstrap over a non-empty KB_DIR with no sync state:
 #                   local files are adopted and pushed as pages
 #   --dry-run       print the full action plan; change nothing anywhere
@@ -34,12 +37,13 @@
 # Exit codes: 0 ok, 1 error, 2 completed but conflicts need resolution.
 set -uo pipefail
 
-KB_DIR=""; REPO=""; DRY=0; PULL_ONLY=0; ALLOW_DELETE=0; FORCE=0
+KB_DIR=""; REPO=""; DRY=0; PULL_ONLY=0; ALLOW_DELETE=0; FORCE=0; NEW_SECTIONS=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --repo) REPO="$2"; shift 2;;
     --pull-only) PULL_ONLY=1; shift;;
     --allow-delete) ALLOW_DELETE=1; shift;;
+    --new-section) NEW_SECTIONS="$NEW_SECTIONS $2"; shift 2;;
     --force) FORCE=1; shift;;
     --dry-run) DRY=1; shift;;
     --help) awk 'NR>1 && !/^#/{exit} NR>1{sub(/^# ?/,""); print}' "$0"; exit 0;;
@@ -102,10 +106,10 @@ fi
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 git clone -q "$WIKI_URL" "$TMP/wiki" || { echo "error: wiki clone failed" >&2; exit 1; }
 
-export KB_DIR REPO WIKI_URL DRY PULL_ONLY ALLOW_DELETE FORCE
+export KB_DIR REPO WIKI_URL DRY PULL_ONLY ALLOW_DELETE FORCE NEW_SECTIONS
 export WIKI_CLONE="$TMP/wiki"
 python3 <<'EOF'
-import os, re, subprocess, sys, datetime
+import os, re, subprocess, sys, datetime, tempfile
 
 KB   = os.environ['KB_DIR'].rstrip('/')
 W    = os.environ['WIKI_CLONE']
@@ -114,6 +118,7 @@ DRY  = os.environ['DRY'] == '1'
 PULL = os.environ['PULL_ONLY'] == '1'
 ADEL = os.environ['ALLOW_DELETE'] == '1'
 FORCE = os.environ['FORCE'] == '1'
+NEWSEC = set(os.environ.get('NEW_SECTIONS', '').split())
 
 STATE = os.path.join(KB, '.gh-wiki-sync')
 BASE  = os.path.join(STATE, 'base')
@@ -132,13 +137,104 @@ def write(p, s):
 def cap(seg):
     return '-'.join(w[:1].upper() + w[1:] for w in re.split(r'[-_ ]+', seg) if w)
 
+# CHANGING THIS BREAKS THE NEW-SECTION GUARD - fix both in one commit.
+# The guard decides "this section is already published" by testing live page
+# names against page_for(sec + '/README.md') + '-', which encodes the
+# flattening separator. Give pages real paths and every section fails the
+# test, so the sync hard-exits on every run asking to approve sections that
+# have existed for months. Replace the prefix test with a directory-existence
+# check against the wiki clone at the same time: that tests the fact rather
+# than a name derived from it, and survives any later naming change.
 def page_for(path):          # rel path -> wiki page name
     p = path[:-3] if path.endswith('.md') else path
     if p == 'README': return 'Home'
     if p.endswith('/README'): p = p[:-len('/README')]
     return '-'.join(cap(re.sub(r'[^A-Za-z0-9._ -]+', '', s)) for s in p.split('/'))
 
-def title_for(path):         # link text: last segment, words capitalized
+# ---- link notation ---------------------------------------------------------
+# Repo-relative is the authoring form and stays that way on disk. The wiki has
+# a flat page namespace, so a link correct in the repo dead-ends there. The
+# INVARIANT: wiki form is the comparison and merge currency; the working tree
+# is the only thing in repo-relative form. Every read of a local file for
+# comparison or merging goes through wikify(); every write back to one goes
+# through unwikify(); base/ and the clone are always wiki form.
+LINK = re.compile(r'(\]\()([^)\s]+)(\))')
+ESCAPED = []                 # real targets with no page - served by the repo
+UNRESOLVED = []              # link targets that name nothing at all
+
+def _blob(rel):              # HEAD resolves to the repo's default branch
+    return f"https://github.com/{REPO}/blob/HEAD/{rel}"
+
+def wikify(text, pth):       # repo-relative -> wiki page names
+    d = os.path.dirname(pth)
+    def sub(mo):
+        pre, t, post = mo.groups()
+        if re.match(r'^(https?:|mailto:|#)', t): return mo.group(0)
+        body, sep, frag = t.partition('#')
+        if not body: return mo.group(0)
+        full = os.path.normpath(os.path.join(KB, d, body))
+        # Does it name something real? A target already in page form has no
+        # extension either, and resolving it would invent a path. Anything
+        # that does not exist is left alone: a page name stays a page name
+        # (so wikify is idempotent), and a typo stays visibly broken rather
+        # than becoming a plausible URL that 404s.
+        if not os.path.exists(full):
+            # A page name has neither a slash nor '.md', so it is left in
+            # peace. Anything that LOOKS like a path and resolves to nothing
+            # is a broken cross-reference in the repo - say so.
+            if '/' in body or body.endswith('.md'):
+                UNRESOLVED.append(f"{pth} -> {body}")
+            return mo.group(0)
+        rel = os.path.relpath(full, KB)
+        inside = not rel.startswith('..')
+        # A page exists only for a .md FILE inside the sync domain. page_for
+        # strips '.md' and prefixes anything else, so it must not be handed a
+        # directory, an image, or a non-markdown file - and none of those has
+        # a page to link to anyway.
+        if inside and body.endswith('.md') and os.path.isfile(full):
+            return pre + page_for(rel) + sep + frag + post
+        # Everything else real - a directory, an image, a file outside the
+        # KB - is served by the repo, not the wiki. Relative to the REPO
+        # ROOT, which is where this runs and where the pointer lives.
+        out = os.path.relpath(full, os.path.abspath('.'))
+        if out.startswith('..'): return mo.group(0)   # outside the repo
+        ESCAPED.append(f"{pth} -> {body}")
+        return pre + _blob(out) + sep + frag + post
+    return LINK.sub(sub, text)
+
+def unwikify(text, pth):     # wiki page names -> repo-relative
+    d = os.path.dirname(pth)
+    def sub(mo):
+        pre, t, post = mo.groups()
+        if re.match(r'^(https?:|mailto:|#)', t): return mo.group(0)
+        body, sep, frag = t.partition('#')
+        tgt = pairs_path(body)
+        if not tgt: return mo.group(0)
+        return pre + os.path.relpath(tgt, d or '.') + sep + frag + post
+    return LINK.sub(sub, text)
+
+def pairs_path(pg):          # page name -> local path, this run or recorded
+    for pth, g in pairs.items():
+        if g == pg: return pth
+    return pages_of.get(pg)
+
+def same_text(text, path):
+    try: return text == read(path)
+    except OSError: return False
+
+def title_for(path):         # sidebar label: the document's own H1
+    # The good title is in the file. A filename is a slug - typed prefix,
+    # hyphens, no punctuation - so deriving the label from it loses words
+    # and question marks that were part of the title. Display only: the
+    # sidebar is regenerated every sync and nothing references these.
+    # Page NAMES still come from the path; see the note above page_for().
+    try:
+        m = re.search(r'^#\s+(.+?)\s*$', read(os.path.join(KB, path)), re.M)
+        if m:
+            # ] and [ would break the markdown link the label sits inside
+            return m.group(1).replace('[', '(').replace(']', ')')
+    except OSError:
+        pass
     p = path[:-3] if path.endswith('.md') else path
     if p.endswith('/README'): p = p[:-len('/README')]
     return cap(os.path.basename(p)).replace('-', ' ')
@@ -170,6 +266,52 @@ local_files.sort()
 
 wiki_pages = sorted(f[:-3] for f in os.listdir(W)
                     if f.endswith('.md') and f not in ('_Sidebar.md', '_Footer.md'))
+
+# A new TOP-LEVEL directory is a new public section - a claim that the
+# project has a kind of knowledge it did not have before, published as a
+# side effect of an agent creating a folder. Sub-groups inside a known
+# section inherit their parent's meaning and publish status, so they pass
+# without ceremony. Only interrupt for the line that actually matters.
+if os.path.isfile(MANF):
+    # Known means PUBLISHED UNDER THAT SECTION. The manifest is sync state an
+    # agent may rewrite, and its path column is the field a staged rename
+    # touches - so reading sections from it lets one already-published page
+    # moved into a fresh directory mark that directory approved. The wiki's
+    # own page names cannot be rewritten locally, so ask them instead.
+    # Forward through page_for() rather than trying to invert it: a section
+    # like case-studies becomes the two tokens Case-Studies, and splitting a
+    # page name on '-' cannot tell where the directory ends.
+    # This is a PROXY for "the section exists on the wiki", and it holds only
+    # while page names encode the path. See the note above page_for(): under
+    # directory mirroring this must become a directory-existence check, in
+    # the same commit, or it flags every section on every run.
+    live = set(wiki_pages)
+    found = {p.split('/')[0] for p in local_files if '/' in p}
+    unapproved = []
+    for sec in sorted(found - NEWSEC):
+        pfx = page_for(sec + '/README.md')        # section -> its page prefix
+        if not any(pg == pfx or pg.startswith(pfx + '-') for pg in live):
+            unapproved.append(sec)
+    if unapproved:
+        print("error: this sync would publish new top-level section(s):",
+              file=sys.stderr)
+        for sec in unapproved:
+            n = sum(1 for p in local_files if p.split('/')[0] == sec)
+            print(f"    {sec}/  ({n} page{'s' if n != 1 else ''})",
+                  file=sys.stderr)
+        print("  Sections are created by people, so this needs your nod once.",
+              file=sys.stderr)
+        print("  A section named in the taxonomy is fine - approve it and it",
+              file=sys.stderr)
+        print("  never asks again. One an agent invented usually belongs inside",
+              file=sys.stderr)
+        print("  an existing section instead: a sub-group like research/studies/",
+              file=sys.stderr)
+        print("  needs no approval and publishes fine.",
+              file=sys.stderr)
+        print("  Meant it? " + " ".join(f"--new-section {s}" for s in unapproved),
+              file=sys.stderr)
+        sys.exit(1)
 
 if not os.path.isfile(MANF) and local_files and not FORCE:
     print(f"error: {KB} is non-empty but has no sync state.", file=sys.stderr)
@@ -207,8 +349,9 @@ def push_page(pth, pg):
     global wiki_dirty
     if DRY: return
     src = os.path.join(KB, pth)
-    write(os.path.join(W, pg + '.md'), read(src))
-    write(os.path.join(BASE, pg + '.md'), read(src))
+    body = wikify(read(src), pth)
+    write(os.path.join(W, pg + '.md'), body)
+    write(os.path.join(BASE, pg + '.md'), body)
     wiki_dirty = True
 
 # ---- pass 1: known pairings ------------------------------------------------
@@ -223,7 +366,8 @@ for pth in sorted(manifest):
     if not l_ex:
         moved = next((c for c in local_files
                       if c not in manifest and c not in pairs
-                      and os.path.isfile(B) and same(os.path.join(KB, c), B)), None)
+                      and os.path.isfile(B)
+                      and same_text(wikify(read(os.path.join(KB, c)), c), B)), None)
         if moved:
             newpg = page_for(moved)
             RENAMED.append(f"{pg} -> {newpg} ({moved})")
@@ -238,7 +382,7 @@ for pth in sorted(manifest):
         continue
 
     if not r_ex:                                   # page deleted in the UI
-        if os.path.isfile(B) and same(L, B):
+        if os.path.isfile(B) and same_text(wikify(read(L), pth), B):
             PULLED.append(f"{pth} (page '{pg}' deleted in wiki - file pruned)")
             if not DRY:
                 os.remove(L)
@@ -254,14 +398,21 @@ for pth in sorted(manifest):
         RENAMED.append(f"{pg} -> {expected} ({pth})")
         if not PULL: wiki_mv(pg, expected)
         pg = expected
-        R, B = os.path.join(W, pg + '.md'), os.path.join(BASE, pg + '.md')
+        # wiki_mv is a no-op under --dry-run, so the page and its base are
+        # still at the OLD names. Repointing R/B at the post-rename paths
+        # would stat files the dry run declined to create, and every rename
+        # would read as a conflict - which made dry-run useless on exactly
+        # the reorganizations it exists to preview. Report the new name;
+        # keep reading where the content is.
+        if not DRY:
+            R, B = os.path.join(W, pg + '.md'), os.path.join(BASE, pg + '.md')
     pairs[pth] = pg
 
     if has_markers(L):
         CONFLICTS.append(f"{pth} still has conflict markers - not pushed")
         continue
 
-    l_chg = not (os.path.isfile(B) and same(L, B))
+    l_chg = not (os.path.isfile(B) and same_text(wikify(read(L), pth), B))
     r_chg = not (os.path.isfile(B) and same(R, B))
 
     if not l_chg and not r_chg:
@@ -273,16 +424,22 @@ for pth in sorted(manifest):
     elif r_chg and not l_chg:
         PULLED.append(f"{pg} -> {pth}")
         if not DRY:
-            write(L, read(R)); write(B, read(R))
+            write(L, unwikify(read(R), pth)); write(B, read(R))
     else:                                          # both changed: 3-way merge
         base = B if os.path.isfile(B) else os.devnull
+        # merge in wiki form on all three sides. Feeding the raw working tree
+        # here would show every link line as a local edit - a notation
+        # difference, not a change - and conflict on every cross-reference.
+        fd, ltmp = tempfile.mkstemp(suffix='.md'); os.close(fd)
+        write(ltmp, wikify(read(L), pth))
         r = subprocess.run(['git', 'merge-file', '-p',
                             '-L', f'{pth} (local)', '-L', 'base', '-L', f'wiki:{pg}',
-                            L, base, R], capture_output=True, text=True)
+                            ltmp, base, R], capture_output=True, text=True)
+        os.unlink(ltmp)
         if r.returncode == 0:
             MERGED.append(f"{pth} <-> {pg}")
             if not DRY:
-                write(L, r.stdout)
+                write(L, unwikify(r.stdout, pth))
                 if PULL:
                     PENDING.append(f"{pth} (merged locally, push pending)")
                     write(B, read(R))
@@ -291,7 +448,9 @@ for pth in sorted(manifest):
         elif r.returncode > 0 and r.returncode < 128:
             CONFLICTS.append(f"{pth} (vs page '{pg}')")
             if not DRY:
-                write(L, r.stdout)
+                # markers are not links, so this is safe to map back; the
+                # resolved file re-wikifies on the next push
+                write(L, unwikify(r.stdout, pth))
                 write(B, read(R))   # base := wiki; resolved local pushes next sync
         else:
             CONFLICTS.append(f"{pth}: merge failed ({r.stderr.strip()})")
@@ -309,9 +468,10 @@ for pth in local_files:
         CONFLICTS.append(f"{pth} still has conflict markers - not pushed"); continue
     if pg in wiki_pages and pg not in pages_of:
         # bootstrap: both sides have this page
-        if same(L, os.path.join(W, pg + '.md')):
+        if same_text(wikify(read(L), pth), os.path.join(W, pg + '.md')):
             pairs[pth] = pg
-            if not DRY: write(os.path.join(BASE, pg + '.md'), read(L))
+            if not DRY:
+                write(os.path.join(BASE, pg + '.md'), wikify(read(L), pth))
             continue
         if not FORCE:
             CONFLICTS.append(f"{pth} and wiki page '{pg}' differ with no sync state - reconcile by hand or --force (local wins)")
@@ -327,12 +487,13 @@ for pg in wiki_pages:
     if pg in pairs.values() or pg in pages_of: continue
     pth = 'README.md' if pg == 'Home' else pg + '.md'
     L = os.path.join(KB, pth)
-    if os.path.isfile(L) and not same(L, os.path.join(W, pg + '.md')):
+    if os.path.isfile(L) and not same_text(wikify(read(L), pth),
+                                           os.path.join(W, pg + '.md')):
         CONFLICTS.append(f"{pth} exists locally with different content than new wiki page '{pg}' - reconcile by hand")
         continue
     NEWWIKI.append(f"{pg} -> {pth}")
     if not DRY:
-        write(L, read(os.path.join(W, pg + '.md')))
+        write(L, unwikify(read(os.path.join(W, pg + '.md')), pth))
         write(os.path.join(BASE, pg + '.md'), read(os.path.join(W, pg + '.md')))
     pairs[pth] = pg
 
@@ -348,7 +509,10 @@ def sidebar():
         ensure_dir(os.path.dirname(d))
         emitted.add(d)
         depth = d.count('/')
-        name = cap(os.path.basename(d)).replace('-', ' ')
+        # a section's label is its README's H1, same as a leaf's
+        readme = os.path.join(d, 'README.md')
+        name = (title_for(readme) if os.path.isfile(os.path.join(KB, readme))
+                else cap(os.path.basename(d)).replace('-', ' '))
         if d in section_page:
             lines.append('  ' * depth + f"- **[{name}]({section_page[d]})**")
         else:
@@ -394,6 +558,19 @@ for title, items in (("Pushed:", PUSHED), ("Pulled:", PULLED), ("Merged:", MERGE
     if items:
         print(title)
         for i in items: print("  " + i)
+if ESCAPED:
+    uniq = sorted(set(ESCAPED))
+    print(f"Links with no wiki page ({len(uniq)}) - published as github.com/…/blob/HEAD/… :")
+    for e in uniq[:10]: print("  " + e)
+    if len(uniq) > 10: print(f"  ... and {len(uniq)-10} more")
+    print("  These 404 silently if the target moves - GitHub does not warn.")
+
+if UNRESOLVED:
+    uniq = sorted(set(UNRESOLVED))
+    print(f"Broken links ({len(uniq)}) - these target nothing in the repo either:")
+    for u in uniq[:10]: print("  " + u)
+    if len(uniq) > 10: print(f"  ... and {len(uniq)-10} more")
+
 if CONFLICTS:
     print("CONFLICTS - resolve the markers, then sync again:")
     for c in CONFLICTS: print("  " + c)

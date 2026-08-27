@@ -8,7 +8,8 @@
 # Bypass when you mean to: git commit --no-verify
 #
 # Does three things, in order of how much it cares:
-#   1. BLOCKS a changed SKILL.md whose version did not move - that is
+#   1. BLOCKS a changed SKILL whose version did not move - any file in
+#      the skill's directory counts, not just SKILL.md - that is
 #      what makes the update check meaningful, and it is almost always
 #      an oversight.
 #   2. Regenerates VERSIONS.json and stages it, so the commit is
@@ -29,22 +30,33 @@ set -euo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
-staged_skills=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^skills/.*/SKILL\.md$' || true)
-[[ -n "$staged_skills" ]] || exit 0
+# A skill is its whole directory, not just SKILL.md. References, scripts,
+# assets and templates all ship to every bound project, so a change to any
+# of them has to move the version - otherwise projects hold stale files
+# under a version the update check reports as current. Watching SKILL.md
+# alone missed exactly that.
+staged_dirs=$(git diff --cached --name-only --diff-filter=ACMRD \
+              | grep -E '^skills/[^/]+/[^/]+/' \
+              | awk -F/ '{print $1"/"$2"/"$3}' | sort -u || true)
+[[ -n "$staged_dirs" ]] || exit 0
 
 unbumped=""
-while IFS= read -r f; do
-  [[ -n "$f" ]] || continue
+while IFS= read -r d; do
+  [[ -n "$d" ]] || continue
+  f="$d/SKILL.md"
   git cat-file -e "HEAD:$f" 2>/dev/null || continue          # new skill: nothing to compare
+  git cat-file -e ":$f"     2>/dev/null || continue          # skill removed: not our business
   old=$(git show "HEAD:$f" | sed -nE 's/^ *version: *"?([^"]+)"?$/\1/p' | head -1)
   new=$(git show ":$f"     | sed -nE 's/^ *version: *"?([^"]+)"?$/\1/p' | head -1)
-  # ignore whitespace-only edits
-  if git diff --cached --quiet -w -- "$f"; then continue; fi
+  # ignore whitespace-only edits, across the whole skill
+  if git diff --cached --quiet -w -- "$d"; then continue; fi
   if [[ -n "$old" && "$old" == "$new" ]]; then
-    unbumped="$unbumped  $(dirname "${f#skills/}") (still $old)
+    changed=$(git diff --cached --name-only -w -- "$d" | sed "s|^$d/|      |")
+    unbumped="$unbumped  ${d#skills/} (still $old)
+$changed
 "
   fi
-done <<< "$staged_skills"
+done <<< "$staged_dirs"
 
 if [[ -n "$unbumped" ]]; then
   cat >&2 <<MSG

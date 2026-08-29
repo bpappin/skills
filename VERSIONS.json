@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-27",
+  "generated": "2026-08-29",
   "skills": {
     "write-a-skill": "1.0",
     "grill-with-docs": "2.1",
-    "project-docs": "1.19",
+    "project-docs": "1.20",
     "regulatory-compliance": "1.2",
     "to-adr": "1.2",
     "to-prd": "1.5",
@@ -23,9 +23,9 @@
     "git-guardrails-gemini": "1.0",
     "setup-github-copilot": "1.0",
     "setup-gitlab-duo": "1.0",
-    "story-reconcile": "0.25",
+    "story-reconcile": "0.28",
     "story-workflow": "1.23",
-    "to-issues": "1.11",
-    "triage": "1.24"
+    "to-issues": "1.12",
+    "triage": "1.25"
   }
 }

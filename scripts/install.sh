@@ -1434,6 +1434,7 @@ attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 rea
   migrate_kb_dirs "$dir"
   ask_roles "$dir"
   write_updates_config "$dir"
+  write_topical_tags "$dir"
   ship_setup "$dir"
   # seed .agents/config/dimensions.md right away so triage can prompt real values
   # before any snapshot pull has ever run (best-effort, needs the token)
@@ -1500,6 +1501,7 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
     fi
   fi
   write_updates_config "$dir"
+  write_topical_tags "$dir"
   ship_setup "$dir"
 }
 
@@ -1649,6 +1651,7 @@ attach_project_none() {  # $1 dir, $2 mode (link|copy)
   # the doc has always had a tracker-less variant; it was simply never called
   write_workflow_doc "$dir" none ""
   write_updates_config "$dir"
+  write_topical_tags "$dir"
   write_pages_config "$dir"
   set_snapshot_mode "$dir"
   migrate_docs_layout "$dir"
@@ -1818,6 +1821,38 @@ update_skills_from_repo() {  # $1 dir, $2 owner/repo, $3 branch
   say ""
   say "  Skills updated from $repo. These are tracked files - review the diff"
   say "  and commit them, or 'git checkout .agents .claude .github' to undo."
+}
+
+
+# The agents' topical-tag list. Seeded, never overwritten - the content
+# belongs to them. A missing file degrades cleanly, but then the reuse rule
+# lives only in the skill, and the header is where someone about to add a
+# tag actually reads it.
+write_topical_tags() {  # $1 dir
+  local f="$1/.agents/config/topical-tags.md"
+  [[ -f "$f" ]] && return 0
+  mkdir -p "$(dirname "$f")"
+  cat > "$f" <<'TTEOF'
+# Topical tags
+
+Groupings this project uses to collect related work - the subcomponent or
+concern a piece of work is about. One per line; blank lines and `#` lines
+are ignored.
+
+**Read the list before adding.** Reuse an existing tag if it fits; a near
+duplicate splits a grouping in two and leaves neither half complete.
+Nothing here dictates what a tag looks like - name it so it groups the work
+usefully for this project.
+
+Adding one is a normal part of working. Append it here, then
+`.agents/skills/story-reconcile/scripts/yt-pull.sh --dimensions-only --push-tags`
+carries it into the tracker so it becomes filterable. Values are never
+removed automatically - issues already carry them.
+
+---
+
+TTEOF
+  ok "topical-tags.md seeded (the agents' list - theirs to add to)"
 }
 
 write_updates_config() {  # $1 dir - ask once, preserve thereafter

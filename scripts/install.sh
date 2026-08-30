@@ -1434,7 +1434,7 @@ attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 rea
   migrate_kb_dirs "$dir"
   ask_roles "$dir"
   write_updates_config "$dir"
-  write_topical_tags "$dir"
+  write_topical_tags "$dir" github
   ship_setup "$dir"
   # seed .agents/config/dimensions.md right away so triage can prompt real values
   # before any snapshot pull has ever run (best-effort, needs the token)
@@ -1501,7 +1501,7 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
     fi
   fi
   write_updates_config "$dir"
-  write_topical_tags "$dir"
+  write_topical_tags "$dir" youtrack
   ship_setup "$dir"
 }
 
@@ -1651,7 +1651,7 @@ attach_project_none() {  # $1 dir, $2 mode (link|copy)
   # the doc has always had a tracker-less variant; it was simply never called
   write_workflow_doc "$dir" none ""
   write_updates_config "$dir"
-  write_topical_tags "$dir"
+  write_topical_tags "$dir" none
   write_pages_config "$dir"
   set_snapshot_mode "$dir"
   migrate_docs_layout "$dir"
@@ -1828,9 +1828,11 @@ update_skills_from_repo() {  # $1 dir, $2 owner/repo, $3 branch
 # belongs to them. A missing file degrades cleanly, but then the reuse rule
 # lives only in the skill, and the header is where someone about to add a
 # tag actually reads it.
-write_topical_tags() {  # $1 dir
+write_topical_tags() {  # $1 dir, $2 tracker type (github|youtrack|none)
   local f="$1/.agents/config/topical-tags.md"
   [[ -f "$f" ]] && return 0
+  local puller="yt-pull.sh"
+  [[ "${2:-}" == "github" ]] && puller="gh-pull.sh"
   mkdir -p "$(dirname "$f")"
   cat > "$f" <<'TTEOF'
 # Topical tags
@@ -1845,13 +1847,17 @@ Nothing here dictates what a tag looks like - name it so it groups the work
 usefully for this project.
 
 Adding one is a normal part of working. Append it here, then
-`.agents/skills/story-reconcile/scripts/yt-pull.sh --dimensions-only --push-tags`
+`.agents/skills/story-reconcile/scripts/PULLER --dimensions-only --push-tags`
 carries it into the tracker so it becomes filterable. Values are never
 removed automatically - issues already carry them.
 
 ---
 
 TTEOF
+  # substituted rather than interpolated: the heredoc stays quoted, so the
+  # markdown above can hold backticks and $ without the shell touching it
+  sed -i.bak "s/PULLER/$puller/" "$f" 2>/dev/null || true
+  rm -f "$f.bak"
   ok "topical-tags.md seeded (the agents' list - theirs to add to)"
 }
 

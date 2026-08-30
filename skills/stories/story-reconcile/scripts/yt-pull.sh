@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Pull YouTrack stories into a local markdown snapshot.
 #
-# Usage: yt-pull.sh [PROJECT_KEY] [OUT_DIR] [--dimensions-only]
+# Usage: yt-pull.sh [PROJECT_KEY] [OUT_DIR] [--dimensions-only] [--push-tags]
 #   --dimensions-only   refresh .agents/config/dimensions.md only (no issue snapshot)
+#   --push-tags         add each entry in .agents/config/topical-tags.md that
+#                       is missing to the Topical Tags field's value set
 #   PROJECT_KEY  defaults to $YOUTRACK_PROJECT from the selected profile
 #   OUT_DIR      defaults to ./docs/stories
 #

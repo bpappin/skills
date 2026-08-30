@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Pull GitHub issues into a local markdown snapshot.
 #
-# Usage: gh-pull.sh [owner/repo] [OUT_DIR] [--dimensions-only]
+# Usage: gh-pull.sh [owner/repo] [OUT_DIR] [--dimensions-only] [--push-tags]
 #   owner/repo  defaults to tracker.repo from .agents/config/story-tools.json
 #   OUT_DIR     defaults to ./docs/stories
 #   --dimensions-only   refresh .agents/config/dimensions.md only (no issue snapshot)
+#   --push-tags         create a topic: label for each entry in
+#                       .agents/config/topical-tags.md that has none
 #
 # Output: one .md per issue (OC-0123_title-slug.md; prefix from
 # tracker.prefix, blocks OC-A-0001 past 9999) + INDEX.md; a

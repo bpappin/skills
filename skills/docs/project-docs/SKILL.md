@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone for filing/creating docs. Syncing requires git on PATH plus the binding's connection - YouTrack REST (story-tools connection or YOUTRACK_URL/TOKEN env), or a GitHub token with Contents RW and an initialized wiki.
 metadata:
   author: bpappin
-  version: "1.20"
+  version: "1.22"
 ---
 
 # Project Docs
@@ -19,9 +19,9 @@ Everything lives in exactly one of four kinds of place:
    two-way into `docs/knowledge/`.
 3. **Visual work** (design records and the samples that go with them) →
    `docs/design/`, a **companion tree to `docs/knowledge/`**. Git-native
-   and never synced: the sync moves `.md` only, so a design record pushed
-   to the KB would publish its prose and leave every image behind as a
-   dead link. The to-ux skill owns it.
+   and never synced: it is mostly not prose - mockups, exports, a
+   directory per iteration - and what a reader looks up is the direction
+   it settled on, not the pile it came from. The to-ux skill owns it.
 4. **Machinery** (agent instructions, wiring rules, indexes, tooling
    state) → plain git files. `AGENTS.md` and `WIRING.md` at the repo
    root; doc-system notes and indexes at the `docs/` root. Never synced.

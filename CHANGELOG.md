@@ -12,7 +12,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **The image guidance said how to get a picture into the knowledge base and nothing about whether it could be read once there.** Both targets have a dark theme, so a diagram drawn on an assumed white page renders its dark text on a dark ground and the labels vanish - with nothing to suggest they were ever there, which is the worst way for it to fail. An image must now paint its own opaque background, SVG or alpha PNG alike. The rule says not to reach for a `prefers-color-scheme` media query instead, because an embed renders in an `<img>` that cannot see the host page: the query would follow the reader's operating system while the page follows a theme they set separately, trading a predictable failure for an unpredictable one. It sits in the taxonomy rather than in either tracker binding - it is a fact about the image file, not about YouTrack or the wiki.
 
 ## [2026.08.27]
 

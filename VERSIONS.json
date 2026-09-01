@@ -25,7 +25,7 @@
     "setup-gitlab-duo": "1.0",
     "story-reconcile": "0.29",
     "story-workflow": "1.23",
-    "to-issues": "1.13",
+    "to-issues": "1.14",
     "triage": "1.26"
   }
 }

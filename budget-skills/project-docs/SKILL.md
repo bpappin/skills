@@ -5,12 +5,12 @@ license: MIT
 compatibility: Standalone. Filing conventions only - no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Project Docs
 
-Where a document belongs, and what to call it. This skill owns filing and nothing else - the authoring of each document type has its own skill (`to-adr`, `to-prd`, `to-rad`, `to-research`, `to-wiring`).
+Where a document belongs, and what to call it. This skill owns filing and nothing else - the authoring of each document type has its own skill (`to-adr`, `to-prd`, `to-rad`, `to-wiring`).
 
 There is no publishing step here and no sync. A document is filed when it is in the right directory with the right name, and that is the whole of it.
 
@@ -49,7 +49,22 @@ If two fit, the document is probably two documents. Split it rather than filing 
 
 **Never put spaces or title case in a path.** Lowercase, hyphenated, and stable: `session-scoping.md`, not `Session Scoping.md`.
 
-**Number what is append-only, date nothing else.** Decisions and research logs are sequences - `0004-session-scoping.md` - and the number is permanent. A specification is a living document; putting a date in its name guarantees it looks stale while being current, and guarantees a second copy when someone updates it.
+**Anything that gets cited carries an ID.** The name is `TYPE-NNNN-short-slug.md` - `ADR-0004-session-scoping.md`, `PRD-0003-draft-visibility.md`, `RAD-0023-signal-enrichment.md`, `STY-0042-drafts-are-private.md`.
+
+**The number is an identifier, not a position in a sequence.** It says *which document this is*, not where it falls in an order - so it carries no claim that the document is append-only, finished, or superseded by a higher number. That distinction is what lets a living document have one: a PRD gets corrected in place for a year and keeps `PRD-0003` throughout, because the ID names the document rather than a version of it.
+
+**`ADR-0004` is the handle people cite** - in a commit message, in a code comment, in a conversation, in another document's References - and it has to work with no directory in front of it. A bare `0004` does not: there is a story 4 and a decision 4 and they get cited in the same sentence. Zero-pad so the files sort. Assign the next unused number for that type, and **never reissue one**: an ID that has been cited belongs to that document permanently, including after the document is superseded, abandoned or deleted.
+
+| Prefix | For | Written by |
+|---|---|---|
+| `ADR-` | Decisions | `to-adr` |
+| `PRD-` | Requirements | `to-prd` |
+| `RAD-` | Research logs | `to-rad` |
+| `STY-` | Stories | `to-stories` |
+
+**A project that keeps another cited document type gives it a prefix too** - `SPC-` for specifications is the usual next one. The test is whether anything ever needs to point at it: if a story, a brief or a code comment will name it, it needs an ID, and adding the prefix later means every existing reference to it is wrong.
+
+**Date nothing.** A specification is a living document; a date in its name guarantees it looks stale while being current, and guarantees a second copy the first time someone updates it.
 
 **Give every document an H1 that matches what it is.** The filename is how it is found; the H1 is how a reader knows they found the right thing.
 

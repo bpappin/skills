@@ -67,10 +67,12 @@ exports.aiTool = {
       }
     }
 
-    // Grouping travels with the off-ramp: inherit topical tags (never the
-    // workflow/triage machinery tags, and never the priority).
+    // Grouping travels with the off-ramp: inherit the source's non-machinery
+    // server tags - the delivery batch it belongs to - never the
+    // workflow/triage machinery tags, and never the priority. The "Topical
+    // Tags" custom field is a different mechanism and does NOT travel here.
     const inherited = [];
-    lib.topicalTags(source).forEach((name) => {
+    lib.nonMachineryTags(source).forEach((name) => {
       try {
         created.addTag(name);
         inherited.push(name);

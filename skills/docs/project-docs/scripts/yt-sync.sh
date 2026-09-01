@@ -8,7 +8,7 @@
 # location chooses its parent article at birth.
 #
 # Files and section directories are ID-prefixed like the stories snapshot
-# (EVO-A-12_title-slug.md); new local files are renamed to match once their
+# (PROJ-A-12_title-slug.md); new local files are renamed to match once their
 # article exists.
 #
 # Usage: yt-sync.sh [KB_DIR] [options]
@@ -234,9 +234,9 @@ def slug(text, maxlen=60):
 
 # desired path per article: structure flows down from here.
 #
-# LEAVES are ID-prefixed - EVO-A-12_title-slug.md. The id is load-bearing
+# LEAVES are ID-prefixed - PROJ-A-12_title-slug.md. The id is load-bearing
 # there: a story citing a KB article resolves it by globbing
-# docs/knowledge/**/EVO-A-12_*.md, with no API call and no sync state. It is
+# docs/knowledge/**/PROJ-A-12_*.md, with no API call and no sync state. It is
 # not recoverable from the body (measured on a 338-file KB: 1 file carried
 # its own id).
 #
@@ -549,7 +549,7 @@ for nf in new_files:
     created_ids.append(made['id'])
     report['New'].append(f'{nf} -> article "{title}" ({made.get("idReadable")})')
 
-# newborn articles get their ID stamped into the file/dir name (EVO-A-12_...)
+# newborn articles get their ID stamped into the file/dir name (PROJ-A-12_...)
 def settle_name(aid):
     e = smap.get(aid)
     if not e: return

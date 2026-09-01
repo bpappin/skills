@@ -1,12 +1,11 @@
 ---
 name: to-rad
-description: Record a Research & Development log (RAD) - the trail behind a technical question, landing on findings and a recommendation. Use while a hard problem is still being worked out - comparing options, weighing trade-offs, chasing an approach that failed, checking an assumption, and when someone asks for a "DD" - the engineering detailed/technical design document - since no such type exists here and the investigation belongs in a RAD. NOT for UI, UX, visual or accessibility design, which is a different skill entirely; "design" alone never means this. RADs hold what is NOT yet decided; a recommendation that hardens becomes an ADR. Triggers - "what are the options", "let's compare", "I'm not sure which approach", "weigh the trade-offs", "write this up", "DD", "detailed design document", "capture what we worked out", "why did we rule that out", "log the research", "write up the spike", "what did the spike show", "proof of concept", "POC".
+description: Record a Research & Development log (RAD) - the trail behind a hard question, landing on findings and a recommendation. Covers proofs of concept and feasibility trials of any kind, code or not, including what was faked. Use while a hard problem is still being worked out - comparing options, weighing trade-offs, chasing an approach that failed, checking an assumption, and when someone asks for a "DD" - the engineering detailed/technical design document - since no such type exists here and the investigation belongs in a RAD. NOT for UI, UX, visual or accessibility design, which is a different skill entirely; "design" alone never means this. RADs hold what is NOT yet decided; a recommendation that hardens becomes an ADR. Triggers - "what are the options", "let's compare", "I'm not sure which approach", "weigh the trade-offs", "write this up", "DD", "detailed design document", "capture what we worked out", "why did we rule that out", "log the research", "write up the spike", "what did the spike show", "proof of concept", "POC", "is this feasible", "can we even do this", "we tried it and", "what did the trial show", "spike".
 license: MIT
 compatibility: Standalone. Writes a RAD file into the repo; no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.0"
-  supersedes: to-research
+  version: "1.1"
 ---
 
 # Research & Development Logs (to-rad)
@@ -97,12 +96,29 @@ happens or immediately after** — the reasoning is available for about an
 hour and is reconstruction thereafter.
 
 A RAD also covers the other route to a finding: a **proof of concept** -
-code written in `poc/<name>/` to settle a question that argument could not.
-The write-up is the same document. Say in the Trail what was built, where it
-lives or that it has been deleted, and whether it still runs; put the
-finding in Findings like any other. There is no separate document type for
-this, because a proof of concept is a method of arriving at a finding, not a
-different kind of finding.
+building the smallest thing that settles a question argument could not. A
+clickable mockup, a trial of a vendor's product, a spreadsheet model, a
+walkthrough done by hand with real users, or a bit of throwaway code. The
+method does not change what the document is.
+
+The write-up is the same RAD. Say in the Trail what you built or ran, where
+it is now, and whether it still exists at all; put the finding in Findings
+like any other. There is no separate document type for this, because a
+proof of concept is a method of arriving at a finding, not a different kind
+of finding - and a second document about one investigation drifts from the
+first within a month.
+
+**A proof of concept must say what was real and what was faked.** This is
+the one thing a POC needs that other research does not, and leaving it out
+is how a POC does damage. Most of a POC is not real - that is the point of
+it, and it is why it was cheap - but the person who saw it working cannot
+tell which parts were. A demo that stubbed the pricing, ignored permissions
+and ran on twelve hand-made records is a perfectly good POC and a
+catastrophic estimate. Write the list plainly: what worked for real, what
+was stubbed or hand-waved, what was avoided entirely, and what would have
+to exist for the real thing. Anyone reading the finding later is deciding
+how much work is left, and this is the only part of the document that tells
+them.
 
 **Anything established by experiment gets a `Measured against:` line** -
 versions, platforms, the date. Measured findings are true against a moving
@@ -126,10 +142,21 @@ inside Findings tells a reader which claims to re-check first.
 
    Check the project's existing prefixes before minting one — a repo may
    already use a similar-looking prefix for something else entirely.
-3. **Author the file** as `NNNN-short-slug.md`, taking the next free
-   number in the directory. Lowercase and hyphenated; no status
+3. **Author the file** as `RAD-NNNN-short-slug.md`, taking the next unused
+   RAD ID. `RAD-0023` is the handle people cite, so it
+   has to be unambiguous without a path. Lowercase and hyphenated; no status
    frontmatter - it is wrong within a week and nobody updates it.
 4. **Update the section index** if the directory keeps one.
+
+## Reviewing what was decided
+
+When someone asks why something is the way it is - "review the reasoning for
+[feature]" - search `docs/research/` for the relevant RADs and report what
+the trail actually shows: the assumptions that were made, what was ruled out
+and why, and which of the findings were measured rather than argued. Say
+which assumptions have since been contradicted, if any have. That is the
+question behind the question, and a summary that does not distinguish the
+measured from the assumed is not worth much.
 
 ## Afterwards
 
@@ -140,6 +167,18 @@ inside Findings tells a reader which claims to re-check first.
 - Revisit rather than rewrite. A RAD is a record of what was known then;
   if the answer changed, that is a new RAD or an ADR, not an edit.
 
+**Two templates.** `assets/templates/research.md` is the default - prose,
+four sections, for a question worked out and written up.
+
+Use `assets/templates/research-audit.md` where the record has to be
+defensible to someone who was not there: a regulated change, a safety or
+security argument, a funding or compliance claim, or any result a reviewer
+will want to re-check rather than take on trust. It replaces the prose
+shape with an explicit hypothesis, dated validation points, and a
+Validated / Refuted / Deferred status - the difference is that every claim
+carries the evidence for it and the date it was established, so a reader
+can tell what was measured from what was argued without asking you.
+
 ## Optional by design
 
 Not every project works this way, and nothing here forces it. A developer
@@ -147,6 +186,3 @@ who does not want a trail simply does not ask for one — there is no flag to
 set and no setup step. The cost of the skill existing is a description an
 agent reads; the cost of not having it is re-deriving the reasoning later.
 
-For projects claiming SR&ED or similar R&D tax credits, the record needs to
-be audit-grade: see [references/sred.md](references/sred.md) for the
-additional sections and evidence standard.

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Writes a PRD file into the repo; no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Product Requirements (to-prd)
@@ -34,8 +34,11 @@ existing ADRs. If research fed this (`docs/research/`), reference it.
 
 ### 2. Write the PRD
 
-Create `docs/requirements/<slug>.md` from `assets/templates/prd.md` in
-this skill. No status frontmatter — it is wrong within a week and nobody
+Create `docs/requirements/PRD-NNNN-short-slug.md` from
+`assets/templates/prd.md` in this skill, taking the next unused PRD number.
+`PRD-0003` is the handle stories and briefs cite, and it stays with the
+document for its whole life - a PRD is corrected in place, and the ID names
+the document rather than a version of it. No status frontmatter — it is wrong within a week and nobody
 updates it. The `# Title` heading names the document. Sections:
 
 - **Problem** — from the user's perspective, with the discovery trail
@@ -98,10 +101,10 @@ When you do write one, the section that earns its place is **what it does
 NOT do**. Commercial harm comes from promises made in the gap between what
 shipped and what someone assumed shipped. Mark availability as committed,
 planned, or exploratory, because a reader assumes the strongest reading you
-leave open. Never carry story numbers, module names, or internal codenames into
+leave open. Never carry story ids, module names, or internal codenames into
 it.
 
-Both live beside the PRD in `docs/requirements/` unless the project has a
+Both are named after the PRD they derive from - `PRD-0003-draft-visibility-pm-brief.md` - so the three sort together and a reader can see at a glance that a brief has a parent. Both live beside the PRD in `docs/requirements/` unless the project has a
 commercial or go-to-market section, in which case the commercial brief
 belongs there.
 

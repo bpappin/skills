@@ -146,7 +146,7 @@ for it in issues:
         for li in l.get('issues') or []:
             links.append(f"{l.get('linkType',{}).get('name','link')} {li['idReadable']}")
     body = it.get('description') or '_(no description)_'
-    # human-findable filename: EVO-2_title-of-the-story.md; drop stale
+    # human-findable filename: PROJ-2_title-of-the-story.md; drop stale
     # copies of this issue from earlier pulls (old name or changed title)
     fname = f"{iid}_{slug(it.get('summary'))}.md"
     for stale in os.listdir(out):

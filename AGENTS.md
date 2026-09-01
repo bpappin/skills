@@ -47,6 +47,14 @@ hosts, home paths and project names before proposing them. If something is
 borderline, leave it out and say so — it is far cheaper to add a detail
 later than to remove one from a public history.
 
+## Never commit unless you are asked
+
+**Do not run `git commit`, and do not stage in anticipation of one, unless the maintainer asked for a commit in that message.** Finishing a change is not permission to commit it. Neither is the change being obviously correct, the hook passing, or a previous commit having been approved in the same session - approval is per-request and does not carry forward.
+
+Do the work, leave it in the working tree, and say what is there. The maintainer reads a diff before it becomes history, and this repository's history is public and permanent - a commit is the one step here that cannot be quietly undone.
+
+This applies with equal force to `--amend`, to `--no-verify`, and to `git add`. If a pre-commit hook objects, report what it said and stop; do not decide on the maintainer's behalf that the objection does not apply.
+
 ## Two skill sets, and they drift
 
 `skills/` is the full package. `budget-skills/` is a parallel set for constrained places - a tight token budget, or an organisation whose review will not accept the sync tooling. It is **not** a subset: the documents there had to be written differently, and they are held to two rules the main set is not.

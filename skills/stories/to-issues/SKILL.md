@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding; YouTrack today).
 metadata:
   author: bpappin
-  version: "1.14"
+  version: "1.15"
 ---
 
 # To Issues
@@ -102,7 +102,7 @@ decision-rich parts. "None beyond the AC." for a genuinely trivial slice.>
 - [ ] Verifiable outcome 2
 
 ## References
-- <KB article ID + title of the source PRD, e.g. EVO-A-41 Some Feature>
+- <KB article ID + title of the source PRD, e.g. PROJ-A-41 Some Feature>
 - <parent issue ID, if the source was an issue>
 ```
 

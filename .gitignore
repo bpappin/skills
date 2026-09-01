@@ -4,8 +4,10 @@ node_modules/
 .DS_Store
 *.skill
 
-# Private notes: who to talk to and what to say. Not for the public repo.
-docs/outbox/where-to-engage.md
+# Working notes: handoffs, move briefs, who to talk to and what to say.
+# Written against live projects and full of names, instances and addresses
+# that must never reach a public history. Local only, the whole directory.
+docs/outbox/
 
 # scratch: things retired but not yet deleted
 _to_delete/

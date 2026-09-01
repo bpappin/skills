@@ -4,7 +4,7 @@ description: Compact the current conversation into a handoff document for anothe
 license: MIT
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
   argument-hint: "What will the next session be used for?"
 ---
 
@@ -15,7 +15,7 @@ agent can continue the work.
 
 **Where it goes:**
 
-- If a story file is being worked (`docs/stories/NNNN-*.md`, the to-stories
+- If a story file is being worked (`docs/stories/STY-*.md`, the to-stories
   skill), append the handoff to that file under a `## Session notes`
   heading — durable, versioned with the work, and the next agent finds it
   when it reads the story. Start it with

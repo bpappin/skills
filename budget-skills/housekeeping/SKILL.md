@@ -4,7 +4,7 @@ description: Perform workspace housekeeping, cleanup audits, and prepare handoff
 license: MIT
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Housekeeping
@@ -72,7 +72,7 @@ Prepare version control and team documentation from the clean, complete
 state:
 
 - [ ] Draft a structured commit message (e.g., conventional commits),
-      referencing the story number.
+      referencing the story id, e.g. STY-0042.
 - [ ] Write a PR description detailing scope, rationale, and verification
       results — the story's AC checklist is the verification summary;
       link the story rather than restating it.

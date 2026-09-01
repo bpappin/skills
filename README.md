@@ -63,7 +63,7 @@ Re-running it in a bound project offers a refresh, or a full reconfigure.
 The pipeline: **triage** (inbound) / **to-prd** → **to-issues** (planning) →
 **grill-with-docs** (domain model) → **story-workflow** (execution, with the
 discovered-work off-ramp) → **housekeeping** + **handoff** (session close) →
-**story-reconcile** (adoption/migration) → **project-docs** + **to-research**
+**story-reconcile** (adoption/migration) → **project-docs** + **to-rad**
 + **regulatory-compliance** (knowledge & compliance).
 
 ### Trackers
@@ -105,7 +105,7 @@ work — it belongs upstream here, never in a project's copy.
 | `skills/stories/` | Tracker discipline: story-workflow, story-reconcile, to-issues, triage |
 | `skills/docs/` | Documentation system: project-docs, to-prd, to-adr, to-rad, grill-with-docs, to-wiring, regulatory-compliance |
 | `skills/sessions/` | Session lifecycle: handoff, housekeeping, zoom-out; worklog (à la carte) |
-| `skills/engineering/` | Practice: tdd, improve-codebase-architecture, prototype, to-design |
+| `skills/engineering/` | Practice: tdd, improve-codebase-architecture, prototype, to-ux |
 | `skills/authoring/` | Making skills: write-a-skill |
 | `skills/setup/` | Agent/tool configuration: git-guardrails (Claude Code, Gemini), setup-github-copilot, setup-gitlab-duo |
 | `trackers/youtrack/` | The story-tools MCP app, `deploy.sh`, `smoke.sh`, tests |

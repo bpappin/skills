@@ -94,10 +94,23 @@ function resolveIssue(issueId, opts) {
 }
 
 // Case-insensitive: humans Title Case tags ("Triaged"), and a case
-// variant of a machinery tag must never be inherited as topical.
+// variant of a machinery tag must never be inherited.
 const RESERVED_LOWER = RESERVED_TAGS.map((t) => t.toLowerCase());
 
-function topicalTags(issue) {
+/**
+ * Every server tag on the issue that is not workflow/triage machinery -
+ * in practice the one-off delivery batch tag, plus whatever else an admin
+ * has created for cross-cutting state.
+ *
+ * NOT the "Topical Tags" custom field, despite the resemblance. That field
+ * is a separate, later mechanism: its values are curated in the repo
+ * (.agents/config/topical-tags.md) and pushed into the field's value set,
+ * because agents cannot create server tags - one made ad hoc is owned by
+ * that account and invisible to everyone else. This function was named
+ * topicalTags before that field existed, which read as a claim it never
+ * made. Read it as "tags an agent may inherit", nothing more.
+ */
+function nonMachineryTags(issue) {
   const out = [];
   const tags = issue.tags;
   if (!tags) return out;
@@ -220,7 +233,7 @@ function readOnlyRefusal(ctx, proposed) {
 exports.VERSION = VERSION;
 exports.readOnlyRefusal = readOnlyRefusal;
 exports.RESERVED_TAGS = RESERVED_TAGS;
-exports.topicalTags = topicalTags;
+exports.nonMachineryTags = nonMachineryTags;
 exports.allTags = allTags;
 exports.fieldString = fieldString;
 exports.fieldNames = fieldNames;

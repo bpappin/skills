@@ -1,4 +1,4 @@
-# RAD-[ID]: [Title]
+# RAD-NNNN: [Title]
 
 ## Technical Challenge
 **Problem**: [Describe the problem being researched]
@@ -30,5 +30,5 @@
 * [Date] [Validation point 2]
 
 ## Connections
-- **ADR**: [KB article ID (EVO-A-nn) - related architecture decision]
-- **Stories**: [Tracker story IDs spawned by or validating this research]
+- **ADR**: [path to the related architecture decision, e.g. docs/decisions/0007-conflict-strategy.md]
+- **Stories**: [Story ids spawned by or validating this research, e.g. STY-0042]

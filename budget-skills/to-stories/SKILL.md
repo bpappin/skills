@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. No tracker, no network, no scripts - stories are files in the repo.
 metadata:
   author: bpappin
-  version: "1.0"
+  version: "1.1"
 ---
 
 # To Stories
@@ -16,7 +16,9 @@ The story body format here is **identical** to the one the tracker-backed skills
 
 ## Where stories live
 
-One file per story, `docs/stories/NNNN-short-slug.md`, numbered sequentially from `0001`. The number is the story's identity - it is what a blocker references and what a commit message cites. Never renumber; a story that is abandoned keeps its number and gets `status: dropped`.
+One file per story, `docs/stories/STY-NNNN-short-slug.md`, IDs assigned from `0001` upward and zero-padded so the files sort.
+
+**`STY-0042` is the story's identity and its citation handle** - what a blocker names, what a commit message references, what a PRD's table lists. The type prefix is what makes it unambiguous with no path in front of it: a bare `0042` collides with decision 42 and research log 42, and those get cited in the same sentences. Never reissue an ID; a story that is abandoned keeps its own and gets `status: dropped`.
 
 If the project already keeps stories somewhere else, use that. Match what is there rather than introducing a second convention.
 
@@ -24,7 +26,14 @@ If the project already keeps stories somewhere else, use that. Match what is the
 
 ### 1. Gather context
 
-Work from what is already in the conversation. If the user names a PRD, a RAD or a plan file, read it fully first. Read `docs/stories/` to see what exists - both for the next free number and to avoid re-cutting a slice that is already written.
+Work from what is already in the conversation. If the user names a PRD, a RAD or a plan file **in this repo**, read it fully first. Read `docs/stories/` to see what exists - both for the next unused ID and to avoid re-cutting a slice that is already written.
+
+**The PRD often does not live here, and that is normal.** Where an architect or a business analyst owns requirements, the source is a document in some other system - a wiki page, a ticket, an attachment, or text pasted into the conversation. Work from whatever you are actually given, and say which it was.
+
+Two things follow from a source you cannot open yourself:
+
+- **Do not infer requirements you were not shown.** If you only have an excerpt, slice the excerpt and say plainly which parts of the source you did not see. A slice invented to fill a gap in a document you could not read is the most expensive kind of wrong, because it looks like it came from the requirements.
+- **If the source does not number its requirements, do not mint numbers for it.** Quote the requirement text in `covers:` instead. An `R-3` that exists only in your story is a reference that resolves nowhere, and the next person will go looking for it.
 
 ### 2. Explore the codebase
 
@@ -52,11 +61,11 @@ In dependency order, blockers first, so `blocked_by` can reference real numbers.
 
 ```markdown
 ---
-id: 0007
+id: STY-0007
 title: Signed-in user sees their own drafts
 status: todo
 type: AFK
-blocked_by: [0003]
+blocked_by: [STY-0003]
 topic: Draft Visibility
 estimate: 4h
 covers: [R-3, R-4]
@@ -78,11 +87,13 @@ write that rather than padding.>
 - [ ] Verifiable outcome two
 
 ## References
-- docs/requirements/draft-visibility.md
-- docs/adr/0004-session-scoping.md
+- docs/requirements/PRD-0003-draft-visibility.md
+- docs/decisions/ADR-0004-session-scoping.md
 ```
 
-**Frontmatter fields.** `status` is one of `todo`, `doing`, `done`, `blocked`, `dropped`. `topic` groups related stories the way a tag would - one shared value across a batch, Title Case, usually the feature name. `blocked_by` is a list of story numbers. Everything else is optional; omit a field rather than inventing a value for it.
+**Reference the source however it can actually be found again.** A repo path when the source is here; otherwise the ticket key, the page title and its system, or a URL - whatever a reader could paste somewhere and land on the right thing. "The PRD" is not a reference.
+
+**Frontmatter fields.** `status` is one of `todo`, `doing`, `done`, `blocked`, `dropped`. `topic` groups related stories the way a tag would - one shared value across a batch, Title Case, usually the feature name. `blocked_by` is a list of story ids. Everything else is optional; omit a field rather than inventing a value for it.
 
 **Purpose and Specification are prose, not bullet fragments.** A story is read cold - by a new developer, a fresh agent, or you in three months - and these two sections exist so that reader does not reconstruct intent from a checklist. Purpose is required on every story. Specification is required wherever anything is non-obvious, which is most of them.
 

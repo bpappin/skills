@@ -3,7 +3,7 @@
 const entities = require('@jetbrains/youtrack-scripting-api/entities');
 const parser = require('./ac-parser');
 
-const VERSION = '0.4.2';  // keep in sync with manifest.json (tests/version.test.js enforces)
+const VERSION = '0.5.0';  // keep in sync with manifest.json (tests/version.test.js enforces)
 const DISCOVERED_LINK = 'discovered from';
 const NEEDS_GHERKIN_TAG = 'needs-gherkin';
 

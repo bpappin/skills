@@ -49,6 +49,11 @@ exports.aiTool = {
       priority: lib.fieldString(issue, 'Priority'),
       subsystem: lib.fieldString(issue, 'Subsystem'),
       fixVersions: lib.fieldNames(issue, 'Fix versions'),
+      // Two different things, deliberately both here: `tags` are server tags
+      // (workflow state and the delivery batch), `topicalTags` is the custom
+      // field holding durable groupings, whose values are curated in the repo.
+      // null means the project has no such field, not that it is empty.
+      topicalTags: lib.fieldNames(issue, 'Topical Tags'),
       tags: lib.allTags(issue),
       estimation: lib.fieldString(issue, 'Estimation'),
       spentTime: lib.fieldString(issue, 'Spent time'),

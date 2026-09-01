@@ -35,9 +35,14 @@ cd "$ROOT"
 # of them has to move the version - otherwise projects hold stale files
 # under a version the update check reports as current. Watching SKILL.md
 # alone missed exactly that.
-staged_dirs=$(git diff --cached --name-only --diff-filter=ACMRD \
-              | grep -E '^skills/[^/]+/[^/]+/' \
-              | awk -F/ '{print $1"/"$2"/"$3}' | sort -u || true)
+# Two trees, two shapes: skills/<group>/<name>/ and budget-skills/<name>/.
+# budget-skills is copied into projects by hand rather than installed, but a
+# stale version there is just as misleading to whoever reads it.
+staged=$(git diff --cached --name-only --diff-filter=ACMRD || true)
+staged_dirs=$( { printf '%s\n' "$staged" | grep -E '^skills/[^/]+/[^/]+/' \
+                   | awk -F/ '{print $1"/"$2"/"$3}'
+                 printf '%s\n' "$staged" | grep -E '^budget-skills/[^/]+/' \
+                   | awk -F/ '{print $1"/"$2}'; } | sort -u || true)
 [[ -n "$staged_dirs" ]] || exit 0
 
 unbumped=""

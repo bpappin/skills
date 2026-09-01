@@ -46,3 +46,13 @@ reads as a live reference and invites someone to go look.
 hosts, home paths and project names before proposing them. If something is
 borderline, leave it out and say so — it is far cheaper to add a detail
 later than to remove one from a public history.
+
+## Two skill sets, and they drift
+
+`skills/` is the full package. `budget-skills/` is a parallel set for constrained places - a tight token budget, or an organisation whose review will not accept the sync tooling. It is **not** a subset: the documents there had to be written differently, and they are held to two rules the main set is not.
+
+**No script in `budget-skills/` may touch the network or handle a credential.** That is what makes the set reviewable - it is confirmable with a grep instead of by reading transport code. A script that scaffolds a file, formats a document or checks a convention is fine. If a workflow needs the network, it does not belong in that set at all; do not write a smaller sync.
+
+**Every skill there stands alone.** No dependency on another skill being installed, on a tracker, on an MCP server, or on a knowledge base existing. Those directories are copied into a project by hand, one at a time.
+
+**When you change a skill in one set, check its counterpart in the other.** Nothing enforces this and the two will silently diverge. Guidance about how to think usually belongs in both; guidance about tooling usually belongs in only one. Say which you concluded and why, rather than copying the edit across by reflex - a change that is right for the full package is often wrong for a project with no tracker to sync to.

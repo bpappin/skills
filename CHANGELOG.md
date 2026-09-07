@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.09.07]
+
 ### Fixed
 
 - **`gh-wiki-sync.sh` blamed "the token" without saying which token.** It resolves a credential from four places in order - the environment, the pointer's connection env, `github.env`, then `gh auth token` - and a stale PAT in a connection env silently beats a working `gh` login. The failure message then sent the reader to the credential they knew about rather than the one in use. It now names the source it actually resolved. The probe also dropped `curl -f`, so a 401 is reported as a rejection with its status and distinguished from an unreachable API, which previously collapsed into the same "check the token" message. Reported from another project over the peer channel; the reporter lost minutes to exactly this. project-docs 1.25.

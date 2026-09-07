@@ -1,9 +1,9 @@
 {
-  "generated": "2026-09-01",
+  "generated": "2026-09-07",
   "skills": {
     "write-a-skill": "1.0",
     "grill-with-docs": "2.1",
-    "project-docs": "1.24",
+    "project-docs": "1.25",
     "regulatory-compliance": "1.2",
     "to-adr": "1.3",
     "to-prd": "1.5",
@@ -23,7 +23,7 @@
     "setup-gitlab-duo": "1.0",
     "story-reconcile": "0.30",
     "story-workflow": "1.24",
-    "to-issues": "1.15",
+    "to-issues": "1.16",
     "triage": "1.27"
   }
 }

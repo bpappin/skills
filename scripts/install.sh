@@ -10,8 +10,9 @@
 #   ./install.sh --github     per-developer GitHub setup: PAT -> connection,
 #                             register the 'github' MCP server in agent configs
 #   ./install.sh --register [--connection <name>]   re-push the connection's
-#                             token into every agent's MCP config (run after
-#                             rotating a token - registrations embed it)
+#                             token into every agent's MCP config - YouTrack
+#                             or GitHub, whichever the connection is (run
+#                             after rotating a token - registrations embed it)
 #   ./install.sh --list | --show | --help
 #
 # Everything lives under one well-known root:
@@ -258,6 +259,18 @@ load_github() {  # $1 = connection name (optional); sets GITHUB_TOKEN + GH_LOGIN
   [[ -n "$GH_LOGIN" ]]
 }
 
+# The MCP server name is derived from the connection name, and the connection
+# arrives in two shapes: a project bind builds it as `github-<dir>`, while a
+# refresh derives it bare from the directory. Strip before prefixing so both
+# land on the same server. Two of the four call sites used to defend against
+# this and two did not, which is how a connection already called
+# `github-<name>` registered as `github-github-<name>`. The connection name
+# still names the credential file; only the server name is derived here.
+gh_server_name() {  # $1 = connection name -> MCP server name
+  local conn="${1:-github}"
+  if [[ "$conn" == "github" ]]; then printf 'github'; else printf 'github-%s' "${conn#github-}"; fi
+}
+
 setup_github() {  # $1 = connection name (default github): token -> <name>.env, verify, register
   GH_CONN="${1:-github}"
   step "GitHub connection '$GH_CONN' (your own PAT - one per developer, never shared)"
@@ -288,7 +301,7 @@ setup_github() {  # $1 = connection name (default github): token -> <name>.env, 
   register_agents_github "$GH_CONN"
   say ""
   say "Done. Restart your agent sessions (Claude Code, Gemini CLI, VS Code)"
-  say "so they pick up the 'github-$GH_CONN' MCP server."
+  say "so they pick up the '$(gh_server_name "$GH_CONN")' MCP server."
 }
 
 register_agents_github() {  # $1 = connection name; GitHub hosted MCP server, PAT header, per agent
@@ -296,8 +309,8 @@ register_agents_github() {  # $1 = connection name; GitHub hosted MCP server, PA
   if [[ ! -f "$CONN_DIR/$conn.env" && ! -f "$CONN_DIR/github.env" ]]; then
     say "  (no stored PAT - skipping MCP registration; scripts will use gh auth)"; return 0
   fi
-  local server="github-$conn" mcp_url="https://api.githubcopilot.com/mcp/"
-  [[ "$conn" == "github" ]] && server="github"   # legacy shared credential keeps the old name
+  local server mcp_url="https://api.githubcopilot.com/mcp/"
+  server="$(gh_server_name "$conn")"   # 'github' stays 'github' - legacy shared credential
   local auth="Bearer $GITHUB_TOKEN"
   if command -v claude >/dev/null; then
     claude mcp remove --scope user "$server" >/dev/null 2>&1 || true
@@ -1439,7 +1452,7 @@ verify_bind() {  # $1 dir - post-condition: did the bind actually land?
 attach_project_github() {  # $1 dir, $2 owner/repo, $3 project number|"", $4 readonly, $5 mode
   local dir="$1" gh_repo="$2" gh_proj="$3" readonly_flag="$4" mode="${5:-link}"
   local conn="${GH_CONN:-github}" srv
-  srv="github-${conn#github-}"; [[ "$conn" == "github" ]] && srv="github"
+  srv="$(gh_server_name "$conn")"
   copy_skills "$dir" "$mode"
   warn_user_level_overlap
   rm -f "$dir/.agents/youtrack.json" "$dir/.agents/config/youtrack.json" "$dir/.agents/config/story-tools.json"
@@ -1745,7 +1758,7 @@ wizard() {
 
 check_github_drift() {  # $1 = connection; stale PAT in agent configs
   local conn="${1:-github}" srv
-  srv="github-${conn#github-}"; [[ "$conn" == "github" ]] && srv="github"
+  srv="$(gh_server_name "$conn")"
   [[ -n "${GITHUB_TOKEN:-}" ]] || return 0
   [[ -f "$CONN_DIR/$conn.env" || -f "$CONN_DIR/github.env" ]] || return 0
   local stale="" vsc=""
@@ -2221,9 +2234,15 @@ case "${1:-}" in
       [[ "$(grep -c . <<<"$profiles")" == "1" ]] && profile="$profiles"
     fi
     [[ -z "$profile" ]] && { say "usage: install.sh --register [--connection <name>]  (several connections exist - name one)" >&2; exit 1; }
-    load_connection "$profile" || { say "error: connection '$profile' not found" >&2; exit 1; }
-    PROFILE="$profile"
-    register_agents
+    # Tracker-agnostic, matching the shipped .agents/setup.sh copy: a
+    # connection is a YouTrack one or a GitHub one, and --register re-pushes
+    # whichever it is. This arm was YouTrack-only while the shipped copy
+    # already fell back, so the same flag did different things depending on
+    # which script you ran - and the GitHub binding documents this flag for
+    # rotating a GitHub token.
+    if load_connection "$profile"; then PROFILE="$profile"; register_agents
+    elif load_github "$profile"; then register_agents_github "$profile"
+    else say "error: connection '$profile' not found" >&2; exit 1; fi
     say ""
     say "Registrations updated. Restart your agent sessions so they reconnect"
     say "with the new token.";;

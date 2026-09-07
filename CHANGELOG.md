@@ -12,7 +12,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **`gh-wiki-sync.sh` blamed "the token" without saying which token.** It resolves a credential from four places in order - the environment, the pointer's connection env, `github.env`, then `gh auth token` - and a stale PAT in a connection env silently beats a working `gh` login. The failure message then sent the reader to the credential they knew about rather than the one in use. It now names the source it actually resolved. The probe also dropped `curl -f`, so a 401 is reported as a rejection with its status and distinguished from an unreachable API, which previously collapsed into the same "check the token" message. Reported from another project over the peer channel; the reporter lost minutes to exactly this. project-docs 1.25.
+- **`--register` did different things depending on which script you ran.** The copy shipped as `.agents/setup.sh` tried the YouTrack connection and fell back to GitHub; the installer's own arm was YouTrack-only and errored out on a GitHub connection. The GitHub binding documents this flag for rotating a GitHub token, so the advice was correct on one script and wrong on the other. The installer now does the same fallback, and the help says the flag covers whichever tracker the connection is.
+- **A GitHub connection whose name already began with `github-` registered as `github-github-<name>`.** The MCP server name is derived from the connection name, and the connection arrives in two shapes: a project bind builds it as `github-<dir>`, a refresh derives it bare from the directory. Two of the four sites that build the server name stripped the prefix first and two did not, so which shape you got decided whether the name doubled. All four now go through one `gh_server_name` helper. The connection name still names the credential file; only the server name is derived.
+- **Step 5 of `to-issues` described a refusal that its own procedure could not produce.** Adding a topical value and applying one to an issue are different calls - `--push-tags` hits the label-creation endpoint on GitHub and the field's value set on YouTrack, and creates by design, while a rejection can only come from applying a value the tracker does not know. The paragraph ran the two together, so an agent following the procedure met a failure mode that procedure cannot reach. They are now separated, with the rule stated so it holds either way: never apply a value that is not already on the project's list, because some trackers refuse and others create it silently, and the silent one is worse. to-issues 1.16.
 
 ## [2026.09.01.1]
 

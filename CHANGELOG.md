@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.09.07]
+
 ### Fixed
 
 - **The record-type list is short on purpose, and the recogniser matches it exactly.** `GUIDE-` and `SPEC-` are both gone: a guide is a `DOC-` in `guides/` and a specification is a `DOC-` in `specifications/`. The directory already says what a document is *about*; a prefix's job is to say how to *read* it. That is what `RAD-`, `ADR-` and `PRD-` do and why they cannot collapse into each other - a research log may be inconclusive, a decision is settled, a requirement is normative, and two of them on the same subject must still be read differently. A specification and an informational page are both descriptive prose maintained in place, so the distinction was subject matter, which is what directories are for. Stories are `STRY-`. The rule that *generates* prefixes is fixed in the same change, because it is what produced both: both taxonomies told a project that a cited document type earns a prefix, which conflates needing an identifier with needing a new one. Everything cited needs an identifier and `DOC-` is one; a new prefix is earned only by a document that must be READ differently from the existing types. The wiki sync's prefix set is now exactly the documented conventions and nothing else - an extra spelling kept "just in case" is documentation whether or not it is meant to be, because an agent reading the source treats anything there as blessed. project-docs 1.32, budget-skills project-docs 1.6.

@@ -61,14 +61,14 @@ In a small team one person wears every hat and walks the whole spine. In a large
 
 ### How the documents point at each other
 
-Anything that gets cited carries an ID, and the ID carries its type - that string is the handle people use:
+Anything that gets cited carries an ID, and the ID says how to read the thing it names - that string is the handle people use:
 
 ```
 docs/
   research/      RAD-0023-signal-enrichment.md
   decisions/     ADR-0004-session-scoping.md
   requirements/  PRD-0003-draft-visibility.md
-  stories/       STY-0042-drafts-are-private.md
+  stories/       STRY-0042-drafts-are-private.md
   reference/     domain-glossary.md
 WIRING.md          <- feature-to-feature integration rules
 AGENTS.md          <- points at the glossary so agents find it

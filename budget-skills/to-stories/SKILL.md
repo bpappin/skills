@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. No tracker, no network, no scripts - stories are files in the repo.
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.2"
 ---
 
 # To Stories
@@ -16,9 +16,9 @@ The story body format here is **identical** to the one the tracker-backed skills
 
 ## Where stories live
 
-One file per story, `docs/stories/STY-NNNN-short-slug.md`, IDs assigned from `0001` upward and zero-padded so the files sort.
+One file per story, `docs/stories/STRY-NNNN-short-slug.md`, IDs assigned from `0001` upward and zero-padded so the files sort.
 
-**`STY-0042` is the story's identity and its citation handle** - what a blocker names, what a commit message references, what a PRD's table lists. The type prefix is what makes it unambiguous with no path in front of it: a bare `0042` collides with decision 42 and research log 42, and those get cited in the same sentences. Never reissue an ID; a story that is abandoned keeps its own and gets `status: dropped`.
+**`STRY-0042` is the story's identity and its citation handle** - what a blocker names, what a commit message references, what a PRD's table lists. The type prefix is what makes it unambiguous with no path in front of it: a bare `0042` collides with decision 42 and research log 42, and those get cited in the same sentences. Never reissue an ID; a story that is abandoned keeps its own and gets `status: dropped`.
 
 If the project already keeps stories somewhere else, use that. Match what is there rather than introducing a second convention.
 
@@ -61,11 +61,11 @@ In dependency order, blockers first, so `blocked_by` can reference real numbers.
 
 ```markdown
 ---
-id: STY-0007
+id: STRY-0007
 title: Signed-in user sees their own drafts
 status: todo
 type: AFK
-blocked_by: [STY-0003]
+blocked_by: [STRY-0003]
 topic: Draft Visibility
 estimate: 4h
 covers: [R-3, R-4]

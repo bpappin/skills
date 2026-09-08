@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Filing conventions only - no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.6"
 ---
 
 # Project Docs
@@ -33,10 +33,10 @@ If two fit, the document is probably two documents. Split it rather than filing 
 |---|---|
 | `decisions/` | Architecture decision records. One hard-to-reverse choice each; append-only history |
 | `requirements/` | PRD narratives and the stories that implement them |
-| `specifications/` | How a thing IS - architecture, component specs; updated in place |
+| `specifications/` | How a thing IS - architecture, component specs; updated in place. Numbered `DOC-`, sharing the sequence with `documents/` |
 | `research/` | Investigations - question, trail, findings. Postmortems and worked case studies belong here |
 | `reference/` | External facts: vendors, regulations, domain material - and the **Domain Glossary**, the project's canonical terms |
-| `guides/` | How-to - onboarding, environment, CI |
+| `guides/` | How-to - onboarding, environment, CI. Numbered `DOC-`, sharing the sequence with `documents/` |
 | `testing/` | Durable test plans and protocols |
 | `compliance/` | Legal and regulatory rules the work must satisfy |
 | `documents/` | Informational pages explaining what the project is and how the pieces relate. Also the honest home for something that fits nothing else |
@@ -49,7 +49,7 @@ If two fit, the document is probably two documents. Split it rather than filing 
 
 **Never put spaces or title case in a path.** Lowercase, hyphenated, and stable: `session-scoping.md`, not `Session Scoping.md`.
 
-**Anything that gets cited carries an ID.** The name is `TYPE-NNNN-short-slug.md` - `ADR-0004-session-scoping.md`, `PRD-0003-draft-visibility.md`, `RAD-0023-signal-enrichment.md`, `STY-0042-drafts-are-private.md`.
+**Anything that gets cited carries an ID.** The name is `TYPE-NNNN-short-slug.md` - `ADR-0004-session-scoping.md`, `PRD-0003-draft-visibility.md`, `RAD-0023-signal-enrichment.md`, `STRY-0042-drafts-are-private.md`.
 
 **The number is an identifier, not a position in a sequence.** It says *which document this is*, not where it falls in an order - so it carries no claim that the document is append-only, finished, or superseded by a higher number. That distinction is what lets a living document have one: a PRD gets corrected in place for a year and keeps `PRD-0003` throughout, because the ID names the document rather than a version of it.
 
@@ -60,9 +60,12 @@ If two fit, the document is probably two documents. Split it rather than filing 
 | `ADR-` | Decisions | `to-adr` |
 | `PRD-` | Requirements | `to-prd` |
 | `RAD-` | Research logs | `to-rad` |
-| `STY-` | Stories | `to-stories` |
+| `DOC-` | Documents | - |
+| `STRY-` | Stories | `to-stories` |
 
-**A project that keeps another cited document type gives it a prefix too** - `SPC-` for specifications is the usual next one. The test is whether anything ever needs to point at it: if a story, a brief or a code comment will name it, it needs an ID, and adding the prefix later means every existing reference to it is wrong.
+**A guide is a `DOC-` in `guides/`, and a specification is a `DOC-` in `specifications/`.** The directory already says what a document is *about*; the prefix says how to *read* it. That is what separates `RAD-`, `ADR-` and `PRD-` - inconclusive, settled, normative - and why those cannot collapse into each other even when they cover the same subject. A specification and an informational page are both descriptive prose maintained in place, so they share a sequence.
+
+**Everything cited needs an ID; almost nothing needs a new prefix.** Those are two different questions, and running them together is what produces record types nobody needed. If a story, a brief or a code comment will name the document, it needs an ID - and `DOC-` *is* an ID. A new **prefix** is earned only when the document has to be READ differently from every type above: inconclusive, settled, normative, gated. "It covers a different subject" is what the directory is for, and that document is a `DOC-`. If a project does earn a new type, add it to the table above - adding a prefix later makes every existing reference to those documents wrong.
 
 **Date nothing.** A specification is a living document; a date in its name guarantees it looks stale while being current, and guarantees a second copy the first time someone updates it.
 

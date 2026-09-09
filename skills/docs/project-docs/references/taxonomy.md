@@ -80,7 +80,7 @@ restarted sequence collides.
 
 **Everything cited needs an identifier; almost nothing needs a new prefix.** Those are two different questions, and running them together is what produces record types nobody needed. If a story, a brief or a code comment will name the document, it needs an identifier - and `DOC-` *is* an identifier. A new **prefix** is earned only when the document has to be READ differently from every type above: a `RAD-` may be inconclusive, an `ADR-` is settled, a `PRD-` is normative, a `STRY-` carries a completion gate. If the honest answer is "it covers a different subject", that is what the directory is for, and the document is a `DOC-`.
 
-Keep the list short: the wiki sync recognises exactly these prefixes and nothing else, deliberately, because an extra spelling left in the source reads as permission to use it. A project that does earn a new type adds it here first, because adding the prefix later makes every existing reference to those documents wrong.
+**Too many prefixes make a messy system, and they are not needed.** That is the whole reason the list is this short, and it outranks any individual case for adding one. Keep it short: the wiki sync recognises exactly these prefixes and nothing else, deliberately, because an extra spelling left in the source reads as permission to use it. A project that does earn a new type adds it here first, because adding the prefix later makes every existing reference to those documents wrong.
 
 `docs/design/` is a **companion tree to `docs/knowledge/`**, not a section
 inside it: design records plus the images that make them worth reading.
@@ -118,7 +118,7 @@ falls back to the directory stem, de-hyphenated and title-cased, so
 |---|---|---|
 | `decisions/` | Architecture Decision Records | One hard-to-reverse choice each; append-only history |
 | `requirements/` | Product Requirements | PRD narratives + Stories tables of tracker IDs (never AC) |
-| `specifications/` | Specifications | How a thing IS - architecture, component specs; update in place. Numbered `DOC-`, sharing the sequence with `documents/` |
+| `specifications/` | Specifications | How a thing IS - architecture, component specs; update in place. May be **binding**: where the project says so, code contradicting a specification is a bug in the code, not a stale document. The section's `README.md` is where that is declared. Numbered `DOC-`, sharing the sequence with `documents/` |
 | `research/` | Research | Investigations - question, trail, findings. Postmortems and worked case studies are kinds of investigation and belong here, as files or as a sub-group if there are enough to warrant one |
 | `reference/` | Reference | External facts: vendors, prospects, regulations, domain material - and the **Domain Glossary** (the project's canonical terms; `AGENTS.md` at the repo root points at it so agents find it without a path) |
 | `guides/` | Developer Guides | How-to - onboarding, environment, CI. Numbered `DOC-`, sharing the sequence with `documents/` |

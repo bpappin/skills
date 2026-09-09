@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Filing conventions only - no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.6"
+  version: "1.8"
 ---
 
 # Project Docs
@@ -33,7 +33,7 @@ If two fit, the document is probably two documents. Split it rather than filing 
 |---|---|
 | `decisions/` | Architecture decision records. One hard-to-reverse choice each; append-only history |
 | `requirements/` | PRD narratives and the stories that implement them |
-| `specifications/` | How a thing IS - architecture, component specs; updated in place. Numbered `DOC-`, sharing the sequence with `documents/` |
+| `specifications/` | How a thing IS - architecture, component specs; updated in place. May be **binding**: where the project says so, code contradicting a specification is a bug in the code, not a stale document. The section's `README.md` is where that is declared. Numbered `DOC-`, sharing the sequence with `documents/` |
 | `research/` | Investigations - question, trail, findings. Postmortems and worked case studies belong here |
 | `reference/` | External facts: vendors, regulations, domain material - and the **Domain Glossary**, the project's canonical terms |
 | `guides/` | How-to - onboarding, environment, CI. Numbered `DOC-`, sharing the sequence with `documents/` |
@@ -65,7 +65,7 @@ If two fit, the document is probably two documents. Split it rather than filing 
 
 **A guide is a `DOC-` in `guides/`, and a specification is a `DOC-` in `specifications/`.** The directory already says what a document is *about*; the prefix says how to *read* it. That is what separates `RAD-`, `ADR-` and `PRD-` - inconclusive, settled, normative - and why those cannot collapse into each other even when they cover the same subject. A specification and an informational page are both descriptive prose maintained in place, so they share a sequence.
 
-**Everything cited needs an ID; almost nothing needs a new prefix.** Those are two different questions, and running them together is what produces record types nobody needed. If a story, a brief or a code comment will name the document, it needs an ID - and `DOC-` *is* an ID. A new **prefix** is earned only when the document has to be READ differently from every type above: inconclusive, settled, normative, gated. "It covers a different subject" is what the directory is for, and that document is a `DOC-`. If a project does earn a new type, add it to the table above - adding a prefix later makes every existing reference to those documents wrong.
+**Everything cited needs an ID; almost nothing needs a new prefix.** Those are two different questions, and running them together is what produces record types nobody needed. If a story, a brief or a code comment will name the document, it needs an ID - and `DOC-` *is* an ID. A new **prefix** is earned only when the document has to be READ differently from every type above: inconclusive, settled, normative, gated. "It covers a different subject" is what the directory is for, and that document is a `DOC-`. **Too many prefixes make a messy system, and they are not needed.** That is the whole reason the list is this short, and it outranks any individual case for adding one. If a project does earn a new type, add it to the table above - adding a prefix later makes every existing reference to those documents wrong.
 
 **Date nothing.** A specification is a living document; a date in its name guarantees it looks stale while being current, and guarantees a second copy the first time someone updates it.
 

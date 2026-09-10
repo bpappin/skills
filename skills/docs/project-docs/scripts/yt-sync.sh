@@ -107,7 +107,7 @@ FORCE = os.environ['FORCE'] == '1'
 # normpath-ed - with KB '.', a bare 'x.md' has dirname '' and a walk up to KB
 # never arrives. The comparison runs on resolved paths: cwd is always resolved,
 # and an absolute KB_DIR through a symlink otherwise lands outside itself.
-def canon(p):
+def canon_path(p):
     r = os.path.relpath(os.path.realpath(p), os.path.realpath(KB))
     if r == '.': return KB
     if r == '..' or r.startswith('..' + os.sep): return os.path.normpath(p)
@@ -322,7 +322,7 @@ if os.path.isfile(STATE_FILE):
 smap = state.setdefault('articles', {})
 owner = {}
 for aid, e in smap.items():
-    e['path'] = canon(e['path'])
+    e['path'] = canon_path(e['path'])
     if e['path'] in owner:
         sys.exit(f'error: sync state records {owner[e["path"]]} and {aid} at the same path, '
                  f'{e["path"]} - two articles cannot own one file.\n'
@@ -336,7 +336,7 @@ def local_md():
         dns[:] = [d for d in dns if d != '.yt-sync']
         for fn in fns:
             if fn.endswith('.md'):
-                found.append(canon(os.path.join(dp, fn)))
+                found.append(canon_path(os.path.join(dp, fn)))
     return found
 
 bootstrapping = not os.path.isfile(STATE_FILE)

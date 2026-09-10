@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.09.10]
+
 ### Fixed
 
 - **The installer executed a command while writing the user-level skill manifest.** A backtick in that file's text was escaped one level too far, so the heredoc ran `./install.sh --clean-user` instead of printing it. From any other directory it failed harmlessly and left `Remove them with \.` in `~/.agents/skills/MANAGED.md`; started from `scripts/`, it re-ran the installer mid-install and stopped at an unexplained `Remove them? [y/N]`, the list it was asking about swallowed into the file. It is printed now, and the next refresh rewrites the damaged line. The other generated files were already escaped correctly.

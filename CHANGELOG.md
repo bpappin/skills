@@ -12,7 +12,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **`yt-sync.sh` duplicated every edited article when the sync state and the current run spelled the knowledge-base path differently.** `KB_DIR` is accepted as `./docs/knowledge`, `docs/knowledge` or an absolute path, and paths were compared as raw strings, so state recorded under one spelling never matched a tree walked under another. An unedited file was rescued by the content match that detects local moves; an edited one was not, so it was pushed to its article *and* created again as a new one, with the local file then renamed to the duplicate's id. Every path is now rebuilt on one canonical form, resolved through symlinks, so existing state migrates on the next run with no re-bootstrap - and state that already records two articles at one file stops with an error rather than letting one overwrite the other. The dry run did list the duplicates under `New:`; the plan is only a warning if it is read whole. project-docs 1.35.
 
 ## [2026.09.07]
 

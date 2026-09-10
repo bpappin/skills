@@ -92,12 +92,26 @@ import json, os, re, shutil, subprocess, sys, tempfile, urllib.request, urllib.p
 URL = os.environ['YOUTRACK_URL'].rstrip('/')
 TOKEN = os.environ['YOUTRACK_TOKEN']
 PROJECT = os.environ['PROJECT']
-KB = os.environ['KB_DIR'].rstrip('/')
+KB = os.path.normpath(os.environ['KB_DIR'])
 ROOT = os.environ['ROOT']
 DRY = os.environ['DRY'] == '1'
 PULL_ONLY = os.environ['PULL_ONLY'] == '1'
 ALLOW_DELETE = os.environ['ALLOW_DELETE'] == '1'
 FORCE = os.environ['FORCE'] == '1'
+
+# One spelling per path. KB_DIR arrives as ./docs/knowledge, docs/knowledge or
+# an absolute path, and state recorded under one spelling has to match a tree
+# walked under another: compared as raw strings they never meet, an edited file
+# fails the content match that rescues an unedited one, and it is pushed to its
+# article AND created again as a new one. Every path is rebuilt on KB instead of
+# normpath-ed - with KB '.', a bare 'x.md' has dirname '' and a walk up to KB
+# never arrives. The comparison runs on resolved paths: cwd is always resolved,
+# and an absolute KB_DIR through a symlink otherwise lands outside itself.
+def canon(p):
+    r = os.path.relpath(os.path.realpath(p), os.path.realpath(KB))
+    if r == '.': return KB
+    if r == '..' or r.startswith('..' + os.sep): return os.path.normpath(p)
+    return os.path.join(KB, r)
 
 SYNC = os.path.join(KB, '.yt-sync')
 STATE_FILE = os.path.join(SYNC, 'state.json')
@@ -306,6 +320,15 @@ if os.path.isfile(STATE_FILE):
     with open(STATE_FILE, encoding='utf-8') as f:
         state = json.load(f)
 smap = state.setdefault('articles', {})
+owner = {}
+for aid, e in smap.items():
+    e['path'] = canon(e['path'])
+    if e['path'] in owner:
+        sys.exit(f'error: sync state records {owner[e["path"]]} and {aid} at the same path, '
+                 f'{e["path"]} - two articles cannot own one file.\n'
+                 f'Decide which article the file belongs to, remove the other entry from '
+                 f'{STATE_FILE} and its base file from {BASE_DIR}, then re-run with --dry-run.')
+    owner[e['path']] = aid
 
 def local_md():
     found = []
@@ -313,7 +336,7 @@ def local_md():
         dns[:] = [d for d in dns if d != '.yt-sync']
         for fn in fns:
             if fn.endswith('.md'):
-                found.append(os.path.join(dp, fn))
+                found.append(canon(os.path.join(dp, fn)))
     return found
 
 bootstrapping = not os.path.isfile(STATE_FILE)

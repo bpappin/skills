@@ -736,7 +736,7 @@ committed anywhere, so they drift from what your projects were tested
 against and nobody else sees them. A project copy of the same name
 overrides the one here.
 
-Remove them with \\`./install.sh --clean-user\\`.
+Remove them with \`./install.sh --clean-user\`.
 
 | Skill | Version |
 |---|---|

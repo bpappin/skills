@@ -16,7 +16,8 @@ if [[ -z "${YOUTRACK_HOST:-}" ]]; then
   [[ -n "$conn" ]] && candidates+=("$HOME/.agents/story-tools/connections/$conn.env")
   conns=( "$HOME"/.agents/story-tools/connections/*.env )
   [[ ${#conns[@]} -eq 1 && -f "${conns[0]}" ]] && candidates+=("${conns[0]}")
-  for f in "${candidates[@]}"; do
+  # ${arr[@]+...}: an empty array is "unbound" under set -u before bash 4.4
+  for f in ${candidates[@]+"${candidates[@]}"}; do
     # shellcheck disable=SC1090
     [[ -f "$f" ]] && { source "$f"; break; }
   done
@@ -27,14 +28,18 @@ YOUTRACK_HOST="${YOUTRACK_HOST:-${YOUTRACK_URL:-${YT_HOST:-}}}"
 YOUTRACK_API_TOKEN="${YOUTRACK_API_TOKEN:-${YOUTRACK_TOKEN:-${YT_TOKEN:-}}}"
 
 if [[ -z "$YOUTRACK_HOST" || -z "$YOUTRACK_API_TOKEN" ]]; then
-  echo "error: set YOUTRACK_HOST and YOUTRACK_API_TOKEN (or provide $ENV_FILE)" >&2
+  echo "error: set YOUTRACK_HOST and YOUTRACK_API_TOKEN, or name a connection with YOUTRACK_CONNECTION" >&2
   exit 1
 fi
 export YOUTRACK_HOST YOUTRACK_API_TOKEN
 
 cd "$SELF_DIR"
-npx --yes --package @jetbrains/youtrack-apps-tools youtrack-app validate app
-npx --yes --package @jetbrains/youtrack-apps-tools youtrack-app upload app
+# Pinned: unpinned, every deploy took whatever the CLI published last, and the
+# 1.x release renamed its subcommands out from under this script. --directory
+# is not optional - it defaults to dist, not to the app beside this script.
+CLI=(npx --yes --package @jetbrains/youtrack-apps-tools@1.0.3 youtrack-app)
+"${CLI[@]}" app validate --directory app
+"${CLI[@]}" app upload --directory app
 
 echo
 echo "Uploaded. NOTE: if tool names changed, re-add/re-enable the MCP connection"

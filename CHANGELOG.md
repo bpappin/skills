@@ -12,7 +12,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- **`handoff` writes to the system's temporary directory in both skill sets - never into the repo, and never onto a tracker story.** The budget version appended the handoff to the story file being worked, which gets committed; the main version posted it as a comment on the focused story, which on a public repository is world-readable the moment it posts. Either way a summary of a live conversation - the moment names, credentials and verbatim quotes slip into text - landed somewhere permanent, and a handoff is stale by the next session anyway; what should outlive a session already has a home on the story. Both now match the upstream skill they were adapted from: temporary directory only, a "Suggested skills" section, and a rule to redact keys, tokens, passwords and personal information. The main version keeps its step that proposes logging the session's time. handoff 1.2, budget-skills handoff 1.3.
+
+### Fixed
+
+- **The budget research template's example ADR link had no `ADR-` prefix**, contradicting the naming convention the same set teaches; it was missed when story ids were renamed. budget-skills to-rad 1.3.
 
 ## [2026.09.10]
 

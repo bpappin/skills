@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-10",
+  "generated": "2026-09-11",
   "skills": {
     "write-a-skill": "1.0",
     "grill-with-docs": "2.1",
@@ -13,7 +13,7 @@
     "prototype": "1.0",
     "tdd": "1.0",
     "to-ux": "2.2",
-    "handoff": "1.1",
+    "handoff": "1.2",
     "housekeeping": "1.5",
     "worklog": "0.1",
     "zoom-out": "1.0",

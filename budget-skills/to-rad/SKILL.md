@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Writes a RAD file into the repo; no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Research & Development Logs (to-rad)

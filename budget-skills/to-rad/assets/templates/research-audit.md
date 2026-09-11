@@ -30,5 +30,5 @@
 * [Date] [Validation point 2]
 
 ## Connections
-- **ADR**: [path to the related architecture decision, e.g. docs/decisions/0007-conflict-strategy.md]
+- **ADR**: [path to the related architecture decision, e.g. docs/decisions/ADR-0007-conflict-strategy.md]
 - **Stories**: [Story ids spawned by or validating this research, e.g. STRY-0042]

@@ -21,3 +21,14 @@ What was decided, actively phrased.
 ## Consequences
 
 What becomes easier, what becomes harder, what we gave up.
+
+## Corrections
+
+<!-- Substantive corrections to the facts above, oldest first: one dated line
+     each, saying what was wrong and what is right. A rename, a typo or a dead
+     link needs no line - just fix it. The DECISION is never corrected here:
+     reversing it is a new ADR that supersedes this one, and the Status line
+     above says so. Earlier wording lives in git and the KB history; this
+     section is the signpost, not the archive. Delete the section if empty. -->
+
+- YYYY-MM-DD: <what the record said, and what is true instead>

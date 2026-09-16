@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone for authoring. The project-docs skill owns the KB section layout and the tracker sync; run its sync after writing.
 metadata:
   author: bpappin
-  version: "1.4"
+  version: "1.5"
   supersedes: to-research
 ---
 
@@ -30,7 +30,7 @@ does not commit.
 | Document | Answers |
 |---|---|
 | **RAD** | "What did we research, and what do we recommend?" |
-| **ADR** | "What did we decide, and why?" — committed, append-only |
+| **ADR** | "What did we decide, and why?" — committed: the decision append-only, the document corrected in place |
 | **PRD** | "What must we build?" — requirements plus tracker stories |
 | **Spec** | "How does the thing work now?" — updated in place |
 

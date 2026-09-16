@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Filing conventions only - no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.8"
+  version: "1.9"
 ---
 
 # Project Docs
@@ -31,7 +31,7 @@ If two fit, the document is probably two documents. Split it rather than filing 
 
 | Directory | What belongs there |
 |---|---|
-| `decisions/` | Architecture decision records. One hard-to-reverse choice each; append-only history |
+| `decisions/` | Architecture decision records. One hard-to-reverse choice each. The *decision* is append-only - reversing it takes a new record that supersedes this one - while the document around it is maintained: a fact that was wrong, or a name that has since changed, is corrected in place |
 | `requirements/` | PRD narratives and the stories that implement them |
 | `specifications/` | How a thing IS - architecture, component specs; updated in place. May be **binding**: where the project says so, code contradicting a specification is a bug in the code, not a stale document. The section's `README.md` is where that is declared. Numbered `DOC-`, sharing the sequence with `documents/` |
 | `research/` | Investigations - question, trail, findings. Postmortems and worked case studies belong here |

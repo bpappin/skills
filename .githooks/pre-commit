@@ -35,14 +35,24 @@ cd "$ROOT"
 # of them has to move the version - otherwise projects hold stale files
 # under a version the update check reports as current. Watching SKILL.md
 # alone missed exactly that.
-# Two trees, two shapes: skills/<group>/<name>/ and budget-skills/<name>/.
-# budget-skills is copied into projects by hand rather than installed, but a
-# stale version there is just as misleading to whoever reads it.
+# A skill is any directory holding a SKILL.md, wherever it sits. Each staged
+# file walks up to the nearest one - in the index or in HEAD, so a deleted
+# file still finds its skill. Nothing here names a tree: adding a skill set,
+# or renaming one, needs no change to this hook.
+# skills/in-progress/ is parked work: not installed anywhere, so a version
+# there gates nothing and should not block a commit.
 staged=$(git diff --cached --name-only --diff-filter=ACMRD || true)
-staged_dirs=$( { printf '%s\n' "$staged" | grep -E '^skills/[^/]+/[^/]+/' \
-                   | awk -F/ '{print $1"/"$2"/"$3}'
-                 printf '%s\n' "$staged" | grep -E '^budget-skills/[^/]+/' \
-                   | awk -F/ '{print $1"/"$2}'; } | sort -u || true)
+staged_dirs=$(printf '%s\n' "$staged" | while IFS= read -r f; do
+    [[ -n "$f" ]] || continue
+    [[ "$f" == skills/in-progress/* ]] && continue
+    d=$(dirname "$f")
+    while [[ "$d" != "." && "$d" != "/" ]]; do
+      if git cat-file -e ":$d/SKILL.md" 2>/dev/null || git cat-file -e "HEAD:$d/SKILL.md" 2>/dev/null; then
+        printf '%s\n' "$d"; break
+      fi
+      d=$(dirname "$d")
+    done
+  done | sort -u || true)
 [[ -n "$staged_dirs" ]] || exit 0
 
 unbumped=""

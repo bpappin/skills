@@ -12,7 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- **`budget-skills/` is now `light-skills/`.** Budget read as cheap; the set is small, self-contained, and built for tight context budgets and strict code review, not a lesser version of anything. The skills themselves never named their directory, so nothing inside them changed. The two pieces of repo tooling that did - the pre-commit version gate and the installer's retired-skill guard - now find a skill by the `SKILL.md` it contains rather than by the tree it sits in, so no future rename touches them. Released entries below keep the old name, as history.
+- **An ADR's decision is append-only; the document around it is maintained.** The taxonomy said flatly that ADRs are append-only, so a record that stated something false - a constant since renamed, a claim that was wrong when written - had no repair short of filing a fresh ADR to announce a rename. That is noise, and leaving the wrong sentence standing is worse, because the next reader, usually an agent, takes it as authoritative and acts on it. `to-adr` already allowed the fix; the taxonomy and `to-rad` contradicted it, and the taxonomy is what a filing agent reads. All three now say the same thing. A rename, typo or dead link is corrected silently; a substantive correction gets a dated line under a new `## Corrections` section at the foot of the record, which the ADR template now carries. Two edits are explicitly not corrections: rewording the Decision, which is a new ADR that supersedes, and rewriting Context with hindsight, which destroys the evidence of what was known at the time. `Status:` stays the decision's standing and never becomes a correction log - nothing in the suite parses that line, so the convention is settled here rather than invented per project. Raised by a project that hit it. project-docs 1.37, to-adr 1.4, to-rad 1.5, light-skills project-docs 1.9, to-adr 1.2, to-rad 1.4.
 
 ## [2026.09.11]
 

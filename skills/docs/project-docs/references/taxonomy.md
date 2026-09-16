@@ -116,7 +116,7 @@ falls back to the directory stem, de-hyphenated and title-cased, so
 
 | Directory | Section title | What belongs there |
 |---|---|---|
-| `decisions/` | Architecture Decision Records | One hard-to-reverse choice each; append-only history |
+| `decisions/` | Architecture Decision Records | One hard-to-reverse choice each. The *decision* is append-only - reversing it takes a new record that supersedes this one - while the document around it is maintained: a fact that was wrong, or a name that has since changed, is corrected in place |
 | `requirements/` | Product Requirements | PRD narratives + Stories tables of tracker IDs (never AC) |
 | `specifications/` | Specifications | How a thing IS - architecture, component specs; update in place. May be **binding**: where the project says so, code contradicting a specification is a bug in the code, not a stale document. The section's `README.md` is where that is declared. Numbered `DOC-`, sharing the sequence with `documents/` |
 | `research/` | Research | Investigations - question, trail, findings. Postmortems and worked case studies are kinds of investigation and belong here, as files or as a sub-group if there are enough to warrant one |
@@ -207,7 +207,9 @@ outside engineering has one version, in PD, and that is the normal case.
 ## Distinctions that matter
 
 - **spec vs adr**: a spec describes how a thing IS; an ADR records why a
-  choice was made. Specs update in place; ADRs are append-only.
+  choice was made. Specs update in place; an ADR's *decision* is append-only
+  - a reversal is a new record that supersedes it - while the document around
+  it is corrected in place like any other.
 - **research vs reference**: research is your investigation (trail and
   conclusion); reference is someone else's facts kept close.
 - **vendors vs prospects** (both under Reference): a vendor you use or

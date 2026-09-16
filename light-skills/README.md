@@ -1,4 +1,4 @@
-# Budget skills
+# Light skills
 
 A small, self-contained skill set for places the full package does not fit: a constrained token budget, or an organisation whose review process will not accept the sync tooling.
 

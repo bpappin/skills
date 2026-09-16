@@ -154,29 +154,29 @@ kv()    { printf '  %s%-24s%s %s\n' "$C_D" "$1" "$C_0" "$2"; }
 
 # A retired skill must not survive in the source tree. RETIRED_SKILLS is
 # what prunes it from bound projects, but a directory left behind under
-# skills/ or budget-skills/ is still readable, still copyable, and is what
-# anyone assembling a set from what is on disk will copy. That is not
+# anywhere in the source tree is still readable, still copyable, and is
+# what anyone assembling a set from what is on disk will copy. That is not
 # hypothetical: to-research was retired here, left in place, and then
-# copied wholesale into budget-skills by someone reading the tree rather
-# than this list. Only checked from the source clone - a shipped bundle
+# copied wholesale into the parallel light set by someone reading the tree
+# rather than this list. A skill is found by its SKILL.md, not by the name
+# of the tree holding it, so a new or renamed set is covered unchanged. Only checked from the source clone - a shipped bundle
 # has no skills tree to police.
 if [[ $SHIPPED -eq 0 ]]; then
   _stale=''
   for _r in "${RETIRED_SKILLS[@]}"; do
-    for _root in "$REPO_DIR/skills" "$REPO_DIR/budget-skills"; do
-      [[ -d "$_root" ]] || continue
-      while IFS= read -r _d; do
-        [[ -n "$_d" ]] || continue
-        _stale="$_stale${_stale:+ }${_d#"$REPO_DIR"/}"
-      done < <(find "$_root" -maxdepth 2 -type d -name "$_r" 2>/dev/null)
-    done
+    while IFS= read -r _f; do
+      [[ -n "$_f" ]] || continue
+      _d="$(dirname "$_f")"
+      _stale="$_stale${_stale:+ }${_d#"$REPO_DIR"/}"
+    done < <(find "$REPO_DIR" -path "$REPO_DIR/.git" -prune -o \
+               -type f -path "*/$_r/SKILL.md" -print 2>/dev/null)
   done
   if [[ -n "$_stale" ]]; then
     warn "retired skill(s) still in the source tree: $_stale"
     say  "    They are pruned from projects but remain here to be copied by mistake."
     say  "    Delete them, or take them off RETIRED_SKILLS if they are not retired."
   fi
-  unset _stale _r _root _d
+  unset _stale _r _f _d
 fi
 
 # one-time migration from older layouts

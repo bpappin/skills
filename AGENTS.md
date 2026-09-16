@@ -57,9 +57,9 @@ This applies with equal force to `--amend`, to `--no-verify`, and to `git add`. 
 
 ## Two skill sets, and they drift
 
-`skills/` is the full package. `budget-skills/` is a parallel set for constrained places - a tight token budget, or an organisation whose review will not accept the sync tooling. It is **not** a subset: the documents there had to be written differently, and they are held to two rules the main set is not.
+`skills/` is the full package. `light-skills/` is a parallel set for constrained places - a tight token budget, or an organisation whose review will not accept the sync tooling. It is **not** a subset: the documents there had to be written differently, and they are held to two rules the main set is not.
 
-**No script in `budget-skills/` may touch the network or handle a credential.** That is what makes the set reviewable - it is confirmable with a grep instead of by reading transport code. A script that scaffolds a file, formats a document or checks a convention is fine. If a workflow needs the network, it does not belong in that set at all; do not write a smaller sync.
+**No script in `light-skills/` may touch the network or handle a credential.** That is what makes the set reviewable - it is confirmable with a grep instead of by reading transport code. A script that scaffolds a file, formats a document or checks a convention is fine. If a workflow needs the network, it does not belong in that set at all; do not write a smaller sync.
 
 **Every skill there stands alone.** No dependency on another skill being installed, on a tracker, on an MCP server, or on a knowledge base existing. Those directories are copied into a project by hand, one at a time.
 

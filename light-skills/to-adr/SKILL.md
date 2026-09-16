@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Writes an ADR file into the repo; no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Architecture Decision Records (to-adr)
@@ -30,7 +30,7 @@ out from what the repo already does.
 Write one when a choice is **hard to reverse** and someone could reasonably
 have chosen otherwise. A decision with no alternatives was not a decision.
 
-- **ADR** - why a choice was made. The decision is frozen once accepted; new knowledge means a new ADR that supersedes it, not a rewrite.
+- **ADR** - why a choice was made. The decision is frozen once accepted; new knowledge means a new ADR that supersedes it, not a rewritten decision - though the document's facts are kept correct (see After writing).
 - **Spec** - how a thing IS. Updated in place. If you are describing current
   behaviour, that is a spec, not an ADR.
 - **Code comment** - why this line is odd. Local, no alternatives weighed.
@@ -95,20 +95,10 @@ better than false confidence, and tells a reader exactly what to re-check.
 
 ## After writing
 
-- **Context and Decision are frozen once accepted; everything else
-  accrues.** A changed decision is a new ADR, never an edit to the old
-  one - write it, cross-link both ways, and the old gets
-  `Status: superseded by ADR-0012`. Editing the original instead leaves a
-  record of reasoning nobody ever applied, and quietly repoints every code
-  comment and story that cites the old ID at a different decision.
-- **Consequences are the exception, and they are the part worth having.**
-  What a decision actually cost is learned months later, not on the day it
-  was made. Add to Consequences as it becomes known, dated, and leave what
-  was already there - a cost that was predicted and a cost that arrived are
-  two different facts, and the distance between them is how anyone
-  calibrates the next decision. Correcting a broken link, a typo or a
-  mis-stated fact is fine on the same grounds: the *decision* is frozen,
-  the document is not.
+- **A changed decision is a new ADR, never an edit to the old one.** Write it, cross-link both ways, and the old gets `Status: superseded by ADR-0012`. Editing the original instead leaves a record of reasoning nobody ever applied, and quietly repoints every code comment and story that cites the old ID at a different decision.
+- **Consequences are the exception, and they are the part worth having.** What a decision actually cost is learned months later, not on the day it was made. Add to Consequences as it becomes known, dated, and leave what was already there - a cost that was predicted and a cost that arrived are two different facts, and the distance between them is how anyone calibrates the next decision.
+- **The decision is frozen; the document is maintained.** A record that states something false - a constant it names has been renamed, a claim in Context or Consequences was wrong when written - is corrected in place. Filing a fresh ADR to say "that name is now X" is noise, and leaving the wrong sentence standing is worse, because the next reader takes it as authoritative and acts on it. A rename, a typo or a dead link is corrected silently; a **substantive** correction gets a dated line under `## Corrections` at the foot of the record, saying what was wrong and what is right. Earlier wording is not lost - git and the knowledge base keep every version, and that is the audit trail, not a stale sentence in the current text.
+- **Two edits are never corrections.** Rewording the Decision sentence is a new ADR that supersedes this one, not a fix. Rewriting Context with hindsight, so the reasoning reads better than it was, destroys the only evidence of what was actually known at the time. `Status:` stays the decision's standing - `accepted`, or `superseded by ADR-NNNN` - and never becomes a correction log.
 - Point at it from the work it governs - the PRD, the spec, the story's
   `## References`.
 - Where a decision constrains a library's public surface, summarise the rule

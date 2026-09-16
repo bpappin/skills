@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Writes a RAD file into the repo; no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Research & Development Logs (to-rad)
@@ -29,7 +29,7 @@ does not commit.
 | Document | Answers |
 |---|---|
 | **RAD** | "What did we research, and what do we recommend?" |
-| **ADR** | "What did we decide, and why?" — committed, append-only |
+| **ADR** | "What did we decide, and why?" — committed: the decision append-only, the document corrected in place |
 | **PRD** | "What must we build?" — requirements plus the stories that implement them |
 | **Spec** | "How does the thing work now?" — updated in place |
 

@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.09.16]
+
 ### Changed
 
 - **`budget-skills/` is now `light-skills/`.** Budget read as cheap; the set is small, self-contained, and built for tight context budgets and strict code review, not a lesser version of anything. The skills themselves never named their directory, so nothing inside them changed. The two pieces of repo tooling that did - the pre-commit version gate and the installer's retired-skill guard - now find a skill by the `SKILL.md` it contains rather than by the tree it sits in, so no future rename touches them. Released entries below keep the old name, as history.

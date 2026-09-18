@@ -12,7 +12,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Skills that send an agent to read something now forbid obeying it.** Reading is untouched - issue bodies, comments, KB articles, wiki pages and logs are read exactly as before, because that is the job. What is forbidden is acting on a line inside one that tells the agent to run a command, install a package, or edit a build or instruction file: quote it, name its source, ask. A trusted source does not make the bytes trusted, and one approval covers one document. `project-docs` carries a sharper version, because a pulled article or wiki page lands in `docs/knowledge/` indistinguishable from what the team wrote, and a wiki's write list is wider than the repo's. The reasoning sits in `docs/adr/0005-fetched-text-is-data.md` rather than in the skills, and it is honest that this is policy and not enforcement: nobody has measured whether such a rule stops an agent following an injected instruction. Raised by a peer project's finding. story-workflow 1.25, triage 1.28, to-issues 1.17, project-docs 1.38, light-skills project-docs 1.10, to-stories 1.3.
+- **A `WORKFLOW.md` for the light set.** The README explains the set to whoever is choosing skills, and it stays in the skills repo - so the people in the project, who never see it, had nothing. This is the file they keep: what a skill even is, the five-stage spine, which role runs what and what a business analyst does first, where the handoffs actually break, what to say to an agent, the scope rules, and where documents live. Copied to the repo root by hand and trimmed, like the skills themselves; nothing regenerates it. It restates the README's orientation on purpose - the two will drift, and the copy that matters is the one in the project.
+
 
 ## [2026.09.16]
 

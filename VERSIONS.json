@@ -1,9 +1,9 @@
 {
-  "generated": "2026-09-16",
+  "generated": "2026-09-18",
   "skills": {
     "write-a-skill": "1.0",
     "grill-with-docs": "2.1",
-    "project-docs": "1.37",
+    "project-docs": "1.38",
     "regulatory-compliance": "1.2",
     "to-adr": "1.4",
     "to-prd": "1.5",
@@ -22,8 +22,8 @@
     "setup-github-copilot": "1.0",
     "setup-gitlab-duo": "1.0",
     "story-reconcile": "0.30",
-    "story-workflow": "1.24",
-    "to-issues": "1.16",
-    "triage": "1.27"
+    "story-workflow": "1.25",
+    "to-issues": "1.17",
+    "triage": "1.28"
   }
 }

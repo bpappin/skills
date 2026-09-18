@@ -2,7 +2,7 @@
 
 A small, self-contained skill set for places the full package does not fit: a constrained token budget, or an organisation whose review process will not accept the sync tooling.
 
-Copy the directories you want straight into a project's `.agents/skills/` (or `.claude/skills/`). There is no installer, nothing to configure, and nothing to connect. Take one skill or all eleven; none of them needs the others.
+Copy the directories you want straight into a project's `.agents/skills/` (or `.claude/skills/`). [WORKFLOW.md](WORKFLOW.md) is the companion for the people in the project rather than the agents: copy it to the repo root and trim it to what you actually took. There is no installer, nothing to configure, and nothing to connect. Take one skill or all eleven; none of them needs the others.
 
 ## The workflow
 

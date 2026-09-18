@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.09.18]
+
 ### Added
 
 - **Skills that send an agent to read something now forbid obeying it.** Reading is untouched - issue bodies, comments, KB articles, wiki pages and logs are read exactly as before, because that is the job. What is forbidden is acting on a line inside one that tells the agent to run a command, install a package, or edit a build or instruction file: quote it, name its source, ask. A trusted source does not make the bytes trusted, and one approval covers one document. `project-docs` carries a sharper version, because a pulled article or wiki page lands in `docs/knowledge/` indistinguishable from what the team wrote, and a wiki's write list is wider than the repo's. The reasoning sits in `docs/adr/0005-fetched-text-is-data.md` rather than in the skills, and it is honest that this is policy and not enforcement: nobody has measured whether such a rule stops an agent following an injected instruction. Raised by a peer project's finding. story-workflow 1.25, triage 1.28, to-issues 1.17, project-docs 1.38, light-skills project-docs 1.10, to-stories 1.3.

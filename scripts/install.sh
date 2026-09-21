@@ -74,7 +74,7 @@ SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/stor
         "$REPO_DIR/skills/stories/to-issues" "$REPO_DIR/skills/stories/triage"
         "$REPO_DIR/skills/docs/project-docs" "$REPO_DIR/skills/docs/to-prd"
         "$REPO_DIR/skills/docs/to-adr" "$REPO_DIR/skills/docs/to-rad"
-        "$REPO_DIR/skills/docs/grill-with-docs" "$REPO_DIR/skills/docs/regulatory-compliance" "$REPO_DIR/skills/docs/to-wiring"
+        "$REPO_DIR/skills/docs/grill-with-docs" "$REPO_DIR/skills/docs/regulatory-compliance"
         "$REPO_DIR/skills/sessions/handoff" "$REPO_DIR/skills/sessions/housekeeping"
         "$REPO_DIR/skills/sessions/zoom-out" "$REPO_DIR/skills/engineering/tdd"
         "$REPO_DIR/skills/engineering/improve-codebase-architecture"
@@ -99,7 +99,7 @@ SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/stor
 # never pruned, even if an older installer once shipped it: the developer
 # may want it, and it is not ours to remove. Same for anything the
 # project added itself.
-RETIRED_SKILLS=(grill-me to-ai-skill to-research to-design to-library-skill
+RETIRED_SKILLS=(grill-me to-ai-skill to-research to-design to-library-skill to-wiring
                 setup-project manage-docs manage-persona manage-skills
                 sync-tracking)
 
@@ -1558,11 +1558,34 @@ attach_project() {  # $1 dir, $2 yt_project, $3 readonly(true|""), $4 mode
 
 pick_project() {  # sets PROJECT_DIR/PROJECT_NAME (may be empty = user-level only)
   PROJECT_DIR=""; PROJECT_NAME=""
+  # Nobody arriving here knows what "user-level" means, and the word appears
+  # nowhere else until it has already happened. Say it before asking.
+  note "Two ways to install the skills:"
+  note "  Project - copied into that repo and committed, so everyone who clones"
+  note "            it gets the same versions. This is the one you usually want."
+  note "  User    - copied into your home directory instead. They follow you into"
+  note "            every project on this machine, are never committed, and"
+  note "            nobody else on the team sees them."
+  note "A project copy always overrides a user copy, and you can set up a project"
+  note "later with --project <dir>."
+  blank
+
   # default to the directory we're standing in when it looks like a project;
   # never prefill some OTHER project from history
   local here=""
   if [[ -d .git || -d .agents || -f AGENTS.md ]]; then here="$PWD"; fi
-  local dir; dir="$(ask "Project repo to set up (path; Enter for user-level setup only)" "$here")"
+  # The hint has to match what Enter actually does. With a path prefilled,
+  # Enter TAKES it - so "Enter for user-level only" was a lie in the common
+  # case, and there was no way to choose user-level at all without typing a
+  # path that fails. "-" is that answer.
+  local q dir
+  if [[ -n "$here" ]]; then
+    q="Project repo to set up (Enter accepts the path below; '-' for user-level only)"
+  else
+    q="Project repo to set up (full path, or Enter for user-level only)"
+  fi
+  dir="$(ask "$q" "$here")"
+  [[ "$dir" == "-" || "$dir" == "none" ]] && dir=""
   [[ -z "$dir" ]] && { say "  user-level setup only - bind a project later with --project <dir>"; return; }
   dir="${dir/#\~/$HOME}"
   [[ -d "$dir" ]] || { warn "$dir is not a directory - continuing with user-level setup only"; return; }
@@ -1765,7 +1788,7 @@ wizard() {
     say "                      \"that's done, check it off\" / \"is this story done?\""
     say ""
     say "     Also installed: to-adr, to-rad, to-prd, to-issues, triage,"
-    say "     grill-with-docs, to-wiring, regulatory-compliance, handoff, housekeeping."
+    say "     grill-with-docs, regulatory-compliance, handoff, housekeeping."
   else
     say "  1. Restart your agentic coding environment so it loads the '$MCP_SERVER' MCP server."
     say "  2. Bind a repo when ready: ./scripts/install.sh --project <dir>"

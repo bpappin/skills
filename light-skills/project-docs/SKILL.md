@@ -5,12 +5,12 @@ license: MIT
 compatibility: Standalone. Filing conventions only - no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.10"
+  version: "1.11"
 ---
 
 # Project Docs
 
-Where a document belongs, and what to call it. This skill owns filing and nothing else - the authoring of each document type has its own skill (`to-adr`, `to-prd`, `to-rad`, `to-wiring`).
+Where a document belongs, and what to call it. This skill owns filing and nothing else - the authoring of each document type has its own skill (`to-adr`, `to-prd`, `to-rad`).
 
 There is no publishing step here and no sync. A document is filed when it is in the right directory with the right name, and that is the whole of it.
 

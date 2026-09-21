@@ -24,14 +24,14 @@ In a small team one person wears every hat and walks the whole spine. In a large
 
 | Role | Runs | Hands on |
 |---|---|---|
-| Business analyst / product manager | `grill-with-docs`, `to-prd` | A PRD, and the PM and commercial briefs derived from it |
-| Architect | `to-rad`, `to-adr`, `to-wiring`, `grill-with-docs` | Research logs, decisions, and the integration rules in `WIRING.md` |
+| Business analyst / product manager | `grill-with-docs`, `to-prd` | A PRD - and, if asked, the PM and commercial briefs |
+| Architect | `to-rad`, `to-adr`, `grill-with-docs` | Research logs and decisions |
 | Developer | `to-stories`, `to-adr`, `tdd` | Story files, implementation decisions, working code |
 | Anyone, any session | `handoff`, `housekeeping`, `zoom-out`, `project-docs` | — |
 
-**The business analyst or product manager** starts with `grill-with-docs` if the requirement is still vague — it interviews until the fuzzy parts are named, and challenges the words used against the project's domain glossary, which is where most requirement ambiguity actually lives. Then `to-prd` writes the PRD and derives the two audience briefs from it: the product brief in capability and sequencing terms, the commercial brief only when the change alters what someone outside the company can be told or promised. Those are separate documents on purpose. Nobody reads past their own section in a combined one.
+**The business analyst or product manager** starts with `grill-with-docs` if the requirement is still vague — it interviews until the fuzzy parts are named, and challenges the words used against the project's domain glossary, which is where most requirement ambiguity actually lives. Then `to-prd` writes the PRD - one file. The product brief (capability and sequencing terms) and the commercial brief (only when the change alters what someone outside the company can be told or promised) are written when someone asks for them, never by default.
 
-**The architect** works the technical questions before anyone commits to an approach. `to-rad` holds a question while it is still open — the options, what was tried, what failed, the recommendation — and it is the only document here allowed to be inconclusive. When a recommendation hardens into a commitment, `to-adr` records it with what was rejected and why. `to-wiring` is the one people forget: it defines how features hook into each other in `WIRING.md`, so a new feature does not silently fail to integrate with the existing ones. An architect may also slice the work with `to-stories`, or leave that to whoever picks it up.
+**The architect** works the technical questions before anyone commits to an approach. `to-rad` holds a question while it is still open — the options, what was tried, what failed, the recommendation — and it is the only document here allowed to be inconclusive. When a recommendation hardens into a commitment, `to-adr` records it with what was rejected and why. If the project keeps a `WIRING.md` at its root - its own notes on how features hook into each other - `to-stories` checks each slice against it, so a new feature does not silently fail to integrate with the existing ones. Nothing generates that file; the team writes it. An architect may also slice the work with `to-stories`, or leave that to whoever picks it up.
 
 **The developer** usually arrives with the PRD already written and agreed, and runs two skills. `to-stories` slices it into work that can be picked up — this is the common entry point and often the only one. `to-adr` records the decisions that are genuinely theirs: which library, which boundary, which failure mode they chose to accept. Those are your calls even when the requirements are not, and in this arrangement they are exactly the ones nobody writes down, because the requirements were someone else's and it feels as though the decisions were too. Then `tdd` against the slices.
 
@@ -102,10 +102,9 @@ These are a parallel set, not a subset. The same idea often appears in both, wor
 |---|---|
 | `to-rad` | Research log — options, trade-offs, what failed, a recommendation |
 | `to-adr` | Decision record — one hard-to-reverse choice, and what was rejected |
-| `to-prd` | Requirements — what is being built, plus the PM and commercial briefs |
+| `to-prd` | Requirements — what is being built; PM and commercial briefs on request |
 | `to-stories` | Vertical slices with acceptance criteria, as files in the repo |
 | `tdd` | Red-green-refactor, one slice at a time |
-| `to-wiring` | Feature-to-feature integration rules, kept in `WIRING.md` |
 | `grill-with-docs` | Interview a plan until it stops being vague; sharpen the glossary |
 | `project-docs` | Where a document belongs and what to call it — filing only |
 | `handoff` | Compact a session into something another agent can pick up |

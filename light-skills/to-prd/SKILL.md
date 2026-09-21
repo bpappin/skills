@@ -1,11 +1,11 @@
 ---
 name: to-prd
-description: Synthesize conversation context and codebase understanding into a formal PRD, with verification living on the stories that implement it - then derive the product and commercial briefs the PRD's other audiences need. Use when the user wants to formalize a plan, feature idea, or requirement discussion into a PRD, or wants an existing PRD restated for product management or business development. Triggers - "write a PRD", "formalize this plan", "turn this into requirements", "brief for the PM", "what do we tell sales", "commercial brief", "what can we promise".
+description: Synthesize conversation context and codebase understanding into a formal PRD, with verification living on the stories that implement it - one file. Product and commercial briefs are written only when someone asks for one. Use when the user wants to formalize a plan, feature idea, or requirement discussion into a PRD, or wants an existing PRD restated for product management or business development. Triggers - "write a PRD", "formalize this plan", "turn this into requirements", "brief for the PM", "what do we tell sales", "commercial brief", "what can we promise".
 license: MIT
 compatibility: Standalone. Writes a PRD file into the repo; no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Product Requirements (to-prd)
@@ -62,11 +62,11 @@ stories are written, fill the PRD's `## Stories` table with their numbers
 and which requirements each covers. Where a requirement has strict rules or
 needs test automation, say so in that story's Specification.
 
-### 4. Derive the audience briefs
+### 4. Briefs - only when asked
 
-A PRD is written for the people building the thing. The same decisions
-matter to people who do not read module boundaries, and re-explaining it
-verbally each time is how the versions drift apart.
+**The output is one file: the PRD.** Do not write a brief unprompted. When the PRD is done, offer them in one line - "Want a product brief or a commercial brief for this?" - and write one only if the answer is yes, or if a brief was asked for by name ("brief for the PM", "what do we tell sales"). A requirement that arrives as three documents is three things to keep in step, and most of the time nobody reads the other two.
+
+When one is asked for, the rest of this section is how to write it well. A PRD is written for the people building the thing; a brief restates the same decisions for people who do not read module boundaries.
 
 **Separate documents, not renderings.** Each brief is a first-class
 document written for its own audience. Do not write one document with a
@@ -84,14 +84,14 @@ the PRD *should* have said — success signals, a firm date, a segment — that
 is a gap in the PRD. Fix it there, then write the brief. This is the most
 useful thing about the exercise: it finds the holes.
 
-**Product brief** (`assets/templates/pm-brief.md` in this skill) - write
-this whenever the PRD represents a real product decision. Outcomes, users,
+**Product brief** (`assets/templates/pm-brief.md` in this skill) - when
+asked. Outcomes, users,
 non-goals in plain terms, how we will know it worked, sequencing, risks. No
 module names; if the problem cannot be stated without them, the PRD's
 Problem section is not finished.
 
-**Commercial brief** (`assets/templates/bd-brief.md`) - **only when it makes
-sense**, and often it does not. The test: *does this change what someone
+**Commercial brief** (`assets/templates/bd-brief.md`) - when asked, and
+**even then only when it makes sense**; often it does not. The test: *does this change what someone
 outside the company can be told, sold, or promised?* A new capability, a
 changed limit, a new integration - yes. Refactors, tech debt, internal
 tooling, performance work nobody asked for - no, and producing one anyway
@@ -104,7 +104,7 @@ planned, or exploratory, because a reader assumes the strongest reading you
 leave open. Never carry story ids, module names, or internal codenames into
 it.
 
-Both are named after the PRD they derive from - `PRD-0003-draft-visibility-pm-brief.md` - so the three sort together and a reader can see at a glance that a brief has a parent. Both live beside the PRD in `docs/requirements/` unless the project has a
+Both are named after the PRD they derive from - `PRD-0003-draft-visibility-pm-brief.md` - so a brief sorts beside its PRD and a reader can see at a glance that it has a parent. Both live beside the PRD in `docs/requirements/` unless the project has a
 commercial or go-to-market section, in which case the commercial brief
 belongs there.
 
@@ -116,9 +116,9 @@ belongs there.
 - [ ] Are non-goals explicit?
 - [ ] Is the Stories table filled (or explicitly deferred to to-stories)?
 - [ ] No AC in the PRD - checklists belong to the stories.
-- [ ] Does the PM brief read without a single module name?
-- [ ] Does the PRD actually say how success is measured, or did the brief
-      expose that it does not?
-- [ ] If there is a commercial brief, does it pass the outside-the-company
-      test - and does it state what the thing does *not* do?
-- [ ] Does each brief cross-link the PRD and the other tiers, with a date?
+- [ ] Does the PRD say how success is measured?
+- [ ] Exactly one file, unless a brief was asked for?
+- [ ] If a PM brief was asked for: does it read without a single module name?
+- [ ] If a commercial brief was asked for: does it pass the outside-the-company
+      test, and state what the thing does *not* do?
+- [ ] If any brief exists: does it cross-link the PRD, with a date?

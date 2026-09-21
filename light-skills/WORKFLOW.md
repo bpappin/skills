@@ -29,14 +29,14 @@ In a small team one person wears every hat. In a larger one the stages belong to
 
 | Role | Runs | Ends up with |
 |---|---|---|
-| Business analyst / product manager | `grill-with-docs`, `to-prd` | A PRD, and the briefs its other readers need |
-| Architect | `to-rad`, `to-adr`, `to-wiring`, `grill-with-docs` | Research logs, decisions, and the integration rules in `WIRING.md` |
+| Business analyst / product manager | `grill-with-docs`, `to-prd` | A PRD - and, if asked, briefs for its other readers |
+| Architect | `to-rad`, `to-adr`, `grill-with-docs` | Research logs and decisions |
 | Developer | `to-stories`, `to-adr`, `tdd` | Story files, implementation decisions, working code |
 | Anyone, any session | `handoff`, `housekeeping`, `zoom-out`, `project-docs` | - |
 
-**If you are the business analyst or product manager,** start with `grill-with-docs` when the requirement is still vague. It interviews you until the fuzzy parts are named, and challenges the words against the project's glossary, which is where most requirement ambiguity actually lives. Then `to-prd` writes the PRD and derives the briefs from it: a product brief in capability and sequencing terms, and a commercial brief only when the change alters what someone outside the company can be told or promised. They are separate documents on purpose, because nobody reads past their own section in a combined one.
+**If you are the business analyst or product manager,** start with `grill-with-docs` when the requirement is still vague. It interviews you until the fuzzy parts are named, and challenges the words against the project's glossary, which is where most requirement ambiguity actually lives. Then `to-prd` writes the PRD - one file. If someone outside engineering needs it restated, ask for a product brief, or a commercial brief when the change alters what someone outside the company can be told or promised; neither is written unless you ask.
 
-**The architect** works the technical questions before anyone commits. `to-rad` holds a question while it is still open - the options, what failed, the recommendation - and it is the only document here allowed to be inconclusive. When a recommendation hardens, `to-adr` records it with what was rejected and why. `to-wiring` is the one people forget: it says how features hook into each other, so a new one does not silently fail to integrate.
+**The architect** works the technical questions before anyone commits. `to-rad` holds a question while it is still open - the options, what failed, the recommendation - and it is the only document here allowed to be inconclusive. When a recommendation hardens, `to-adr` records it with what was rejected and why. If this project keeps a `WIRING.md` at its root - its own notes on how features hook into each other - `to-stories` checks each slice against it, so a new feature does not silently fail to integrate. Nothing generates that file; the team writes it.
 
 **The developer** usually arrives with the PRD already agreed. `to-stories` slices it into work someone can pick up - often the only entry point they need - and `to-adr` records the calls that are genuinely theirs: which library, which boundary, which failure mode they accepted. Those are exactly the decisions nobody writes down, because the requirements were someone else's and it feels as though the decisions were too. Then `tdd` against the slices.
 
@@ -58,7 +58,7 @@ In a small team one person wears every hat. In a larger one the stages belong to
 |---|---|
 | "what are the options" / "write up the spike" | A research log - the trail, what failed, a recommendation (`to-rad`) |
 | "we decided X" / "record this decision" | A decision record with what was rejected (`to-adr`) |
-| "write a PRD" / "turn this into requirements" | Requirements, plus the briefs its other readers need (`to-prd`) |
+| "write a PRD" / "turn this into requirements" | One requirements document (`to-prd`) - briefs only if you ask |
 | "break this down" / "make tickets" | Vertical slices as story files (`to-stories`) |
 | "grill me" / "poke holes in this" | An interview until the vague parts are named (`grill-with-docs`) |
 | "build this test-first" | Red, green, one slice at a time (`tdd`) |

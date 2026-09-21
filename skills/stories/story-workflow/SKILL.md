@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.25"
+  version: "1.26"
 ---
 
 # Story Workflow
@@ -85,6 +85,10 @@ toggle or edit them as if they were checklist items.
    the scope line, don't ask. Read the actual column names from the
    project's dimensions; never invent one. Already in progress → no-op.
    Leave State alone — it records how the story resolves, not where it is.
+
+**If the repo root has a `WIRING.md`, read it before you plan.** It is a project's own record of how features hook into each other - global services, integration triggers, the connection mechanisms this codebase uses - kept in plain git beside `AGENTS.md`. Nothing generates or maintains it, so treat it as the team's notes rather than as generated truth: if it contradicts the code, the code wins and the file is stale.
+
+Check the story against it. Where a trigger matches, say in your plan how the hookup will be built. A missing hookup in *existing* code is discovered work - route it via `work.discovered`, never fold it into this story.
 
 ## While working
 

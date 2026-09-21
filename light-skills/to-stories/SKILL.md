@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. No tracker, no network, no scripts - stories are files in the repo.
 metadata:
   author: bpappin
-  version: "1.3"
+  version: "1.5"
 ---
 
 # To Stories
@@ -43,19 +43,24 @@ Two things follow from a source you cannot open yourself:
 
 Enough to use the project's own vocabulary in titles and descriptions, and to respect any ADRs covering the area. A story written in words the codebase does not use will be misread by whoever picks it up.
 
+If the repo root has a `WIRING.md` - a project's own notes on how features hook into each other - read it and check each slice against it, saying in the slice how the hookup gets built. Nothing maintains that file, so where it contradicts the code, the code wins.
+
 ### 3. Draft vertical slices
 
-Each story is a **tracer bullet**: a thin vertical slice cutting through every integration layer end to end, not a horizontal slice of one layer.
+Each story is a **tracer bullet**: a vertical slice cutting through every integration layer end to end, not a horizontal slice of one layer.
 
 - Each slice delivers a narrow but COMPLETE path through every layer it touches - schema, API, UI, tests.
 - A completed slice is demoable or verifiable on its own.
-- Prefer many thin slices over few thick ones.
+- **A simple feature is one story.** Start there, and split only when you have to.
+- **Split for one of two reasons, and name it.** *Necessity*: a part genuinely has to land separately - a migration that must deploy first, a piece someone else is blocked on, work another person will pick up in parallel. *Complexity*: the one story has grown too big to hold in a single working session or to review as a single change.
+- **Split at a seam, not at a layer or a step.** A seam is a real boundary in the system - where one part can change without the other. Each piece is still a complete vertical slice, demoable on its own; cutting the schema from the API from the UI is the horizontal slicing this exists to prevent.
+- Every extra story is a file someone reads, tracks and closes. If you cannot say which reason a split serves, it is one story.
 
 Mark each **AFK** (implementable and mergeable without human interaction) or **HITL** (needs a person - an architectural decision, a design review, a judgement call). Prefer AFK where the work allows it.
 
 ### 4. Quiz the user
 
-Present the breakdown as a numbered list before writing anything. For each slice: **Title**, **Type** (AFK/HITL), **Blocked by**, **Covers** (which requirements from the source), and a rough **Estimate** (1h / 4h / 1d - calibration data, not a promise).
+Present the breakdown as a numbered list before writing anything: the count first, and for every split beyond one story, the reason - necessity or complexity - and the seam it cuts at. For each slice: **Title**, **Type** (AFK/HITL), **Blocked by**, **Covers** (which requirements from the source), and a rough **Estimate** (1h / 4h / 1d - calibration data, not a promise).
 
 Ask: is the granularity right? Are the dependencies right? Should any slices merge or split? Iterate until approved. Writing twelve files and then being told the slicing is wrong wastes more than the question costs.
 

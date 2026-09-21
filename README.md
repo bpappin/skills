@@ -103,7 +103,7 @@ work — it belongs upstream here, never in a project's copy.
 | Directory | Contents |
 |---|---|
 | `skills/stories/` | Tracker discipline: story-workflow, story-reconcile, to-issues, triage |
-| `skills/docs/` | Documentation system: project-docs, to-prd, to-adr, to-rad, grill-with-docs, to-wiring, regulatory-compliance |
+| `skills/docs/` | Documentation system: project-docs, to-prd, to-adr, to-rad, grill-with-docs, regulatory-compliance |
 | `skills/sessions/` | Session lifecycle: handoff, housekeeping, zoom-out; worklog (à la carte) |
 | `skills/engineering/` | Practice: tdd, improve-codebase-architecture, prototype, to-ux |
 | `skills/authoring/` | Making skills: write-a-skill |

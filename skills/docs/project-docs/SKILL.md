@@ -1,11 +1,11 @@
 ---
 name: project-docs
-description: Decide where a document belongs, and keep the repo's docs/knowledge/ tree in two-way sync with the tracker knowledge base (YouTrack articles or the GitHub repo wiki; tracker-agnostic via bindings). Owns filing, sections, templates, and the sync - NOT the authoring of specific document types, which have their own skills (to-adr for decisions, to-prd for requirements, to-rad for investigations and proofs of concept, to-wiring for wiring rules). Use when placing a document, creating a section, syncing or publishing docs, resolving a sync conflict, or adopting the docs system. Triggers - "where should this doc go", "file this", "what section", "update docs", "sync docs", "publish the docs", "docs conflict", "set up the docs".
+description: Decide where a document belongs, and keep the repo's docs/knowledge/ tree in two-way sync with the tracker knowledge base (YouTrack articles or the GitHub repo wiki; tracker-agnostic via bindings). Owns filing, sections, templates, and the sync - NOT the authoring of specific document types, which have their own skills (to-adr for decisions, to-prd for requirements, to-rad for investigations and proofs of concept). Use when placing a document, creating a section, syncing or publishing docs, resolving a sync conflict, or adopting the docs system. Triggers - "where should this doc go", "file this", "what section", "update docs", "sync docs", "publish the docs", "docs conflict", "set up the docs".
 license: MIT
 compatibility: Standalone for filing/creating docs. Syncing requires git on PATH plus the binding's connection - YouTrack REST (story-tools connection or YOUTRACK_URL/TOKEN env), or a GitHub token with Contents RW and an initialized wiki.
 metadata:
   author: bpappin
-  version: "1.38"
+  version: "1.40"
 ---
 
 # Project Docs
@@ -42,7 +42,7 @@ and keeps it in sync. Writing one is a different job with its own skill:
 | Requirements | `to-prd` |
 | An investigation, a design worked out by discussion, or what a proof of concept proved | `to-rad` |
 | UX, AX and visual design | `to-ux` |
-| Feature wiring rules | `to-wiring` |
+| Feature wiring rules | `WIRING.md` at the repo root - plain git, written by the team; `story-workflow` reads it when planning |
 
 Reach for those when the task is "record this decision" or "write this up",
 and this one when the task is "where does it go" or "get it synced". If a

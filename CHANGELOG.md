@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.10.01]
+
 ### Removed
 
 - **Effort logging is gone from the skills.** `effort.log` recorded human-approved time against the focused story, and the mechanism is being redesigned, so it comes out rather than being adjusted in place. Removed: the operation and its whole section in `story-workflow`, the completion step that offered an entry, the YouTrack and GitHub binding rows, the `### Effort` block in the offline binding, the `housekeeping` checklist item, the `handoff` step that proposed one, and the replay of effort entries in `story-reconcile`. `worklog` - the developer's cross-project day, which was always a separate record - stays, and no longer points at a thing that does not exist. The YouTrack app still exposes `story_log_work`; removing a deployed tool is a separate decision, and nothing in the skills calls it now. story-workflow 1.28, housekeeping 1.6, handoff 1.3, story-reconcile 0.31, worklog 0.2.

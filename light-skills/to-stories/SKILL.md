@@ -1,11 +1,11 @@
 ---
 name: to-stories
-description: Break a plan, spec, or PRD into independently-grabbable stories using tracer-bullet vertical slices, written as markdown files in the repo. Use when the user wants to turn a plan into implementation stories and the project has no issue tracker, or the tracker is not reachable from here. Triggers - "break this down", "turn this into stories", "what are the slices", "make tickets for this".
+description: Break a plan, spec, or PRD into independently-grabbable stories using tracer-bullet vertical slices, written as markdown files in the repo. Use when the user wants to turn a plan into implementation stories and the project has no issue tracker, or the tracker is not reachable from here. Also covers keeping a feature's test plan current when a story changes what a user sees. Triggers - "break this down", "turn this into stories", "what are the slices", "make tickets for this".
 license: MIT
 compatibility: Standalone. No tracker, no network, no scripts - stories are files in the repo.
 metadata:
   author: bpappin
-  version: "1.5"
+  version: "1.6"
 ---
 
 # To Stories
@@ -119,5 +119,7 @@ If the source was a PRD, add or update its story table with the new numbers and 
 There is no tracker to hold state, so the file holds it. Set `status: doing` when you start and `status: done` when the AC are all checked. Tick AC boxes in place as they land.
 
 **Do not tick an AC you have not verified.** The checkbox is the only completion signal this set has - there is no board, no query, and nobody reviewing a transition. A story marked done on inspection rather than on evidence is worse than one left open, because it stops being looked at.
+
+**Before you mark a story done, ask whether it changed what a user can see or do.** If it did, the feature's test plan under `docs/testing/<feature>/` is written or refreshed first - a new sequence for new behaviour, corrected steps for changed behaviour, and the date and version recorded when it is actually run. A folder per feature, its README the index, one file per sequence: what the user does, what setup it needs, the numbered steps in the app's own labels, and what passing looks like on screen. If nothing user-facing changed - a refactor, a library, a build change - say so and move on; there is nothing to press buttons on.
 
 If work turns up that is out of scope, do not widen the story. Write a new one and note it in `blocked_by` or `References` as appropriate. Scope discipline is the whole reason for slicing.

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone for filing/creating docs. Syncing requires git on PATH plus the binding's connection - YouTrack REST (story-tools connection or YOUTRACK_URL/TOKEN env), or a GitHub token with Contents RW and an initialized wiki.
 metadata:
   author: bpappin
-  version: "1.40"
+  version: "1.41"
 ---
 
 # Project Docs
@@ -43,6 +43,7 @@ and keeps it in sync. Writing one is a different job with its own skill:
 | An investigation, a design worked out by discussion, or what a proof of concept proved | `to-rad` |
 | UX, AX and visual design | `to-ux` |
 | Feature wiring rules | `WIRING.md` at the repo root - plain git, written by the team; `story-workflow` reads it when planning |
+| A feature's test plan - how a person or an agent verifies it by hand | `testing/<feature>/`, from `assets/templates/qa-feature.md` and `qa-sequence.md` |
 
 Reach for those when the task is "record this decision" or "write this up",
 and this one when the task is "where does it go" or "get it synced". If a
@@ -55,11 +56,8 @@ Bundled resources:
 - [references/stability.md](references/stability.md) - the four stability
   levels (spike, proof of concept, experimental, supported), what each
   promises, and where the word gets written.
-- `assets/templates/` - starting points: `prd.md`, `adr.md`,
-  `research.md`, `qa-plan.md`, `prospect.md`, `pm-brief.md` and
-  `bd-brief.md` (audience renderings derived from a PRD - see to-prd),
-  plus `readme.md` (section filing guide) and `docs-guide.md` (the
-  `docs/README.md` front door).
+- `assets/templates/` - starting points: `prd.md`, `adr.md`, `research.md`, `prospect.md`, `pm-brief.md` and `bd-brief.md` (audience renderings derived from a PRD - see to-prd), plus `readme.md` (section filing guide) and `docs-guide.md` (the `docs/README.md` front door).
+- For `testing/`: `qa-feature.md` is a feature's index and `qa-sequence.md` is one sequence within it - what a person or an agent does, and how they can see it passed. `qa-plan.md` is the older, broader shape and stays for a protocol that spans features rather than describing one.
 - Tracker bindings - `tracker.type` in `.agents/config/story-tools.json`
   selects one (absent → youtrack):
   - [references/tracker-youtrack.md](references/tracker-youtrack.md) -

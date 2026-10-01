@@ -1,11 +1,11 @@
 ---
 name: worklog
-description: EXPERIMENTAL. Record the developer's working time in a personal, cross-project work log - a plain markdown ledger under ~/.agents/worklog/ that they edit by hand. The developer states the duration; the agent supplies which project it was and one short summary of what was worked on. Use for "log time", "log 3 hours", "log my day", "start working", "stop tracking", "what did I work on", "how many hours this week", timesheets, and pushing hours to invoicing tools. NOT for effort on a tracker issue - that is story-workflow's `effort.log`, recorded on the issue being worked.
+description: EXPERIMENTAL. Record the developer's working time in a personal, cross-project work log - a plain markdown ledger under ~/.agents/worklog/ that they edit by hand. The developer states the duration; the agent supplies which project it was and one short summary of what was worked on. Use for "log time", "log 3 hours", "log my day", "start working", "stop tracking", "what did I work on", "how many hours this week", timesheets, and pushing hours to invoicing tools. NOT for time attributed to a single tracker issue: the skills do not record that at present, and it is not kept here.
 license: MIT
 compatibility: No tracker connection required. Needs python3 and a writable ~/.agents/. Adapters that push to external tools need their own credentials and are not built yet.
 metadata:
   author: bpappin
-  version: "0.1"
+  version: "0.2"
   stability: experimental
 ---
 
@@ -19,9 +19,10 @@ The developer's working time, by project, in one personal record that spans
 every repo they touch. It answers *what did I do today* and it feeds
 timesheets and invoicing.
 
-**This is not issue effort.** Effort is time spent on a tracker issue,
-recorded on that issue, answering *what did this story cost* — that belongs
-to story-workflow's `effort.log` and never appears here. A working day
+**This is not issue effort.** Time spent on one tracker issue, answering
+*what did this story cost*, is a different record with a different owner.
+The skills do not write it at all at present - that mechanism is being
+redesigned - and it never appears here either way. A working day
 contains meetings, several projects, and work no issue covers. When the
 developer says "log time", "log 3h" or "log my day", they mean **this**,
 never an issue.

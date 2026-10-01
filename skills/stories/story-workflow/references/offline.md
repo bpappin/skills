@@ -40,10 +40,6 @@ Story: PROJ-123 - Import pipeline retries        <!-- or a title if no ID -->
 <canonical story body - ## Purpose + ## Specification, plus
 ## Acceptance Criteria if clear>
 
-### Effort
-90m - approved by user
-<!-- effort on the story above; a working day is not effort -->
-
 ### Notes
 <anything the next session or the reconcile pass needs>
 ```
@@ -59,7 +55,6 @@ Story: PROJ-123 - Import pipeline retries        <!-- or a title if no ID -->
 | `ac.add` | Same, marked `(added)` - still requires explicit user approval |
 | `work.discovered` | Canonical story block under `### Discovered work` - the off-ramp rules are unchanged: log it, tell the user, continue the focused story |
 | `story.completeCheck` | Parse the AC you have; report the verdict and record it in Notes. Never declare done beyond what you can verify |
-| `effort.log` | `### Effort` entry - one rounded, user-approved number against the session's focused story. No focused story means no effort entry |
 
 All scope-guard rules apply verbatim offline: the AC list is the scope, the
 off-ramp is the default for anything else, silent expansion is still

@@ -1,11 +1,11 @@
 ---
 name: story-workflow
-description: Work a tracker story with strict scope discipline - focus one story, treat its acceptance-criteria checklist as the scope, route discovered work to new linked issues, and gate completion. Tracker-agnostic via per-tracker bindings (YouTrack and GitHub today; Jira later). Use whenever starting development work, picking up a ticket, resuming a task, checking off acceptance criteria, completing a story, or when new work is discovered mid-task. Triggers - "work on", "pick up", "resume", "what am I working on", "start the next story", "is this done", issue IDs like PROJ-123 or #123.
+description: Work a tracker story with strict scope discipline - focus one story, treat its acceptance-criteria checklist as the scope, route discovered work to new linked issues, and gate completion. Tracker-agnostic via per-tracker bindings (YouTrack and GitHub today; Jira later). Use whenever starting development work, picking up a ticket, resuming a task, checking off acceptance criteria, updating a feature test plan or QA test plan, asking whether a feature is verified, completing a story, or when new work is discovered mid-task. Triggers - "work on", "pick up", "resume", "what am I working on", "start the next story", "is this done", issue IDs like PROJ-123 or #123.
 license: MIT
 compatibility: Requires a connection to the project's issue tracker (see the tracker binding for specifics; YouTrack needs MCP, Cloud or Server 2025.3+)
 metadata:
   author: bpappin
-  version: "1.26"
+  version: "1.28"
 ---
 
 # Story Workflow
@@ -51,7 +51,6 @@ story-reconcile. Point the user at the installer once, confirm, then work.
 | `ac.add` | Expand scope — explicit user approval only |
 | `work.discovered` | Log out-of-scope work as a NEW linked issue |
 | `story.completeCheck` | Verdict: all AC done? QA required and present? |
-| `effort.log` | Record human-approved EFFORT on the focused issue (was `work.logTime`). The developer's working day is a separate record - see the `worklog` skill |
 | `story.next` | Pick the next story: highest priority, ready first |
 
 The story format is the same everywhere (see
@@ -103,55 +102,6 @@ Check the story against it. Where a trigger matches, say in your plan how the ho
 - `ac.add` is allowed only when the user explicitly asks to widen this
   story's scope. When in doubt, offer `work.discovered` first.
 
-## Effort on the focused story
-
-There are TWO kinds of time record and this skill owns only one of them.
-
-**Effort** is time spent on *this issue*, recorded on the issue. That is
-`effort.log`, and it is what this section is about.
-
-**A work log** is the developer's working time, attributed to a *project*
-and destined for a timesheet or an invoicing tool. It is a separate record
-with a separate owner — the `worklog` skill — and this skill never writes
-it. A day contains meetings, several projects, and work no issue covers;
-none of that is effort on a story.
-
-Mixing them produces two specific failures, both seen in the wild:
-
-- Recording a whole working day as effort on one issue. Eleven hours never
-  belongs to a story - that is a work log, and the `worklog` skill owns it.
-- Hunting for "the best home" for a number when no single story owns it.
-  **If no story is focused, there is no effort to record** — that time is
-  work-log time, and the answer is to say so, not to pick an issue.
-
-Effort goes on the focused story and nowhere else. Never search for a
-story to carry a number, never split a number across several.
-
-At session close (completion, handoff, housekeeping, or "I'm done"), if a
-story was focused, compute end minus session start, round to the nearest 15
-minutes, and propose ONE entry: "About 2h on PROJ-123 — log it as effort?"
-On approval, `effort.log`.
-
-- **Never record effort silently** - every entry is a number the user
-  approved.
-- **The duration is the user's to state, never inferred.** Do not derive it
-  from commits, tracker activity or elapsed tool calls, and never adjust it
-  to hit a target. "It says 3h but I worked 5" is a correction, not a
-  conflict - take the number given.
-- Gaps inside a session are work (thinking counts); don't subtract them.
-- An absurd computed number (unclosed session overnight) → ask what the
-  session actually took, and consider whether it is effort at all or the
-  developer's day, which is the work log's business.
-- **"log time", "log 3h", "log my day" are NOT this.** Those phrases mean
-  the developer's work log — hand them to the `worklog` skill (à la carte;
-  if it is not installed, say so rather than logging anywhere else), which
-  attributes to a project and feeds timesheets. Only an explicit "log 30m
-  ON PROJ-123" is effort, and only because they named the issue.
-- Effort should be near-automatic: the session had a focused story and a
-  duration, so propose it at close and take a one-word yes. It never
-  competes for the phrase "log time".
-- A comment on the entry is one short line, not a play-by-play.
-
 ## Priority and tags
 
 - Priority is read from context, set by triage/planning. Never change a
@@ -180,7 +130,20 @@ On approval, `effort.log`.
 2. If QA is required and missing, write Gherkin scenarios for the verified
    behavior into a `## QA` section
    ([references/ac-format.md](references/ac-format.md)).
-3. When ready: confirm with the user, then move the story using the
+3. **Did this story change or add user-facing behaviour?** If it did, the
+   feature's test plan under `testing/<feature>/` is written or refreshed
+   before the story moves: a new sequence for new behaviour, corrected
+   steps for changed behaviour, and `Last verified` plus the version set
+   when it is actually run. New behaviour with no plan means a new
+   sequence from `project-docs`'s `qa-sequence.md`. **"No, nothing
+   user-facing changed" is a complete answer** - a library, a refactor or
+   a build change has nothing to verify by pressing buttons, and asking
+   for a plan there is the ceremony this is meant to avoid.
+
+   This is a prompt, not a gate: `story.completeCheck` does not know about
+   feature plans, so nothing refuses the story if you skip it. That makes
+   it worth asking out loud rather than silently deciding.
+4. When ready: confirm with the user, then move the story using the
    binding's state tool. Where the board has a testing/review column
    (e.g. "Testing", "Review"), Stage goes THERE, not to done — completion
    by the implementer means ready-for-verification; a human (or the QA
@@ -190,7 +153,6 @@ On approval, `effort.log`.
    concluded (usually Fixed) — the story can sit in Testing with State
    Fixed; that is the two fields doing their jobs. Mention any open
    discovered-work issues.
-4. Offer the session time entry (see Session time) if not yet logged.
 
 ## Coaching the human
 

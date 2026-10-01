@@ -4,7 +4,7 @@ description: Perform workspace housekeeping, cleanup audits, and prepare handoff
 license: MIT
 metadata:
   author: bpappin
-  version: "1.5"
+  version: "1.6"
 ---
 
 # Housekeeping
@@ -52,12 +52,6 @@ focused, means the story's AC checklist (story-workflow skill):
       or the to-issues skill for a planned batch. Never local TODO/gap files.
 - [ ] If the story might be complete, run the completion check
       (story-workflow) — don't declare it done otherwise.
-- [ ] Propose the session's time entry: end minus session start, rounded
-      to 15 minutes, ONE entry on the story that got most of the session
-      ("~2h on PROJ-123 - log it as effort?"). Record via story-workflow's
-      `effort.log`, and only against the focused story - a whole working
-      day is a work log, not issue effort
-      only after the user approves the number. Never log silently.
 
 ### Step 4: Context preservation & decisions
 

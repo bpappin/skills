@@ -16,7 +16,6 @@ YouTrack app; YouTrack's built-in MCP tools are always present alongside.
 | `ac.add` | `story_add_ac(text)` | Same read-modify-write, appending a `- [ ]` line |
 | `work.discovered` | `story_add_discovered_work(summary, description)` - **pass the issue id explicitly**; omitted, it uses your focused story, which may be in another project - links "discovered from" (falls back to relates-to + `discovered` tag) | `create_issue` in the same project (canonical format) + `link_issues` relates-to the current story |
 | `story.completeCheck` | `story_complete_story` - checks AC, `needs-gherkin` tag vs `## QA` | Parse AC yourself: all checked? tag present but no QA section? Report; don't close otherwise |
-| `effort.log` | `story_log_work(minutes, comment?)` on the FOCUSED issue - human-approved only. Effort belongs to the issue being worked; a working day belongs to the `worklog` skill, never here | No work-item tool built in: tell the user the number to enter via YouTrack's `work` command, or post it as a comment (`Effort: 2h`) for later entry |
 | `story.next` | `search_issues`: `project: {KEY} tag: {ready-for-agent} #Unresolved sort by: priority asc` (drop the tag term if the project doesn't use triage) | same |
 | Stage on pickup | predefined `update_issue` - Stage → the in-progress column (read real values via `story_project_dimensions`; fallback: `.agents/config/dimensions.md` from the last pull, else ask once) | same, values from the snapshot or board |
 | State change on completion | predefined `update_issue` - boards with a testing/review column: Stage → that column (a human moves it to done after verification); otherwise Stage → done column. Stage+State projects also set State → resolution (e.g. Fixed); single-field projects set that field | same |
@@ -54,8 +53,6 @@ Admin Write) and clients connected with `?customToolPackages=story-tools`
 connection after a deploy that changes tool names). One-time conveniences
 the installer creates automatically when the token permits: directed link
 type `discovered from`, the reserved workflow tags (shared with All
-Users), and per-project time tracking
-(work items behind `story_log_work`; enable manually under Project Settings
-> Time Tracking if the installer lacked admin rights). Optional app setting
+Users). Optional app setting
 "Read-only mode" refuses story_* writes server-side. Verify with
 `scripts/smoke.sh`.

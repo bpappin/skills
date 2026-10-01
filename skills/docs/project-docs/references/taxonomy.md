@@ -122,7 +122,7 @@ falls back to the directory stem, de-hyphenated and title-cased, so
 | `research/` | Research | Investigations - question, trail, findings. Postmortems and worked case studies are kinds of investigation and belong here, as files or as a sub-group if there are enough to warrant one |
 | `reference/` | Reference | External facts: vendors, prospects, regulations, domain material - and the **Domain Glossary** (the project's canonical terms; `AGENTS.md` at the repo root points at it so agents find it without a path) |
 | `guides/` | Developer Guides | How-to - onboarding, environment, CI. Numbered `DOC-`, sharing the sequence with `documents/` |
-| `testing/` | Quality Assurance | Durable test plans and protocols (QA *runs* are issues) |
+| `testing/` | Quality Assurance | Durable feature test plans - a folder per feature, its README the index, one article per sequence. A *run* is a tracker record where the project has a tracker wired, and never a document either way |
 | `compliance/` | Mandates & Compliance | Legal/regulatory rules the work must satisfy |
 | `support/` | Support | Support knowledge, runbooks, customer-facing material |
 | `documents/` | Documents | Informational pages that explain the project - what it is, why it exists, how the pieces relate. Numbered `DOC-0001-…`, and maintained in place rather than dated and closed. Also the honest home for a KB document that fits no other section |

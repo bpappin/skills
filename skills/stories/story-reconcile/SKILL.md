@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires a connection to the project's issue tracker (read access minimum; see the tracker binding). Writes optional - produces a report instead when read-only.
 metadata:
   author: bpappin
-  version: "0.30"
+  version: "0.31"
 ---
 
 # Story Reconcile
@@ -76,9 +76,8 @@ Bundled resources:
    - Rewrite each PRD's task content into a `## Stories` table of IDs;
      remove embedded AC.
    - Replay approved worklog entries: toggle the AC items on their
-     stories, create the discovered-work issues, record the effort
-     entries (`effort.log` - the numbers were already user-approved when
-     recorded). Mark each applied session block `Reconciled: <date>`;
+     stories and create the discovered-work issues. Mark each applied
+     session block `Reconciled: <date>`;
      when every session is applied, offer to delete the pending log.
    - Move GAP-style files into `docs/_archive/` (do not delete).
    - **Read-only mode** (config `readOnly: true` or writes refused): skip

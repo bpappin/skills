@@ -4,7 +4,7 @@ description: Compact the current conversation into a handoff document for anothe
 license: MIT
 metadata:
   author: bpappin
-  version: "1.2"
+  version: "1.3"
   argument-hint: "What will the next session be used for?"
 ---
 
@@ -26,4 +26,3 @@ Read the file before you write to it, and tell the user the final path.
 - Do not duplicate content already captured in other artifacts (PRDs, plans, ADRs, stories, commits, diffs) - reference them by ID, path, or URL instead. In particular, never restate the story's AC checklist: the story itself is the source of truth for progress.
 - Redact anything sensitive: API keys, tokens, passwords, personally identifiable information.
 - If the user passed arguments, treat them as a description of what the next session will focus on and tailor the doc accordingly.
-- A handoff usually ends the working session: if this session's time isn't logged yet, propose one entry (rounded to 15m) on the story that got most of it, and record it via story-workflow's `effort.log` once the user approves the number.

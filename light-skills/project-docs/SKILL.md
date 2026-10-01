@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Filing conventions only - no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.11"
+  version: "1.12"
 ---
 
 # Project Docs
@@ -41,7 +41,7 @@ If two fit, the document is probably two documents. Split it rather than filing 
 | `research/` | Investigations - question, trail, findings. Postmortems and worked case studies belong here |
 | `reference/` | External facts: vendors, regulations, domain material - and the **Domain Glossary**, the project's canonical terms |
 | `guides/` | How-to - onboarding, environment, CI. Numbered `DOC-`, sharing the sequence with `documents/` |
-| `testing/` | Durable test plans and protocols |
+| `testing/` | Durable feature test plans - a folder per feature, its README the index, one file per sequence. A run is not recorded here |
 | `compliance/` | Legal and regulatory rules the work must satisfy |
 | `documents/` | Informational pages explaining what the project is and how the pieces relate. Also the honest home for something that fits nothing else |
 

@@ -1,11 +1,11 @@
 ---
 name: to-prd
-description: Synthesize conversation context and codebase understanding into a formal PRD, with verification living on tracker stories - then derive the product and commercial briefs the PRD's other audiences need. Use when the user wants to formalize a plan, feature idea, or requirement discussion into a PRD, or wants an existing PRD restated for product management or business development. Triggers - "write a PRD", "formalize this plan", "turn this into requirements", "brief for the PM", "what do we tell sales", "commercial brief", "what can we promise".
+description: Synthesize conversation context and codebase understanding into a formal PRD, with verification living on tracker stories - and, only when asked, restate it for another audience as a pasteable summary or an outbox artifact - never a second document. Use when the user wants to formalize a plan, feature idea, or requirement discussion into a PRD, or wants an existing PRD restated for product management or business development. Triggers - "write a PRD", "formalize this plan", "turn this into requirements", "brief for the PM", "what do we tell sales", "commercial brief", "what can we promise".
 license: MIT
 compatibility: Standalone for the PRD document; creating the verification stories uses the to-issues skill and the project's tracker.
 metadata:
   author: bpappin
-  version: "1.5"
+  version: "1.6"
 ---
 
 # Product Requirements (to-prd)
@@ -67,51 +67,22 @@ stories are published, fill the PRD's `## Stories` table with their IDs and
 which requirements each covers. Where a requirement has strict rules or
 needs test automation, note it so the story gets the `needs-gherkin` tag.
 
-### 4. Derive the audience briefs
+### 4. Briefing other readers - not a second document
 
-A PRD is written for the people building the thing. The same decisions
-matter to people who do not read module boundaries, and re-explaining it
-verbally each time is how the versions drift apart.
+**The PRD is the only document this skill writes.** Do not produce a brief unprompted. A brief written beside a PRD becomes a second PRD: it restates the same decisions, drifts from them within a week, and the one the business reads is the one that is wrong.
 
-**Separate documents, not renderings.** Each brief is authored in its own
-audience tier and is a first-class document there — see the
-audience-replication convention in project-docs' taxonomy. Do not write one
-document with a section per reader; nobody reads past their own part.
+When somebody does need the PRD restated for a reader who does not follow module boundaries, ask which form they want, and default to the cheapest:
 
-**Cross-link all of them.** That is what stops them diverging silently, and
-it is how a reader who needs more depth finds it. Where two state the same
-fact, **the PRD owns it** — correct it there first, then carry the
-correction outward.
+- **A short summary in the conversation** - a few sentences they can paste into chat, an email, or a story comment. This is the normal answer and needs no file.
+- **An outbound artifact in `docs/outbox/`**, only if they ask for something to send. That section exists for exactly this: written FOR someone else, not project knowledge, and it does not sync anywhere. Name it after the PRD it came from.
 
-**Each tier may hold what the others do not.** Competitive positioning was
-never in the PRD and does not belong there. But if a brief needs something
-the PRD *should* have said — success signals, a firm date, a segment — that
-is a gap in the PRD. Fix it there, then write the brief. This is the most
-useful thing about the exercise: it finds the holes.
+Never in the Product Requirements section, and never in the knowledge base. A brief is a rendering of a decision for one audience at one moment; the PRD is the record.
 
-**Product brief** (`assets/templates/pm-brief.md` in project-docs) - write
-this whenever the PRD represents a real product decision. Outcomes, users,
-non-goals in plain terms, how we will know it worked, sequencing, risks. No
-module names; if the problem cannot be stated without them, the PRD's
-Problem section is not finished.
+**Where to look for the shape**, when one is asked for: `assets/templates/pm-brief.md` for a product brief (outcomes, users, non-goals in plain terms, how we will know it worked, sequencing, risks - no module names) and `assets/templates/bd-brief.md` for a commercial one. Use them as a checklist of what to cover, not as a reason to create a file.
 
-**Commercial brief** (`assets/templates/bd-brief.md`) - **only when it makes
-sense**, and often it does not. The test: *does this change what someone
-outside the company can be told, sold, or promised?* A new capability, a
-changed limit, a new integration - yes. Refactors, tech debt, internal
-tooling, performance work nobody asked for - no, and producing one anyway
-trains people to ignore them.
+**A commercial brief has a test worth keeping:** does this change what someone outside the company can be told, sold, or promised? A new capability, a changed limit, a new integration - yes. Refactors, tech debt, internal tooling - no. When you do write one, the section that earns its place is **what it does NOT do**, because commercial harm comes from promises made in the gap between what shipped and what someone assumed shipped. Mark availability as committed, planned, or exploratory; a reader assumes the strongest reading you leave open. Never carry story IDs, module names, or internal codenames into it.
 
-When you do write one, the section that earns its place is **what it does
-NOT do**. Commercial harm comes from promises made in the gap between what
-shipped and what someone assumed shipped. Mark availability as committed,
-planned, or exploratory, because a reader assumes the strongest reading you
-leave open. Never carry story IDs, module names, or internal codenames into
-it.
-
-Both live beside the PRD in the Product Requirements section unless the
-project has a commercial or go-to-market section, in which case the
-commercial brief belongs there. Sync after writing.
+**If briefing exposes a gap, fix the PRD.** Success signals, a firm date, a segment the PRD should have named - correct it there rather than in the restatement. That is the part of this exercise worth having, and it survives without producing a single extra file.
 
 ## Review checklist
 
@@ -121,9 +92,6 @@ commercial brief belongs there. Sync after writing.
 - [ ] Are non-goals explicit?
 - [ ] Is the Stories table filled (or explicitly deferred to to-issues)?
 - [ ] No AC in the PRD - checklists belong to the stories.
-- [ ] Does the PM brief read without a single module name?
-- [ ] Does the PRD actually say how success is measured, or did the brief
-      expose that it does not?
-- [ ] If there is a commercial brief, does it pass the outside-the-company
-      test - and does it state what the thing does *not* do?
-- [ ] Does each brief cross-link the PRD and the other tiers, with a date?
+- [ ] Does the PRD say how success is measured?
+- [ ] One document, unless a brief was asked for - and if one was, is it a
+      pasteable summary or an outbox artifact rather than a second PRD?

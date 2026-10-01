@@ -204,6 +204,8 @@ carry the correction outward.
 Not everything needs replicating. A thing that changes nothing for anyone
 outside engineering has one version, in PD, and that is the normal case.
 
+**This is for a tree already organised by audience, where somebody owns each tier.** It is not a licence to pair every requirement with a brief. A one-off restatement for a particular reader is not a replica: it is a short summary in the conversation, or an artifact in `docs/outbox/` if it has to be sent - see `to-prd`. A second document authored beside the first, which nobody owns and nobody reads, is how two sources of truth start.
+
 ## Distinctions that matter
 
 - **spec vs adr**: a spec describes how a thing IS; an ADR records why a

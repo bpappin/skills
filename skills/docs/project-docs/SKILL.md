@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone for filing/creating docs. Syncing requires git on PATH plus the binding's connection - YouTrack REST (story-tools connection or YOUTRACK_URL/TOKEN env), or a GitHub token with Contents RW and an initialized wiki.
 metadata:
   author: bpappin
-  version: "1.41"
+  version: "1.42"
 ---
 
 # Project Docs
@@ -56,7 +56,7 @@ Bundled resources:
 - [references/stability.md](references/stability.md) - the four stability
   levels (spike, proof of concept, experimental, supported), what each
   promises, and where the word gets written.
-- `assets/templates/` - starting points: `prd.md`, `adr.md`, `research.md`, `prospect.md`, `pm-brief.md` and `bd-brief.md` (audience renderings derived from a PRD - see to-prd), plus `readme.md` (section filing guide) and `docs-guide.md` (the `docs/README.md` front door).
+- `assets/templates/` - starting points: `prd.md`, `adr.md`, `research.md`, `prospect.md`, `pm-brief.md` and `bd-brief.md` (what to cover when a PRD is restated for another reader - a pasteable summary or an outbox artifact, not a document filed beside the PRD; see to-prd), plus `readme.md` (section filing guide) and `docs-guide.md` (the `docs/README.md` front door).
 - For `testing/`: `qa-feature.md` is a feature's index and `qa-sequence.md` is one sequence within it - what a person or an agent does, and how they can see it passed. `qa-plan.md` is the older, broader shape and stays for a protocol that spans features rather than describing one.
 - Tracker bindings - `tracker.type` in `.agents/config/story-tools.json`
   selects one (absent → youtrack):

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Writes a PRD file into the repo; no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Product Requirements (to-prd)
@@ -64,7 +64,7 @@ needs test automation, say so in that story's Specification.
 
 ### 4. Briefs - only when asked
 
-**The output is one file: the PRD.** Do not write a brief unprompted. When the PRD is done, offer them in one line - "Want a product brief or a commercial brief for this?" - and write one only if the answer is yes, or if a brief was asked for by name ("brief for the PM", "what do we tell sales"). A requirement that arrives as three documents is three things to keep in step, and most of the time nobody reads the other two.
+**The output is one file: the PRD.** Do not write a brief unprompted - a brief written beside a PRD becomes a second PRD, drifts from it, and the one the business reads is the one that is wrong. If somebody needs it restated for another reader, default to a short summary in the conversation that they can paste into chat or attach to a story; write a file only if they ask for something to send, and then into `docs/outbox/`, never beside the PRD.
 
 When one is asked for, the rest of this section is how to write it well. A PRD is written for the people building the thing; a brief restates the same decisions for people who do not read module boundaries.
 

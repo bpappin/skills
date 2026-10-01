@@ -12,6 +12,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **A PRD no longer comes with a brief beside it.** `to-prd` wrote a product brief whenever the PRD represented a real product decision - nearly always - and insisted briefs be separate first-class documents. In practice that produced a second PRD per requirement: the same decisions restated, drifting within a week, and the copy the business reads being the wrong one. The PRD is now the only document the skill writes. When somebody needs it restated for another reader, the default is a short summary in the conversation they can paste into chat or attach to a story; a file is written only if they ask for something to send, and then into `docs/outbox/`, which exists for artifacts written FOR someone else and syncs nowhere. The `pm-brief` and `bd-brief` templates stay as a checklist of what to cover, not as a reason to create a file. The commercial test and the what-it-does-NOT-do rule are kept, as is the useful part of the exercise: a gap it exposes gets fixed in the PRD. The taxonomy's audience-replication convention now says plainly that it applies to a tree organised by audience with an owner per tier, and is not a licence to pair every requirement with a brief. The light set was fixed on 2026-09-28 but every project had the main copy installed, so nothing reached them. to-prd 1.6, project-docs 1.42, light-skills to-prd 1.3.
+
+
 ### Removed
 
 - **Effort logging is gone from the skills.** `effort.log` recorded human-approved time against the focused story, and the mechanism is being redesigned, so it comes out rather than being adjusted in place. Removed: the operation and its whole section in `story-workflow`, the completion step that offered an entry, the YouTrack and GitHub binding rows, the `### Effort` block in the offline binding, the `housekeeping` checklist item, the `handoff` step that proposed one, and the replay of effort entries in `story-reconcile`. `worklog` - the developer's cross-project day, which was always a separate record - stays, and no longer points at a thing that does not exist. The YouTrack app still exposes `story_log_work`; removing a deployed tool is a separate decision, and nothing in the skills calls it now. story-workflow 1.28, housekeeping 1.6, handoff 1.3, story-reconcile 0.31, worklog 0.2.

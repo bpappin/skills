@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-01",
+  "generated": "2026-10-05",
   "skills": {
     "write-a-skill": "1.0",
     "grill-with-docs": "2.1",
@@ -21,8 +21,8 @@
     "setup-github-copilot": "1.0",
     "setup-gitlab-duo": "1.0",
     "story-reconcile": "0.31",
-    "story-workflow": "1.28",
-    "to-issues": "1.17",
+    "story-workflow": "1.29",
+    "to-issues": "1.18",
     "triage": "1.28"
   }
 }

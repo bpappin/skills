@@ -56,5 +56,4 @@ selectively as a `## QA` section on the story:
 
 Each item is a verifiable outcome, not an activity: "Queue drains
 automatically on reconnect", not "Work on reconnect logic". If an item
-cannot be checked true/false, rewrite it. 3–7 items is the sweet spot;
-more usually means the story should split.
+cannot be checked true/false, rewrite it. 3–7 items is the sweet spot. A longer list is a signal to look for a seam, not a reason to split on its own: if the items all describe one path through the system, it is one story however many ways there are to verify it.

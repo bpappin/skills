@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Filing conventions only - no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.12"
+  version: "1.13"
 ---
 
 # Project Docs
@@ -28,6 +28,8 @@ Ask what the document *is*, not what prompted it. The same conversation can prod
 - It describes **how a thing IS**, and gets updated in place → `specifications/`
 - It is an external fact the project must live with → `reference/`
 - It tells someone **how to do** something → `guides/`
+- It is a slice of work someone can pick up, with acceptance criteria → `stories/`
+- It is written to send to someone outside the project → `outbox/`
 
 If two fit, the document is probably two documents. Split it rather than filing a hybrid nobody can find.
 
@@ -36,7 +38,8 @@ If two fit, the document is probably two documents. Split it rather than filing 
 | Directory | What belongs there |
 |---|---|
 | `decisions/` | Architecture decision records. One hard-to-reverse choice each. The *decision* is append-only - reversing it takes a new record that supersedes this one - while the document around it is maintained: a fact that was wrong, or a name that has since changed, is corrected in place |
-| `requirements/` | PRD narratives and the stories that implement them |
+| `requirements/` | PRD narratives. The stories that implement one live in `stories/`; the PRD lists them in its `## Stories` table |
+| `stories/` | The work itself - one file per story, `STRY-NNNN-slug.md`, status in its frontmatter (`to-stories`) |
 | `specifications/` | How a thing IS - architecture, component specs; updated in place. May be **binding**: where the project says so, code contradicting a specification is a bug in the code, not a stale document. The section's `README.md` is where that is declared. Numbered `DOC-`, sharing the sequence with `documents/` |
 | `research/` | Investigations - question, trail, findings. Postmortems and worked case studies belong here |
 | `reference/` | External facts: vendors, regulations, domain material - and the **Domain Glossary**, the project's canonical terms |
@@ -44,6 +47,7 @@ If two fit, the document is probably two documents. Split it rather than filing 
 | `testing/` | Durable feature test plans - a folder per feature, its README the index, one file per sequence. A run is not recorded here |
 | `compliance/` | Legal and regulatory rules the work must satisfy |
 | `documents/` | Informational pages explaining what the project is and how the pieces relate. Also the honest home for something that fits nothing else |
+| `outbox/` | Outbound artifacts - a brief, a bug report, a letter: written FOR someone else rather than as project knowledge, and never the record of anything |
 
 **These are starting points, not a required tree.** Match what the project already has rather than renaming its directories to fit this table. A project with three documents needs two directories, not nine - add a section when something has nowhere honest to go, never in advance.
 

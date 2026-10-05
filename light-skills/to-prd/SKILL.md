@@ -5,7 +5,7 @@ license: MIT
 compatibility: Standalone. Writes a PRD file into the repo; no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Product Requirements (to-prd)
@@ -62,51 +62,22 @@ stories are written, fill the PRD's `## Stories` table with their numbers
 and which requirements each covers. Where a requirement has strict rules or
 needs test automation, say so in that story's Specification.
 
-### 4. Briefs - only when asked
+### 4. Briefing another reader - not a second document
 
-**The output is one file: the PRD.** Do not write a brief unprompted - a brief written beside a PRD becomes a second PRD, drifts from it, and the one the business reads is the one that is wrong. If somebody needs it restated for another reader, default to a short summary in the conversation that they can paste into chat or attach to a story; write a file only if they ask for something to send, and then into `docs/outbox/`, never beside the PRD.
+**The output is one file: the PRD.** Do not write a brief unprompted - a brief written beside a PRD becomes a second PRD, drifts from it, and the one the business reads is the one that is wrong.
 
-When one is asked for, the rest of this section is how to write it well. A PRD is written for the people building the thing; a brief restates the same decisions for people who do not read module boundaries.
+When somebody needs the PRD restated for a reader who does not follow module boundaries, ask which they want and default to the cheapest:
 
-**Separate documents, not renderings.** Each brief is a first-class
-document written for its own audience. Do not write one document with a
-section per reader: nobody reads past their own part, and the version that
-matters to them ends up buried in something written for someone else.
+- **A short summary in the conversation** - a few sentences they can paste into chat, an email, or a story's notes. This is the normal answer and needs no file.
+- **A file in `docs/outbox/`**, only if they ask for something to send. That is where outbound artifacts go - written FOR someone else rather than as project knowledge. Name it after the PRD it came from, e.g. `PRD-0003-draft-visibility-pm-brief.md`.
 
-**Cross-link all of them.** That is what stops them diverging silently, and
-it is how a reader who needs more depth finds it. Where two state the same
-fact, **the PRD owns it** — correct it there first, then carry the
-correction outward.
+Never in `docs/requirements/`, and never anywhere a reader could mistake it for the record. The PRD is the record; a brief is one audience's view of it at one moment.
 
-**Each tier may hold what the others do not.** Competitive positioning was
-never in the PRD and does not belong there. But if a brief needs something
-the PRD *should* have said — success signals, a firm date, a segment — that
-is a gap in the PRD. Fix it there, then write the brief. This is the most
-useful thing about the exercise: it finds the holes.
+**What to cover**, when one is asked for: `assets/templates/pm-brief.md` for a product brief - outcomes, users, non-goals in plain terms, how we will know it worked, sequencing, risks, and no module names. `assets/templates/bd-brief.md` for a commercial one. Treat both as a checklist, not as a reason to create a file.
 
-**Product brief** (`assets/templates/pm-brief.md` in this skill) - when
-asked. Outcomes, users,
-non-goals in plain terms, how we will know it worked, sequencing, risks. No
-module names; if the problem cannot be stated without them, the PRD's
-Problem section is not finished.
+**A commercial brief has a test worth keeping:** does this change what someone outside the company can be told, sold, or promised? A new capability, a changed limit, a new integration - yes. Refactors, tech debt, internal tooling - no. The section that earns its place is **what it does NOT do**, because commercial harm comes from promises made in the gap between what shipped and what someone assumed shipped. Mark availability as committed, planned or exploratory; a reader assumes the strongest reading left open. Never carry story ids, module names or internal codenames into it.
 
-**Commercial brief** (`assets/templates/bd-brief.md`) - when asked, and
-**even then only when it makes sense**; often it does not. The test: *does this change what someone
-outside the company can be told, sold, or promised?* A new capability, a
-changed limit, a new integration - yes. Refactors, tech debt, internal
-tooling, performance work nobody asked for - no, and producing one anyway
-trains people to ignore them.
-
-When you do write one, the section that earns its place is **what it does
-NOT do**. Commercial harm comes from promises made in the gap between what
-shipped and what someone assumed shipped. Mark availability as committed,
-planned, or exploratory, because a reader assumes the strongest reading you
-leave open. Never carry story ids, module names, or internal codenames into
-it.
-
-Both are named after the PRD they derive from - `PRD-0003-draft-visibility-pm-brief.md` - so a brief sorts beside its PRD and a reader can see at a glance that it has a parent. Both live beside the PRD in `docs/requirements/` unless the project has a
-commercial or go-to-market section, in which case the commercial brief
-belongs there.
+**If briefing exposes a gap, fix the PRD.** Success signals, a date, a segment it should have named - correct it there rather than in the restatement. That is the part of the exercise worth having, and it costs no extra file.
 
 ## Review checklist
 

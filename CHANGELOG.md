@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.10.05]
+
 ### Fixed
 
 - **The light skills disagreed with each other about where things live.** Three conflicts, two of them introduced by the brief change a week earlier. `to-prd` told an agent a brief goes to the conversation or `docs/outbox/` and then, four paragraphs later, that briefs are first-class documents living beside the PRD in `docs/requirements/` - the old behaviour's text left standing after its opening was replaced. That section is rewritten whole, so it cannot contradict itself again. `project-docs` said the stories implementing a PRD live in `requirements/`, while `to-stories` writes them to `docs/stories/` and the set's own README draws them there; `project-docs` now has a `stories/` row and the requirements row points at it. And `docs/outbox/` was a path `to-prd` named that the filing skill had never heard of - it has a row now, and the filing bullets route work and outbound artifacts as well as knowledge. Checked by listing every path the light skills name against the sections table; what is left is `docs/adr/`, which `to-adr` names on purpose when a project already uses it, and `docs/design/`, which `project-docs` explains itself. light-skills to-prd 1.4, project-docs 1.13.

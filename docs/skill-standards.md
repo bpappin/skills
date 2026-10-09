@@ -11,6 +11,16 @@ and the more agents it works in unmodified.
 **Gate: every skill MUST pass `skills-ref validate <skill-dir>` before it
 lands.** ([skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref))
 
+**A portable copy of sections 1-6 ships inside `write-a-skill`**, in both
+`skills/authoring/write-a-skill/references/` and
+`light-skills/write-a-skill/references/`, because a skill may not read a
+path outside itself (rule 2) and the authoring skill has to carry the rules
+it teaches. Section 7 is deliberately not in those copies: it is this
+repository's own convention, and meaningless once the skill is copied into
+somebody else's project. **Change a rule in 1-6 here and the two bundled
+copies need the same change** - they are duplicates by design, and they can
+drift.
+
 ## 1. Structure and frontmatter (spec conformance)
 
 A skill is a directory containing `SKILL.md`, optionally plus `scripts/`,

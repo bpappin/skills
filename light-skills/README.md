@@ -28,6 +28,7 @@ In a small team one person wears every hat and walks the whole spine. In a large
 | Architect | `to-rad`, `to-adr`, `grill-with-docs` | Research logs and decisions |
 | Developer | `to-stories`, `to-adr`, `tdd` | Story files, implementation decisions, working code |
 | Anyone, any session | `handoff`, `housekeeping`, `zoom-out`, `project-docs` | — |
+| Anyone writing tooling | `write-a-skill` | A skill that triggers when it should |
 
 **The business analyst or product manager** starts with `grill-with-docs` if the requirement is still vague — it interviews until the fuzzy parts are named, and challenges the words used against the project's domain glossary, which is where most requirement ambiguity actually lives. Then `to-prd` writes the PRD - one file. The product brief (capability and sequencing terms) and the commercial brief (only when the change alters what someone outside the company can be told or promised) are written when someone asks for them, never by default.
 
@@ -110,3 +111,6 @@ These are a parallel set, not a subset. The same idea often appears in both, wor
 | `handoff` | Compact a session into something another agent can pick up |
 | `housekeeping` | End-of-session cleanup and commit preparation |
 | `zoom-out` | Step back when the work has lost its shape |
+| `write-a-skill` | Write a skill, or check one against the Agent Skills standard |
+
+`write-a-skill` is the odd one out: it is about the tooling rather than about the project's work, and it is here because a team that takes this set usually ends up wanting a skill of its own for something local. It carries the normative standard in its own `references/`, so it answers "why is my skill not firing" without anything else installed.

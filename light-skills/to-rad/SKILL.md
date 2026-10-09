@@ -1,11 +1,11 @@
 ---
 name: to-rad
-description: Record a Research & Development log (RAD) - the trail behind a hard question, landing on findings and a recommendation. Covers proofs of concept and feasibility trials of any kind, code or not, including what was faked. Use while a hard problem is still being worked out - comparing options, weighing trade-offs, chasing an approach that failed, checking an assumption, and when someone asks for a "DD" - the engineering detailed/technical design document - since no such type exists here and the investigation belongs in a RAD. NOT for UI, UX, visual or accessibility design, which is a different skill entirely; "design" alone never means this. RADs hold what is NOT yet decided; a recommendation that hardens becomes an ADR. Triggers - "what are the options", "let's compare", "I'm not sure which approach", "weigh the trade-offs", "write this up", "DD", "detailed design document", "capture what we worked out", "why did we rule that out", "log the research", "write up the spike", "what did the spike show", "proof of concept", "POC", "is this feasible", "can we even do this", "we tried it and", "what did the trial show", "spike".
+description: Record a Research & Development log (RAD) - the trail behind a hard question, landing on findings and a recommendation. Covers proofs of concept and feasibility trials, code or not, including what was faked. Use while a hard problem is still being worked out - comparing options, weighing trade-offs, chasing an approach that failed, checking an assumption - and when someone asks for a "DD", the engineering detailed design document, which does not exist here; the investigation belongs in a RAD. NOT for UI, UX, visual or accessibility design - a different skill entirely; "design" alone never means this. RADs hold what is NOT yet decided; a recommendation that hardens becomes an ADR. Triggers - "what are the options", "let's compare", "which approach", "weigh the trade-offs", "write this up", "DD", "detailed design document", "why did we rule that out", "log the research", "what did the spike show", "spike", "proof of concept", "POC", "is this feasible", "can we even do this", "we tried it and".
 license: MIT
 compatibility: Standalone. Writes a RAD file into the repo; no network, no scripts, no tracker.
 metadata:
   author: bpappin
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Research & Development Logs (to-rad)

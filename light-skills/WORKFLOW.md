@@ -33,6 +33,7 @@ In a small team one person wears every hat. In a larger one the stages belong to
 | Architect | `to-rad`, `to-adr`, `grill-with-docs` | Research logs and decisions |
 | Developer | `to-stories`, `to-adr`, `tdd` | Story files, implementation decisions, working code |
 | Anyone, any session | `handoff`, `housekeeping`, `zoom-out`, `project-docs` | - |
+| Anyone writing tooling | `write-a-skill` | A skill that triggers when it should |
 
 **If you are the business analyst or product manager,** start with `grill-with-docs` when the requirement is still vague. It interviews you until the fuzzy parts are named, and challenges the words against the project's glossary, which is where most requirement ambiguity actually lives. Then `to-prd` writes the PRD - one file. If someone outside engineering needs it restated, ask for a product brief, or a commercial brief when the change alters what someone outside the company can be told or promised; neither is written unless you ask.
 
@@ -65,6 +66,7 @@ In a small team one person wears every hat. In a larger one the stages belong to
 | "where should this go" / "file this" | The right section and a findable name (`project-docs`) |
 | "hand this off" | A handoff document in your system's temp directory (`handoff`) |
 | "let's wrap up" | End-of-session cleanup and commit preparation (`housekeeping`) |
+| "write a skill" / "why is my skill not triggering" | A skill that conforms to the Agent Skills standard (`write-a-skill`) |
 
 ## The rules that keep scope honest
 

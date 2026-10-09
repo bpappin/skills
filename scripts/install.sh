@@ -78,7 +78,8 @@ SKILLS=("$REPO_DIR/skills/stories/story-workflow" "$REPO_DIR/skills/stories/stor
         "$REPO_DIR/skills/sessions/handoff" "$REPO_DIR/skills/sessions/housekeeping"
         "$REPO_DIR/skills/sessions/zoom-out" "$REPO_DIR/skills/engineering/tdd"
         "$REPO_DIR/skills/engineering/improve-codebase-architecture"
-        "$REPO_DIR/skills/engineering/to-ux")
+        "$REPO_DIR/skills/engineering/to-ux"
+        "$REPO_DIR/skills/authoring/write-a-skill")
 # worklog is NOT here on purpose. A developer's working day is personal -
 # it spans every project and belongs to the person, not to any repo - so
 # installing it into every bound project put a private record in front of

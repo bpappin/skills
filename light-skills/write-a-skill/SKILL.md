@@ -4,7 +4,7 @@ description: Write a new agent skill, or bring an existing one up to the Agent S
 license: MIT
 metadata:
   author: bpappin
-  version: "2.0"
+  version: "1.0"
   derived-from: https://github.com/mattpocock/skills (MIT, (c) 2026 Matt Pocock) - heavily modified
 ---
 

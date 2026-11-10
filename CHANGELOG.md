@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.11.10]
+
 ### Fixed
 
 - **A new docs section was renamed twice, and took three syncs to settle.** `yt-sync.sh` named a newborn section's directory with the article's ID prefix (`PROJ-A-5_research/`) while the pull side names it for the section (`research/`), so the next sync moved it straight back - every file in a new section showing up as moved twice in git history, anything pointing at the section holding a wrong path in between, and a user who committed after the first sync getting an extra diff on the next. The same thing happened to every section on a `--force` adoption. The two halves of the script had disagreed in writing as well: the header comment said section directories are ID-prefixed, the naming comment forty lines further down said they are not, and each half was implemented by a different function. The birth step now uses the same `dir_name` the pull step uses, the header says what the code does, and a section born with a sibling whose name it would collide with takes the id suffix rather than being moved inside it. Covered by `trackers/youtrack/tests/sync-section-birth.sh`, which runs the real script against a stand-in API on localhost - no credentials, no network - and which fails against the previous version. One residual case is left and documented in the code: two sibling sections whose different titles collapse to one directory name through the alias table still settle on the second sync rather than the first. Reported by a project agent. project-docs 1.44.

@@ -1,19 +1,19 @@
 ---
 name: housekeeping
-description: Perform workspace housekeeping, cleanup audits, and prepare handoff/commit documentation at the end of a work session. Use when concluding tasks, preparing for commits, or before wrapping up/transitioning a chat.
+description: Perform workspace housekeeping, cleanup audits, orphaned project registry pruning, and prepare handoff/commit documentation at the end of a work session. Use when concluding tasks, preparing for commits, cleaning up ghost or temporary projects in Antigravity (agy) or Gemini, or before wrapping up/transitioning a chat.
 license: MIT
 metadata:
   author: bpappin
-  version: "1.6"
+  version: "1.7"
 ---
 
 # Housekeeping
 
 ## Quick start
 
-When concluding a session: review modified files, clean up debug artifacts,
-reconcile the work with the focused story, preserve decisions, and prepare
-the Git commit message and PR description.
+When concluding a session: review modified files, clean up debug and orphaned
+project artifacts, reconcile the work with the focused story, preserve
+decisions, and prepare the Git commit message and PR description.
 
 ## Workflows
 
@@ -32,6 +32,16 @@ Inspect the codebase and remove development artifacts before documenting:
 - [ ] Remove development-only logs, print/console statements.
 - [ ] Remove unused variables, imports, or dependencies.
 - [ ] Clean up or delete scratch files created in the workspace.
+- [ ] **Antigravity (`agy`) & Gemini ghost projects**: Test harnesses, probes,
+      and subagent runs that open ephemeral directories (e.g., `mktemp` paths
+      under `/tmp`, `/private/tmp`, or `/var/folders`) leave orphaned project
+      registrations in `~/.gemini/config/projects/*.json` and
+      `~/.gemini/projects.json` after the temporary directories are deleted.
+      Run [scripts/prune-gemini-projects.py](scripts/prune-gemini-projects.py)
+      (defaults to `--dry-run`) to audit entries whose `folderUri` paths no
+      longer exist on disk, review the list with the user, and re-run with
+      `--apply` to remove the orphaned entries (system sentinels such as
+      `default-cli-project.json` and `outside-of-project.json` are preserved).
 
 ### Step 2: Environment & configuration check
 

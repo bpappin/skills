@@ -10,8 +10,9 @@ A map needs three things from a tracker: a parent/child relationship, a typed bl
 |---|---|
 | Create the map | `create_issue` in the config's project, body in the map format. Set Type to `Epic` if the project has that value, otherwise leave Type as it lands - **read the project's values first** (`story_project_dimensions`, or `.agents/config/dimensions.md`) and never write one you have not read |
 | Create a decision | `create_issue`, body in the decision format, then link it to the map (below) |
-| Link a decision to its map | `link_issues` with `subtask of`, child → map. This parent link **is** the grouping; no tag is needed to hold the map together |
-| Link a blocker | `link_issues` with `depends on`, blocked → blocker |
+| Link a decision to its map | `link_issues(targetIssueId=<decision>, linkType="subtask of", issueToLinkId=<map>)` - **`targetIssueId` is the subject** of the sentence "decision subtask of map", whatever the parameter descriptions suggest. This parent link **is** the grouping; no tag is needed to hold the map together |
+| Link a blocker | `link_issues(targetIssueId=<blocked>, linkType="depends on", issueToLinkId=<blocker>)` - again the target is the subject: "blocked depends on blocker" |
+| Check a link | `get_issue` on the subject straight after linking, and read which way it went: the tool's reply gives only link counts. Where the story-tools app (0.6.0 or later) is installed, `story_link(issueId, linkType, otherIssueId)` takes the sentence in order and `story_unlink` removes one that went in backwards |
 | List the map's children | `get_issue` on the map and read its links; the `subtask` side lists every child. Do not guess a search syntax for parentage - the links on the map are the authority |
 | Compute the frontier | From those children: open, with every `depends on` target resolved, and no assignee. First in map order wins |
 | Claim a decision | `change_issue_assignee` to the driving developer (`get_current_user` for your own account) - the session's first write, before any work |

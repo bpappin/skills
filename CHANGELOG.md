@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [2026.11.15]
+
 ### Fixed
 
 - **Issue links kept going in backwards.** The tracker's built-in `link_issues` takes `issueToLinkId`, `targetIssueId` and `linkType`, and makes the *target* the subject of the sentence: "target *subtask of* issueToLink". Its parameter descriptions read the other way - "the issue to link from" is the object - and the YouTrack bindings in `to-issues`, `triage`, `story-workflow` and `story-reconcile` named the tool without saying which way round it runs. An agent following the names made the parent a subtask of its own child and the blocker depend on the thing it blocked, the tool's reply showed only link counts so nothing looked wrong, and with no tool to remove a link every one was cleaned up by hand. The bindings now state the sentence, show the built-in call that produces it, and say to read the link back. The story-tools app (0.6.0) gains `story_link(issueId, linkType, otherIssueId)`, whose arguments are the sentence in order and whose result repeats it as read back from the issue, and `story_unlink` with the same order. `story_link` refuses a directed link that already holds the other way round and names the call that removes it, since that is what a mistake followed by its correction leaves behind. The built-in tool itself is the vendor's and is unchanged. The app has to be redeployed, and the MCP connection re-added, before the new tools appear.

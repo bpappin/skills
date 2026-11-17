@@ -1,6 +1,7 @@
 const entities = require('@jetbrains/youtrack-scripting-api/entities');
 const parser = require('./ac-parser');
 const lib = require('./story-lib');
+const args = require('./args');
 
 exports.aiTool = {
   name: 'get_story_context',
@@ -28,6 +29,9 @@ exports.aiTool = {
     returnDirect: false,
   },
   execute: (ctx) => {
+    const bad = args.refuseUnknown(ctx.arguments, exports.aiTool.inputSchema);
+    if (bad) return bad;
+
     const r = lib.resolveIssue(ctx.arguments.issueId);
     if (r.error) return { error: r.error };
     const issue = r.issue;

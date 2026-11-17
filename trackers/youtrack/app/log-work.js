@@ -1,4 +1,5 @@
 const lib = require('./story-lib');
+const args = require('./args');
 
 exports.aiTool = {
   name: 'log_work',
@@ -34,6 +35,9 @@ exports.aiTool = {
     returnDirect: false,
   },
   execute: (ctx) => {
+    const bad = args.refuseUnknown(ctx.arguments, exports.aiTool.inputSchema);
+    if (bad) return bad;
+
     const minutes = ctx.arguments.minutes;
     if (!minutes || minutes <= 0) {
       return { error: 'minutes must be a positive integer (e.g. 90 for 1.5h).' };

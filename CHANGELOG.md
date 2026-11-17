@@ -12,7 +12,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **A story tool given an argument name it did not know answered a different question.** `story_project_dimensions` takes `projectKey`. Called with `project` instead - the name the binding's own config file uses - it dropped the argument without a word, found no project named, and fell back to the caller's focused story. Focus is one value per account, not per project, so where one account serves several projects it points wherever the last agent left it: the call came back with another project's subsystems and topical tags, correctly labelled and easy to miss, and an agent proposes what it is handed. Every `story_*` tool had the same silent drop, and for the ones that write it meant ticking criteria or logging work on the wrong story. In the story-tools app (0.7.0) every tool now refuses an argument name it does not declare, lists the names it takes, and says which one was probably meant. `story_project_dimensions` also accepts `project`, never takes the project from focus - it refuses a call that names neither a project nor an issue - and reports how it resolved the project. The bindings in `to-issues`, `triage` and `story-workflow` say to name the project on every call and check the answer. The app has to be redeployed for any of this to take effect.
 
 ## [2026.11.15]
 

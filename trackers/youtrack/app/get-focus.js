@@ -1,5 +1,6 @@
 const entities = require('@jetbrains/youtrack-scripting-api/entities');
 const lib = require('./story-lib');
+const args = require('./args');
 
 exports.aiTool = {
   name: 'get_focus',
@@ -15,7 +16,10 @@ exports.aiTool = {
     openWorldHint: false,
     returnDirect: false,
   },
-  execute: () => {
+  execute: (ctx) => {
+    const bad = args.refuseUnknown(ctx && ctx.arguments, exports.aiTool.inputSchema);
+    if (bad) return bad;
+
     const info = lib.focusInfo();
     if (!info.id) {
       return { focus: null, owner: info.login, message: 'No focused story. Call story_set_focus with an issueId.' };

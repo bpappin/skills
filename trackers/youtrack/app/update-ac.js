@@ -1,5 +1,6 @@
 const parser = require('./ac-parser');
 const lib = require('./story-lib');
+const args = require('./args');
 
 exports.aiTool = {
   name: 'update_ac',
@@ -25,6 +26,9 @@ exports.aiTool = {
     returnDirect: false,
   },
   execute: (ctx) => {
+    const bad = args.refuseUnknown(ctx.arguments, exports.aiTool.inputSchema);
+    if (bad) return bad;
+
     const ro = lib.readOnlyRefusal(ctx, {
       action: 'update_ac',
       issueId: ctx.arguments.issueId || null,

@@ -65,6 +65,12 @@ Do the work, leave it in the working tree, and say what is there. The maintainer
 
 This applies with equal force to `--amend`, to `--no-verify`, and to `git add`. If a pre-commit hook objects, report what it said and stop; do not decide on the maintainer's behalf that the objection does not apply.
 
+## Bring the checkout up to date before you change it
+
+**Before the first edit of a session, fetch, and fast-forward if the checkout is behind.** A release run pushes a commit of its own to `master` after every push that moves a skill version - it rolls `CHANGELOG.md` and refreshes `VERSIONS.json` - so the checkout is one commit behind shortly after every release. Work started on the stale one ends in a merge, and git merges those two files without a conflict and gets them wrong: entries written under `[Unreleased]` come out beneath a release they were never in.
+
+`git fetch`, then `git pull --ff-only`, is the whole of it, and you may run both without asking. A fast-forward cannot merge, rewrite or lose anything: it moves the branch forward or it refuses. **If it refuses** - the checkout has commits the remote does not, or uncommitted changes are in the way - stop and say so. Do not merge, rebase, stash or reset to get past it; which of those is right is the maintainer's to decide.
+
 ## Two skill sets, and they drift
 
 `skills/` is the full package. `light-skills/` is a parallel set for constrained places - a tight token budget, or an organisation whose review will not accept the sync tooling. It is **not** a subset: the documents there had to be written differently, and they are held to two rules the main set is not.

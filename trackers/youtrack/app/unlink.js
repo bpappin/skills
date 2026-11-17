@@ -1,5 +1,6 @@
 const entities = require('@jetbrains/youtrack-scripting-api/entities');
 const lib = require('./story-lib');
+const args = require('./args');
 const links = require('./link-lib');
 
 exports.aiTool = {
@@ -27,6 +28,9 @@ exports.aiTool = {
     returnDirect: false,
   },
   execute: (ctx) => {
+    const bad = args.refuseUnknown(ctx.arguments, exports.aiTool.inputSchema);
+    if (bad) return bad;
+
     const a = ctx.arguments;
     const ro = lib.readOnlyRefusal(ctx, {
       action: 'unlink', issueId: a.issueId, linkType: a.linkType, otherIssueId: a.otherIssueId,

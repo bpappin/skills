@@ -1,5 +1,6 @@
 const entities = require('@jetbrains/youtrack-scripting-api/entities');
 const lib = require('./story-lib');
+const args = require('./args');
 
 exports.aiTool = {
   name: 'add_discovered_work',
@@ -25,6 +26,9 @@ exports.aiTool = {
     returnDirect: false,
   },
   execute: (ctx) => {
+    const bad = args.refuseUnknown(ctx.arguments, exports.aiTool.inputSchema);
+    if (bad) return bad;
+
     const ro = lib.readOnlyRefusal(ctx, {
       action: 'add_discovered_work',
       summary: ctx.arguments.summary,

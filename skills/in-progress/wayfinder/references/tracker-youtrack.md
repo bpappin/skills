@@ -8,7 +8,7 @@ A map needs three things from a tracker: a parent/child relationship, a typed bl
 
 | Operation | YouTrack command |
 |---|---|
-| Create the map | `create_issue` in the config's project, body in the map format. Set Type to `Epic` if the project has that value, otherwise leave Type as it lands - **read the project's values first** (`story_project_dimensions`, or `.agents/config/dimensions.md`) and never write one you have not read |
+| Create the map | `create_issue` in the config's project, body in the map format. Set Type to `Epic` if the project has that value, otherwise leave Type as it lands - **read the project's values first** (`story_project_dimensions` with the config's `projectKey`, or `.agents/config/dimensions.md`) and never write one you have not read |
 | Create a decision | `create_issue`, body in the decision format, then link it to the map (below) |
 | Link a decision to its map | `link_issues(targetIssueId=<decision>, linkType="subtask of", issueToLinkId=<map>)` - **`targetIssueId` is the subject** of the sentence "decision subtask of map", whatever the parameter descriptions suggest. This parent link **is** the grouping; no tag is needed to hold the map together |
 | Link a blocker | `link_issues(targetIssueId=<blocked>, linkType="depends on", issueToLinkId=<blocker>)` - again the target is the subject: "blocked depends on blocker" |
